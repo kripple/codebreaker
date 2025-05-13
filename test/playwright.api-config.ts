@@ -7,5 +7,5 @@ export default defineConfig({
   outputDir: name,
   reporter: 'line',
   testDir: `../src/${name}`,
-  testMatch: '**/*.test.ts',
+  testMatch: '**/*.api-test.ts',
 });

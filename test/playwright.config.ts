@@ -14,7 +14,7 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  testDir: `../src/${name}`,
+  testDir: '../src',
   testMatch: '**/*.test.ts',
   use: {
     baseURL: url,

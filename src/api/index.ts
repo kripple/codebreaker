@@ -1,19 +1,24 @@
 import Fastify from 'fastify';
 
+import { evaluateAttempt } from './codemaker';
+
 const fastify = Fastify({
   logger: true,
 });
 
-// Declare a route
-fastify.get('/', function (request, reply) {
-  reply.send({ hello: 'world' });
+fastify.get<{
+  Params: {
+    code: string;
+  };
+}>('/try/:code', function (request, reply) {
+  const guess = request.params.code;
+  const data = evaluateAttempt(guess);
+  reply.send({ data });
 });
 
-// Run the server!
-fastify.listen({ port: 3000 }, function (err, address) {
+fastify.listen({ port: 3000 }, function (err, _address) {
   if (err) {
     fastify.log.error(err);
     process.exit(1);
   }
-  // Server is now listening on ${address}
 });

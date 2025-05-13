@@ -1,3 +1,48 @@
 # Codebreaker
 
 https://en.wikipedia.org/wiki/Mastermind_(board_game)
+
+## Goals
+
+- Accessibility - uses both colors and patterns/textures to differentiate between tokens
+- Idea - daily play game (same solution for everyone, changes at the witching hour (3:33, obviously))
+- Answer is a secret to the client, use Symmetric Encryption with Server-Held Secret
+
+## Game Parts
+
+- Game Board
+- Secret Code (row of four)
+- Game Token
+  - Code Token
+  - Key Token
+- twelve (or ten, or eight, or six) additional rows for guesses
+
+- codemaker vs. codebreaker
+
+- correct color + correct position (black)
+- correct color + incorrect position (white)
+
+## Development
+
+This project uses `NPM Scripts` to execute repeatable tasks.
+
+### Installation & Setup
+
+- Install dependencies: `npm install`
+- Install browsers for Playwright tests: `npm run setup`
+
+### Local Development
+
+- Serve the fastify api: `npm run serve`
+- Serve the react app: `npm start`
+
+### Build & Preview
+
+- Create a production build for the react app: `npm run build`
+- Preview the build: `npm run preview`
+
+### Developer Tools
+
+- Run test suites: `npm test`. Testing uses `Playwright`. Test files are co-located with the code they test.
+- Run linting: `npm run lint`. Linting is performed using `Prettier` and `ESLint` for code quality and consistency.
+- Open most recent HTML test report (api tests only): `npm run test:report`
