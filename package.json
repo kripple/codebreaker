@@ -14,7 +14,11 @@
     "build": "tsc && vite build",
     "lint": "eslint . && stylelint '**/*.css' && prettier --check .",
     "preview": "vite preview",
-    "setup": "playwright install"
+    "setup": "playwright install",
+    "test": "npm run test:api && npm run test:app",
+    "test:api": "playwright test --config test/playwright.api-config.ts",
+    "test:app": "playwright test --config test/playwright.app-config.ts",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "fastify": "5.3.2"
