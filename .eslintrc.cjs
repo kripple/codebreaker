@@ -53,14 +53,12 @@ module.exports = {
       files: ['**/test/**/*', '**/*.test.*'],
       rules: {
         ...defaultRules,
-        ...disableForTest,
       },
     },
     {
       files: ['src/api/**/*'],
       rules: {
         ...defaultRules,
-        ...disableForTest,
         '@typescript-eslint/no-restricted-imports': 'off',
       },
     },
