@@ -21,7 +21,7 @@
 
     /* Path resolution */
     "paths": {
-      "@/*": ["src/app/*"]
+      "@/*": ["src/*"]
     },
 
     /* Make the linting useful again */

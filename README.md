@@ -9,6 +9,8 @@ https://en.wikipedia.org/wiki/Mastermind_(board_game)
 - Answer is a secret to the client, use Symmetric Encryption with Server-Held Secret
 - CI/CD pipeline
 - Use open source component library
+- configurable colors & patterns for game tokens
+- entire game state represented as string
 
 ## Game Parts
 

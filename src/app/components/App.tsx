@@ -1,32 +1,25 @@
-import { Button, Container, Stack } from '@mantine/core';
+import { Center, Container, Title } from '@mantine/core';
 
-import { GameBoard } from '@/components/GameBoard';
-import { AppProviders } from '@/providers/AppProviders';
+import { Game } from '@/app/components/Game';
+import { AppProviders } from '@/app/providers/AppProviders';
 
-import '@/components/App.css';
+import '@/app/components/App.css';
 
 export function App() {
   return (
     <AppProviders>
-      <Container h="100%" mt="md">
-        <Stack
-          align="stretch"
-          bg="var(--mantine-color-body)"
-          gap="xs"
-          h={300}
-          justify="space-between"
-        >
-          <header>
-            <h1 className="heading">Codebreaker</h1>
-          </header>
-          <main className="main"></main>
-
-          <Button variant="default">2</Button>
-          <Button variant="default">3</Button>
-        </Stack>
+      <Container m="md">
+        <header>
+          <Center>
+            <Title className="title" mb="md" mt="md" order={1}>
+              CodeBreaker
+            </Title>
+          </Center>
+        </header>
+        <main className="main">
+          <Game />
+        </main>
       </Container>
-
-
     </AppProviders>
   );
 }
