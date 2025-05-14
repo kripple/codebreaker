@@ -7,6 +7,8 @@ https://en.wikipedia.org/wiki/Mastermind_(board_game)
 - Accessibility - uses both colors and patterns/textures to differentiate between tokens
 - Idea - daily play game (same solution for everyone, changes at the witching hour (3:33, obviously))
 - Answer is a secret to the client, use Symmetric Encryption with Server-Held Secret
+- CI/CD pipeline
+- Use open source component library
 
 ## Game Parts
 
@@ -15,7 +17,7 @@ https://en.wikipedia.org/wiki/Mastermind_(board_game)
 - Game Token
   - Code Token
   - Key Token
-- twelve (or ten, or eight, or six) additional rows for guesses
+- twelve (or ten, or eight, or six) additional rows for guesses - we're going to use 10 as default
 
 - codemaker vs. codebreaker
 
