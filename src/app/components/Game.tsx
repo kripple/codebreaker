@@ -1,107 +1,109 @@
 import {
   ActionIcon,
+  Affix,
+  Button,
   Center,
+  Checkbox,
   ColorSwatch,
+  Flex,
   Group,
   Overlay,
   Paper,
+  Radio,
+  RadioGroup,
   SegmentedControl,
+  Select,
   Text,
-  Timeline,
 } from '@mantine/core';
+import { useForm } from '@mantine/form';
 import { useState } from 'react';
 
+import { DisplayToken } from '@/app/components/DisplayToken';
+import { config } from '@/app/config';
 import { gameTokens } from '@/types/token';
 
-type GameState = {
-  activeAttempt: number;
-  secretCode: string[];
-  rows: { colors: string[]; feedback: string[] }[];
-  tokenPosition: number;
-  win: 'yes' | 'no' | 'tbd';
-};
-
 export function Game() {
-  const config = {
-    allowedAttempts: 3,
-    solutionLength: 4,
-  } as const;
   const { allowedAttempts, solutionLength } = config;
+  const [activeSegment, setActiveSegment] = useState<string>('0');
 
-  const [gameState, setGameState] = useState<GameState>({
-    activeAttempt: 0,
-    rows: new Array(allowedAttempts).fill(0).map(() => ({
-      colors: new Array(solutionLength).fill(0).map(() => 'gray'),
-      feedback: [],
-    })),
-    tokenPosition: 0,
-    secretCode: ['red', 'orange', 'yellow', 'green'],
-    win: 'tbd',
+  const row = new Array(solutionLength).fill(0);
+  // const rows = new Array(allowedAttempts).fill(0).map(() => [...row]);
+  const rows = new Array(allowedAttempts).fill(0).map(() => row);
+
+  const form = useForm({
+    mode: 'uncontrolled',
+    initialValues: {
+      rows,
+    },
   });
-  const { activeAttempt, rows, secretCode, win } = gameState;
 
-  const selectTokenColor = (value: string) => {
-    console.log('[selectTokenColor]', { value });
-    setGameState((draft) => {
-      const draftRows = [...draft.rows];
-      draftRows[draft.activeAttempt].colors[draft.tokenPosition] = value;
-
-      return {
-        ...draft,
-        rows: draftRows,
-      };
-    });
-  };
-
-  const setTokenPosition = (value: string) => {
-    console.log('[setTokenPosition]', { value });
-    setGameState((draft) => {
-      return {
-        ...draft,
-        tokenPosition: parseInt(value),
-      };
-    });
-  };
-
-  const rowItems = rows.map((row, i) => {
-    const currentStep = allowedAttempts - i;
-    const isActive = activeAttempt === currentStep - 1;
+  // radio group only visible when segment is active
+  const rowId = 0;
+  const radioGroup = (columnId: number) => {
+    const active = columnId.toString() === activeSegment;
+    const displayToken = (
+      <DisplayToken columnId={columnId} form={form} rowId={rowId} />
+    );
+    if (!active) return displayToken;
 
     return (
-      <Timeline.Item
-        bullet={<Text className="bullet-text">{currentStep}</Text>}
-        key={i}
-      >
-        <SegmentedControl
-          data={row.colors.map((color, i) => ({
-            label: (
-              <Center>
-                <ColorSwatch color={color} />
-              </Center>
-            ),
-            value: i.toString(),
-          }))}
-          onChange={(value: string) => {
-            isActive && setTokenPosition(value);
-          }}
-          styles={{
-            label: { padding: '8px' },
-          }}
-          withItemsBorders={false}
-          {...(isActive
-            ? {}
-            : {
-                defaultValue: '',
-                readOnly: true,
-              })}
-        />
-      </Timeline.Item>
+      <>
+        {displayToken}
+        <Affix position={{ bottom: 0, left: 0 }} w="100%">
+          <RadioGroup
+            key={`${rowId}-${columnId}`}
+            mb="xl"
+            ml="xl"
+            mr="xl"
+            {...form.getInputProps(`rows.${rowId}.${columnId}`)}
+          >
+            <Paper bg="dark" p="sm">
+              <Flex gap="xs" justify="space-around">
+                {gameTokens.map((token) => {
+                  return 'color' in token ? (
+                    <Radio
+                      aria-label={token.label}
+                      key={`${rowId}-${columnId}-${token.id}`}
+                      size="lg"
+                      styles={{
+                        icon: {
+                          height: '100%',
+                          left: 0,
+                          top: 0,
+                          transform: 'scale(1.1)',
+                          transition: 'none',
+                          width: '100%',
+                          zIndex: 0,
+                        },
+                        radio: {
+                          backgroundColor: token.color,
+                          borderColor: token.color,
+                          zIndex: 1,
+                        },
+                      }}
+                      value={token.color}
+                    ></Radio>
+                  ) : (
+                    <Radio
+                      key={`${rowId}-${columnId}-${token.id}`}
+                      size="lg"
+                    ></Radio>
+                  );
+                })}
+              </Flex>
+            </Paper>
+          </RadioGroup>
+        </Affix>
+      </>
     );
-  });
-
+  };
+  const radioGroupsData = row.map((_, i) => ({
+    label: radioGroup(i),
+    value: i.toString(),
+  }));
   return (
     <>
-      <Paper bg="dark" mb="sm" p="md" pos="relative">
+      {/* <Paper bg="dark" mb="sm" p="md" pos="relative">
         <Overlay backgroundOpacity={1} className="overlay" color="dark">
           <Center h="100%">
             <Text className="top-secret">TOP SECRET</Text>
@@ -114,32 +116,21 @@ export function Game() {
             ))}
           </Group>
         </Center>
-      </Paper>
+      </Paper> */}
 
-      <Timeline active={activeAttempt} reverseActive>
-        {rowItems}
-      </Timeline>
+      <form onSubmit={form.onSubmit((values) => console.log(values))}>
+        <SegmentedControl
+          data={radioGroupsData}
+          fullWidth
+          onChange={setActiveSegment}
+          styles={{ label: { height: '100%' }, innerLabel: { height: '100%' } }}
+          withItemsBorders={false}
+        />
 
-      <SegmentedControl
-        data={gameTokens.map((token) => ({
-          label: (
-            <Center>
-              <ColorSwatch color={token.color} />
-            </Center>
-          ),
-          value: token.color,
-        }))}
-        defaultValue=""
-        fullWidth
-        mt="sm"
-        onChange={selectTokenColor}
-        styles={{
-          label: { padding: '8px' },
-          indicator: { backgroundColor: 'transparent' },
-        }}
-        transitionDuration={0}
-        withItemsBorders={false}
-      />
+        <Group justify="flex-end" mt="md">
+          <Button type="submit">Try</Button>
+        </Group>
+      </form>
     </>
   );
 }

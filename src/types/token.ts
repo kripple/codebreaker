@@ -1,5 +1,5 @@
 export const gameTokens = [
-  // { id: 0, key: '0', label: '-', color: 'gray' },
+  { id: 0, key: '0' },
   { id: 1, key: '1', label: 'red', color: '#ff0000' },
   { id: 2, key: '2', label: 'orange', color: 'orange' },
   { id: 3, key: '3', label: 'yellow', color: 'yellow' },
