@@ -10,18 +10,8 @@ export function GameRow({
   count: number;
   setTokenColor: SetValue;
 }) {
-  const [colors, setColors] = useState(new Array(count).fill('gray'));
+  // const [colors, setColors] = useState(new Array(count).fill('gray'));
 
-  const labels = colors.map((color, i) => {
-    return {
-      label: (
-        <Center>
-          <ColorSwatch color={color} />
-        </Center>
-      ),
-      value: i.toString(),
-    };
-  });
 
   const handleChange = (value: string) => {
     // setColors((draft) =>
@@ -31,19 +21,26 @@ export function GameRow({
     // );
   };
 
-  const optionalProps = active
-    ? {}
-    : {
-        defaultValue: '',
-        readOnly: true,
-      };
+
 
   return (
     <SegmentedControl
-      data={labels}
+      data={new Array(count).fill('gray').map((color, i) => ({
+        label: (
+          <Center>
+            <ColorSwatch color={color} />
+          </Center>
+        ),
+        value: i.toString(),
+      }))}
       onChange={handleChange}
       withItemsBorders={false}
-      {...optionalProps}
+      {...(active
+        ? {}
+        : {
+            defaultValue: '',
+            readOnly: true,
+          })}
     />
   );
 }

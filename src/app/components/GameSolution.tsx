@@ -20,7 +20,7 @@ export function GameSoultion({
 
   return (
     <Paper bg="dark" mb="sm" p="md" pos="relative">
-      <Overlay backgroundOpacity={1} className="overlay" color="#000000">
+      <Overlay backgroundOpacity={1} className="overlay" color="dark">
         <Center h="100%">
           <Text className="top-secret">TOP SECRET</Text>
         </Center>

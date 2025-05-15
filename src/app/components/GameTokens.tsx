@@ -12,6 +12,7 @@ export function GameTokens({ setTokenColor }: { setTokenColor: SetValue }) {
               aria-label={token.label}
               color={token.color}
               key={token.color}
+              onClick={() => setTokenColor?.(token.color)}
               radius="xl"
               variant="filled"
             ></ActionIcon>
