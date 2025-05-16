@@ -1,50 +1,17 @@
-import { Center, Radio } from '@mantine/core';
-import { type UseFormReturnType } from '@mantine/form';
-import { useState } from 'react';
+import { ColorSwatch } from '@mantine/core';
 
-type Form = UseFormReturnType<
-  {
-    rows: string[][];
-  },
-  (values: { rows: string[][] }) => {
-    rows: string[][];
-  }
->;
+import { Profiler } from '@/app/components/Profiler';
 
 export function DisplayToken({
-  form,
-  columnId,
-  rowId,
+  className,
+  color,
 }: {
-  form: Form;
-  columnId: number;
-  rowId: number;
+  className?: string;
+  color: string;
 }) {
-  const [color, setColor] = useState<string>('gray');
-  form.watch(`rows.${rowId}.${columnId}`, ({ value }) => setColor(value));
-
   return (
-    <Center>
-      <Radio
-        readOnly
-        size="lg"
-        styles={{
-          icon: {
-            height: '100%',
-            left: 0,
-            top: 0,
-            transform: 'scale(1.1)',
-            transition: 'none',
-            width: '100%',
-            zIndex: 0,
-          },
-          radio: {
-            backgroundColor: color,
-            borderColor: color,
-            zIndex: -1,
-          },
-        }}
-      ></Radio>
-    </Center>
+    <Profiler component="DisplayToken">
+      <ColorSwatch className={className} color={color} mb="xs" mt="xs" />
+    </Profiler>
   );
 }

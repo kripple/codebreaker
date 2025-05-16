@@ -4,6 +4,10 @@
   --stencil-font: 'Stardos Stencil'; /* 300, 700 */
 }
 
+:root {
+  --token-size: calc(1.5rem * var(--mantine-scale));
+}
+
 body {
   font-family: system-ui, sans-serif;
   font-optical-sizing: auto;
@@ -44,4 +48,14 @@ body {
   outline: thick double var(--mantine-color-error);
   padding: 5px 10px 2px 10px;
   text-transform: uppercase;
+}
+
+.active-row {
+  outline: auto;
+}
+.active-token {
+  outline: thick double white;
+}
+.active-row .token {
+  cursor: pointer;
 }

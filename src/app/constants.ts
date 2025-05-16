@@ -1,3 +1,13 @@
+export const config = {
+  allowedAttempts: 8,
+  solutionLength: 4,
+} as const;
+
+const defaultColor = 'gray';
+export const gameRows = new Array(config.allowedAttempts)
+  .fill(defaultColor)
+  .map(() => new Array(config.solutionLength).fill(defaultColor));
+
 export const gameTokens = [
   { id: 0, key: '0' },
   { id: 1, key: '1', label: 'red', color: '#ff0000' },
@@ -7,15 +17,9 @@ export const gameTokens = [
   { id: 5, key: '5', label: 'blue', color: 'blue' },
   { id: 6, key: '6', label: 'purple', color: 'purple' },
 ] as const;
-type GameToken = (typeof gameTokens)[number];
-type GameTokenId = GameToken['key'];
-export type { GameTokenId as GameToken };
 
 export const feedbackTokens = [
   { id: 0, key: '-', label: 'empty' },
   { id: 1, key: 'X', label: 'black', color: '#000000' },
   { id: 2, key: 'O', label: 'white', color: 'white' },
 ] as const;
-type FeedbackToken = (typeof feedbackTokens)[number];
-type FeedbackTokenId = FeedbackToken['key'];
-export type { FeedbackTokenId as FeedbackToken };

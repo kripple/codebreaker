@@ -1,136 +1,118 @@
-import {
-  ActionIcon,
-  Affix,
-  Button,
-  Center,
-  Checkbox,
-  ColorSwatch,
-  Flex,
-  Group,
-  Overlay,
-  Paper,
-  Radio,
-  RadioGroup,
-  SegmentedControl,
-  Select,
-  Text,
-} from '@mantine/core';
+import { Center, ColorSwatch, Flex, Group, Paper } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+import { TokenSelect } from './TokenSelect';
 
 import { DisplayToken } from '@/app/components/DisplayToken';
-import { config } from '@/app/config';
-import { gameTokens } from '@/types/token';
+import { Profiler } from '@/app/components/Profiler';
+import { gameRows } from '@/app/constants';
+import { useTrace } from '@/app/hooks/useTrace';
 
 export function Game() {
-  const { allowedAttempts, solutionLength } = config;
-  const [activeSegment, setActiveSegment] = useState<string>('0');
+  const [activeRow, setActiveRow] = useState<number>(0);
+  const [activeColumn, setActiveColumn] = useState<number>(0);
 
-  const row = new Array(solutionLength).fill(0);
-  // const rows = new Array(allowedAttempts).fill(0).map(() => [...row]);
-  const rows = new Array(allowedAttempts).fill(0).map(() => row);
+  const isActiveRow = (rowId: number) => rowId === activeRow;
+  const isActiveToken = (rowId: number, columnId: number) =>
+    rowId === activeRow && columnId === activeColumn;
+  // const attemptNumber = activeRow + 1;
 
-  const form = useForm({
-    mode: 'uncontrolled',
-    initialValues: {
-      rows,
-    },
-  });
+  const dataPath = (rowId: number, columnId: number) => `${rowId}.${columnId}`;
+  const getRowValue = (value: string) => parseInt(value.split('.')[0]);
+  const getColumnValue = (value: string) => parseInt(value.split('.')[1]);
 
-  // radio group only visible when segment is active
-  const rowId = 0;
-  const radioGroup = (columnId: number) => {
-    const active = columnId.toString() === activeSegment;
-    const displayToken = (
-      <DisplayToken columnId={columnId} form={form} rowId={rowId} />
-    );
-    if (!active) return displayToken;
+  // the idea is to subscribe to changes in a way that is more granular
+  const [formState, setFormState] = useState<string[][]>(gameRows);
 
-    return (
-      <>
-        {displayToken}
-        <Affix position={{ bottom: 0, left: 0 }} w="100%">
-          <RadioGroup
-            key={`${rowId}-${columnId}`}
-            mb="xl"
-            ml="xl"
-            mr="xl"
-            {...form.getInputProps(`rows.${rowId}.${columnId}`)}
-          >
-            <Paper bg="dark" p="sm">
-              <Flex gap="xs" justify="space-around">
-                {gameTokens.map((token) => {
-                  return 'color' in token ? (
-                    <Radio
-                      aria-label={token.label}
-                      key={`${rowId}-${columnId}-${token.id}`}
-                      size="lg"
-                      styles={{
-                        icon: {
-                          height: '100%',
-                          left: 0,
-                          top: 0,
-                          transform: 'scale(1.1)',
-                          transition: 'none',
-                          width: '100%',
-                          zIndex: 0,
-                        },
-                        radio: {
-                          backgroundColor: token.color,
-                          borderColor: token.color,
-                          zIndex: 1,
-                        },
-                      }}
-                      value={token.color}
-                    ></Radio>
-                  ) : (
-                    <Radio
-                      key={`${rowId}-${columnId}-${token.id}`}
-                      size="lg"
-                    ></Radio>
-                  );
-                })}
-              </Flex>
-            </Paper>
-          </RadioGroup>
-        </Affix>
-      </>
-    );
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    console.log('submit', event);
   };
-  const radioGroupsData = row.map((_, i) => ({
-    label: radioGroup(i),
-    value: i.toString(),
-  }));
+
+  // const inputProps = form.getInputProps('rows.0.0');
+  // data-path, defaultValue, maybe onChange?
+
+  // console.log(inputProps);
+
+  const select = (event: ChangeEvent) => {
+    const { name, value } = event.currentTarget;
+    const row = getRowValue(name);
+    const column = getColumnValue(name);
+
+    setFormState((current) => {
+      const draft = [...current];
+      draft[row][column] = value;
+      return draft;
+    });
+  };
+
+  useTrace(
+    {
+      activeRow,
+      activeColumn,
+      formState,
+      submit,
+      select,
+    },
+    'Game',
+  );
+
   return (
-    <>
-      {/* <Paper bg="dark" mb="sm" p="md" pos="relative">
-        <Overlay backgroundOpacity={1} className="overlay" color="dark">
-          <Center h="100%">
-            <Text className="top-secret">TOP SECRET</Text>
-          </Center>
-        </Overlay>
-        <Center>
-          <Group>
-            {secretCode.map((color, i) => (
-              <ColorSwatch color={color} key={i} />
-            ))}
-          </Group>
-        </Center>
-      </Paper> */}
-
-      <form onSubmit={form.onSubmit((values) => console.log(values))}>
-        <SegmentedControl
-          data={radioGroupsData}
-          fullWidth
-          onChange={setActiveSegment}
-          styles={{ label: { height: '100%' }, innerLabel: { height: '100%' } }}
-          withItemsBorders={false}
-        />
-
+    <Profiler component="Game">
+      <form onSubmit={submit}>
+        <Flex direction="column-reverse">
+          <TokenSelect
+            dataPath={dataPath(activeRow, activeColumn)}
+            select={select}
+          />
+          {gameRows.map((row, rowId) => {
+            const activeRow = isActiveRow(rowId) ? 'active-row' : undefined;
+            const rowClassName = activeRow ? 'active-row' : undefined;
+            return (
+              <Center key={rowId}>
+                <Paper bg="dark" className={rowClassName}>
+                  <Group pl="xs" pr="xs">
+                    {row.map((_, columnId) => {
+                      const activeToken = isActiveToken(rowId, columnId)
+                        ? 'token active-token'
+                        : 'token';
+                      const tokenId = dataPath(rowId, columnId);
+                      const color = formState[rowId][columnId];
+                      return (
+                        <div key={columnId}>
+                          <input
+                            disabled={!activeRow}
+                            id={tokenId}
+                            name={tokenId}
+                            onClick={(event) => {
+                              const name = event.currentTarget.name;
+                              const column = getColumnValue(name);
+                              setActiveColumn(column);
+                            }}
+                            readOnly
+                            style={{ display: 'none' }}
+                            value="gray"
+                          ></input>
+                          <label htmlFor={tokenId}>
+                            <DisplayToken
+                              className={activeToken}
+                              color={color}
+                            />
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </Group>
+                </Paper>
+              </Center>
+            );
+          })}
+        </Flex>
         <Group justify="flex-end" mt="md">
-          <Button type="submit">Try</Button>
+          <button type="submit">Try</button>
         </Group>
       </form>
-    </>
+    </Profiler>
   );
 }
