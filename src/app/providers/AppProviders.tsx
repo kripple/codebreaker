@@ -1,19 +1,13 @@
-import { MantineProvider, createTheme } from '@mantine/core';
-
 import { Profiler } from '@/app/components/Profiler';
-
-import '@mantine/core/styles.css';
-
-const theme = createTheme({
-  cursorType: 'pointer',
-});
+import { ApiProvider } from '@/app/providers/ApiProvider';
+import { ThemeProvider } from '@/app/providers/ThemeProvider';
 
 export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <Profiler component="AppProviders">
-      <MantineProvider defaultColorScheme="dark" theme={theme}>
-        {children}
-      </MantineProvider>
+      <ApiProvider>
+        <ThemeProvider>{children}</ThemeProvider>
+      </ApiProvider>
     </Profiler>
   );
 }

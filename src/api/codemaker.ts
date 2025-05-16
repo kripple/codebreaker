@@ -1,10 +1,10 @@
-import type { GameToken } from '@/types/token';
+// import type { GameToken } from '@/types/token';
 
-type SecretCode = [GameToken, GameToken, GameToken, GameToken];
+// type SecretCode = [GameToken, GameToken, GameToken, GameToken];
 
 export function makeSecretCode() {
   // TODO: create random solution with array sample
-  const secretCode: SecretCode = ['1', '2', '3', '4'];
+  const secretCode: string[] = ['1', '2', '3', '4'];
   return secretCode.join('');
 }
 

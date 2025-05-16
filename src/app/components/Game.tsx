@@ -1,10 +1,11 @@
 import { Center, Flex, Group, Paper } from '@mantine/core';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { DisplayToken } from '@/app/components/DisplayToken';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
-import { gameRows } from '@/app/constants';
+import { defaultColor, gameRows, gameTokens } from '@/app/constants';
+import { useApi } from '@/app/hooks/useApi';
 import { useTrace } from '@/app/hooks/useTrace';
 
 export function Game() {
@@ -20,13 +21,24 @@ export function Game() {
   const getRowValue = (value: string) => parseInt(value.split('.')[0]);
   const getColumnValue = (value: string) => parseInt(value.split('.')[1]);
 
-  // the idea is to subscribe to changes in a way that is more granular
   const [formState, setFormState] = useState<string[][]>(gameRows);
+  const validGuess = !formState[activeRow].includes(defaultColor);
+  const [getFeedback, response] = useApi();
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    console.log('submit', event);
+    const code = formState[activeRow]
+      .map(
+        (color) =>
+          gameTokens.find((gameToken) => gameToken.color === color)?.id,
+      )
+      .join('');
+    getFeedback(code);
   };
+
+  useEffect(() => {
+    console.log({ response });
+  }, [response]);
 
   const select = (event: ChangeEvent) => {
     const { name, value } = event.currentTarget;
@@ -103,7 +115,9 @@ export function Game() {
           })}
         </Flex>
         <Group justify="flex-end" mt="md">
-          <button type="submit">Try</button>
+          <button className="button" disabled={!validGuess} type="submit">
+            Try
+          </button>
         </Group>
       </form>
     </Profiler>

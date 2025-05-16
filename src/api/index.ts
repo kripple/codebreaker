@@ -1,3 +1,4 @@
+import cors from '@fastify/cors';
 import Fastify from 'fastify';
 
 import { evaluateAttempt } from './codemaker';
@@ -5,6 +6,7 @@ import { evaluateAttempt } from './codemaker';
 const fastify = Fastify({
   logger: true,
 });
+await fastify.register(cors, {});
 
 fastify.get<{
   Params: {

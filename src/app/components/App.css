@@ -5,7 +5,7 @@
 }
 
 :root {
-  --token-size: calc(1.5rem * var(--mantine-scale));
+  --token-size: calc(1.75rem * var(--mantine-scale));
 }
 
 body {
@@ -56,6 +56,8 @@ body {
 .active-token {
   outline: thick double white;
 }
+
+.button,
 .active-row .token {
   cursor: pointer;
 }
