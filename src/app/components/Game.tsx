@@ -1,10 +1,9 @@
-import { Center, Flex, Group, Paper } from '@mantine/core';
+import { Center, ColorSwatch, Flex, Group, Paper } from '@mantine/core';
 import { useEffect, useState } from 'react';
 
-import { DisplayToken } from '@/app/components/DisplayToken';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
-import { defaultColor, gameRows, gameTokens } from '@/app/constants';
+import { defaultColor, gameRow, gameRows, gameTokens } from '@/app/constants';
 import { useApi } from '@/app/hooks/useApi';
 import { useTrace } from '@/app/hooks/useTrace';
 
@@ -22,25 +21,42 @@ export function Game() {
   const getColumnValue = (value: string) => parseInt(value.split('.')[1]);
 
   const [formState, setFormState] = useState<string[][]>(gameRows);
+  const [feedback, setFeedback] = useState<string[][]>();
   const validGuess = !formState[activeRow].includes(defaultColor);
   const [getFeedback, response] = useApi();
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    const code = formState[activeRow]
-      .map(
-        (color) =>
-          gameTokens.find((gameToken) => gameToken.color === color)?.id,
-      )
+
+    const data = new FormData(event.currentTarget);
+    const code = gameRow
+      .map((_, i) => {
+        const name = `${activeRow}.${i}`;
+        const color = data.get(name);
+        const id = gameTokens.find(
+          (gameToken) => gameToken.color === color,
+        )?.id;
+        return id;
+      })
       .join('');
+
     getFeedback(code);
   };
 
   useEffect(() => {
-    console.log({ response });
-  }, [response]);
+    if (!response?.data?.data) return;
+    setFeedback((current) => {
+      const draft = [...(current || [])];
+      draft.push(response.data.data);
+      return draft;
+    });
+  }, [response.data]);
 
-  const select = (event: ChangeEvent) => {
+  useEffect(() => {
+    console.log({ feedback });
+  }, [feedback]);
+
+  const select = (event: ClickEvent) => {
     const { name, value } = event.currentTarget;
     const row = getRowValue(name);
     const column = getColumnValue(name);
@@ -50,6 +66,12 @@ export function Game() {
       draft[row][column] = value;
       return draft;
     });
+  };
+
+  const changeActiveToken = (event: ClickEvent) => {
+    const name = event.currentTarget.name;
+    const column = getColumnValue(name);
+    setActiveColumn(column);
   };
 
   useTrace(
@@ -67,10 +89,6 @@ export function Game() {
     <Profiler component="Game">
       <form onSubmit={submit}>
         <Flex direction="column-reverse">
-          <TokenSelect
-            dataPath={dataPath(activeRow, activeColumn)}
-            select={select}
-          />
           {gameRows.map((row, rowId) => {
             const activeRow = isActiveRow(rowId) ? 'active-row' : undefined;
             const rowClassName = activeRow ? 'active-row' : undefined;
@@ -90,19 +108,17 @@ export function Game() {
                             disabled={!activeRow}
                             id={tokenId}
                             name={tokenId}
-                            onClick={(event) => {
-                              const name = event.currentTarget.name;
-                              const column = getColumnValue(name);
-                              setActiveColumn(column);
-                            }}
+                            onClick={changeActiveToken}
                             readOnly
                             style={{ display: 'none' }}
-                            value="gray"
+                            value={color}
                           ></input>
                           <label htmlFor={tokenId}>
-                            <DisplayToken
+                            <ColorSwatch
                               className={activeToken}
                               color={color}
+                              mb="xs"
+                              mt="xs"
                             />
                           </label>
                         </div>
@@ -120,6 +136,10 @@ export function Game() {
           </button>
         </Group>
       </form>
+      <TokenSelect
+        dataPath={dataPath(activeRow, activeColumn)}
+        select={select}
+      />
     </Profiler>
   );
 }

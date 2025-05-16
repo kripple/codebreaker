@@ -4,12 +4,12 @@ export const config = {
 } as const;
 
 export const defaultColor = 'gray' as const;
+export const gameRow = new Array(config.solutionLength).fill(defaultColor);
 export const gameRows = new Array(config.allowedAttempts)
   .fill(defaultColor)
   .map(() => new Array(config.solutionLength).fill(defaultColor));
 
 export const gameTokens = [
-  // { id: 0, key: '0' },
   { id: 1, key: '1', label: 'red', color: '#ff0000' },
   { id: 2, key: '2', label: 'orange', color: 'orange' },
   { id: 3, key: '3', label: 'yellow', color: 'yellow' },
