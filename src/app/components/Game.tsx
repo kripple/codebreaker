@@ -1,11 +1,9 @@
-import { Center, ColorSwatch, Flex, Group, Paper } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useEffect, useRef, useState } from 'react';
-
-import { TokenSelect } from './TokenSelect';
+import { Center, Flex, Group, Paper } from '@mantine/core';
+import { useState } from 'react';
 
 import { DisplayToken } from '@/app/components/DisplayToken';
 import { Profiler } from '@/app/components/Profiler';
+import { TokenSelect } from '@/app/components/TokenSelect';
 import { gameRows } from '@/app/constants';
 import { useTrace } from '@/app/hooks/useTrace';
 
@@ -29,11 +27,6 @@ export function Game() {
     event.preventDefault();
     console.log('submit', event);
   };
-
-  // const inputProps = form.getInputProps('rows.0.0');
-  // data-path, defaultValue, maybe onChange?
-
-  // console.log(inputProps);
 
   const select = (event: ChangeEvent) => {
     const { name, value } = event.currentTarget;
