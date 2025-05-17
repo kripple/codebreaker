@@ -1,9 +1,10 @@
-import fairy from '@/app/assets/fairy.svg';
-import fire from '@/app/assets/fire.svg';
-import grass from '@/app/assets/grass.svg';
-import lightning from '@/app/assets/lightning.svg';
-import rock from '@/app/assets/rock.svg';
-import water from '@/app/assets/water.svg';
+import { fairy } from '@/app/assets/fairy';
+import { fire } from '@/app/assets/fire';
+import { grass } from '@/app/assets/grass';
+import { lightning } from '@/app/assets/lightning';
+import { rock } from '@/app/assets/rock';
+import { water } from '@/app/assets/water';
+import { objectKeys } from '@/utils/object-keys';
 
 export const config = {
   allowedAttempts: 8,
@@ -16,24 +17,13 @@ export const gameRows = new Array(config.allowedAttempts)
   .fill(defaultColor)
   .map(() => new Array(config.solutionLength).fill(defaultColor));
 
-export type GameToken = {
-  color: string;
-  id: number;
-  icon: string;
-};
-
-export const gameTokens: GameToken[] = [
-  { icon: fairy },
-  { icon: fire },
-  { icon: lightning },
-  { icon: grass },
-  { icon: water },
-  { icon: rock },
-].map((token, id) => ({
-  ...token,
+export const icons = { fairy, fire, lightning, grass, water, rock } as const;
+export const gameTokens = objectKeys(icons).map((icon, id) => ({
+  icon,
   color: `var(--token-${id})`,
   id,
 }));
+export type GameToken = (typeof gameTokens)[number];
 
 const feedbackTokenSet = [
   { value: '-', label: 'empty', color: defaultColor },

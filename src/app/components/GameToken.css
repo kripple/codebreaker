@@ -22,10 +22,16 @@
   cursor: var(--cursor);
 }
 
+.token svg {
+  color: black;
+  opacity: 0.7;
+  width: 85%;
+}
+
 .active-token {
   position: relative;
 }
-.active-token::before {
+.active-token::after {
   border-radius: 1px;
   content: '';
   height: 100%;

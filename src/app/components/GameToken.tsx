@@ -1,5 +1,6 @@
-import { ColorSwatch, Image } from '@mantine/core';
+import { ColorSwatch } from '@mantine/core';
 
+import { SvgIcon } from '@/app/components/SvgIcon';
 import type { GameToken as GameTokenType } from '@/app/constants';
 import { defaultColor } from '@/app/constants';
 
@@ -14,9 +15,7 @@ export function GameToken({
 }) {
   const className = active ? 'token active-token' : 'token';
   const color = token?.color || defaultColor;
-  const icon = token?.icon ? (
-    <Image src={token.icon} ></Image>
-  ) : null;
+  const icon = token?.icon ? <SvgIcon icon={token.icon} /> : null;
 
   return (
     <ColorSwatch
@@ -25,6 +24,7 @@ export function GameToken({
       mb="xs"
       mt="xs"
       pos="relative"
+      size="120px"
     >
       {icon}
     </ColorSwatch>
