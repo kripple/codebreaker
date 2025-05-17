@@ -27,14 +27,7 @@ export function TokenSelect({
                   style={{ display: 'none' }}
                   value={token.color}
                 ></input>
-                <label
-                  htmlFor={inputId}
-                  style={{
-                    cursor: 'pointer',
-                    display: 'flex',
-                  }}
-                  tabIndex={0}
-                >
+                <label htmlFor={inputId} tabIndex={0}>
                   <GameToken token={token} />
                 </label>
               </div>

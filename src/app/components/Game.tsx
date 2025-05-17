@@ -207,10 +207,12 @@ export function Game() {
           </Flex>
         </form>
       </Paper>
-      <TokenSelect
-        dataPath={dataPath(activeRow, activeColumn)}
-        select={select}
-      />
+      <Box className="token-select">
+        <TokenSelect
+          dataPath={dataPath(activeRow, activeColumn)}
+          select={select}
+        />
+      </Box>
     </Profiler>
   );
 }

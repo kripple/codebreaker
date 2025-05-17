@@ -2,6 +2,13 @@
   --cursor: default;
 }
 
-.active-row {
+.active-row,
+.token-select {
   --cursor: pointer;
+}
+
+.button,
+.active-row label,
+.token-select label {
+  cursor: pointer;
 }
