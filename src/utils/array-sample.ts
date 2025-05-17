@@ -6,7 +6,7 @@ function getRandomInt(max: number) {
   return Math.floor((byteArray[0] / (Math.pow(2, 32) - 1)) * max);
 }
 
-export function sample(array: any[]) {
+export function sample<T extends []>(array: T) {
   const id = getRandomInt(array.length);
   return array[id];
 }
