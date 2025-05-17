@@ -17,7 +17,8 @@
     "setup": "playwright install",
     "test": "playwright test --config test/playwright.config.ts",
     "test:api": "playwright test --config test/playwright.api-config.ts",
-    "test:report": "playwright show-report"
+    "test:report": "playwright show-report",
+    "optimize": "svgo src/app/assets"
   },
   "dependencies": {
     "@fastify/cors": "^11.0.1",
@@ -55,6 +56,7 @@
     "stylelint": "16.18.0",
     "stylelint-order": "6.0.4",
     "stylelint-prettier": "5.0.3",
+    "svgo": "^3.3.2",
     "tsx": "4.19.3",
     "typescript": "5.8.2",
     "vite": "6.3.5"
