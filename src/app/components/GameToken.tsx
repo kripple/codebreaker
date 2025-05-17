@@ -24,7 +24,6 @@ export function GameToken({
       mb="xs"
       mt="xs"
       pos="relative"
-      size="120px"
     >
       {icon}
     </ColorSwatch>
