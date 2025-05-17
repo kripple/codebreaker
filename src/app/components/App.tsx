@@ -10,18 +10,20 @@ export function App() {
   return (
     <Profiler component="App">
       <AppProviders>
-        <Container m="md">
-          <header>
-            <Center>
-              <Title className="title" mb="md" mt="md" order={1}>
-                CodeBreaker
-              </Title>
-            </Center>
-          </header>
-          <main className="main">
-            <Game />
-          </main>
-        </Container>
+        <Center>
+          <Container m="md">
+            <header>
+              <Center>
+                <Title className="title" mb="md" mt="md" order={1}>
+                  CodeBreaker
+                </Title>
+              </Center>
+            </header>
+            <main className="main">
+              <Game />
+            </main>
+          </Container>
+        </Center>
       </AppProviders>
     </Profiler>
   );

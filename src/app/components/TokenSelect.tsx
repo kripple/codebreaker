@@ -27,12 +27,12 @@ export function TokenSelect({
                   value={token.color}
                 ></input>
                 <label
-                  aria-label={token.label}
                   htmlFor={inputId}
                   style={{
                     cursor: 'pointer',
                     display: 'flex',
                   }}
+                  tabIndex={0}
                 >
                   <span
                     style={{

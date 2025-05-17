@@ -13,9 +13,9 @@ fastify.get<{
     code: string;
   };
 }>('/try/:code', function (request, reply) {
-  const guess = request.params.code;
-  const data = evaluateAttempt(guess);
-  reply.send({ data });
+  const code = request.params.code;
+  const data = evaluateAttempt(code);
+  reply.send({ code, feedback: data });
 });
 
 fastify.listen({ port: 3000 }, function (err, _address) {

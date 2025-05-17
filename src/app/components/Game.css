@@ -1,0 +1,33 @@
+:root {
+  --token-0: #ff006e;
+  --token-1: #ff6b0f;
+  --token-2: #ffd000;
+  --token-3: #00c03d;
+  --token-4: #1f71ff;
+  --token-5: #9f4cfd;
+}
+
+.active-row {
+  /* outline: 1px solid white; */
+}
+
+.active-token {
+  position: relative;
+}
+.active-token::before {
+  /* background-color: white; */
+  border-radius: inherit;
+  content: '';
+  /* filter: blur(1px); */
+  height: 100%;
+  outline: 1px solid white;
+  outline-offset: 3px;
+  position: absolute;
+  /* transform: scale(calc(8 / 7)); */
+  width: 100%;
+}
+
+.button,
+.active-row .token {
+  cursor: pointer;
+}
