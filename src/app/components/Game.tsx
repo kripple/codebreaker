@@ -37,7 +37,7 @@ export function Game() {
   const attemptNumber = activeRow + 1;
   const [hash, setHash] = useHash();
 
-  const isActiveRow = (rowId: number) => rowId === activeRow;
+  const getIsActiveRow = (rowId: number) => rowId === activeRow;
   const isActiveToken = (rowId: number, columnId: number) =>
     rowId === activeRow && columnId === activeColumn;
 
@@ -133,15 +133,20 @@ export function Game() {
         <form onSubmit={submit}>
           <Flex direction="column-reverse">
             {gameRows.map((row, rowId) => {
-              const activeRow = isActiveRow(rowId) ? 'active-row' : undefined;
-              const rowClassName = activeRow ? 'active-row' : undefined;
+              const isActiveRow = getIsActiveRow(rowId);
+              const rowClassName = isActiveRow ? 'active-row row' : 'row';
               const divider = rowId === 0 ? null : <Divider />;
+
               return (
-                <Box key={rowId}>
+                <Paper
+                  bg={isActiveRow ? 'dark' : undefined}
+                  className={rowClassName}
+                  key={rowId}
+                >
                   <Center>
                     <SimpleGrid
                       cols={2}
-                      mr="xs"
+                      mx="8px"
                       spacing="xs"
                       verticalSpacing="xs"
                     >
@@ -156,11 +161,10 @@ export function Game() {
                         );
                       })}
                     </SimpleGrid>
-                    <Paper bg="dark" className={rowClassName}>
-                      <Group pl="xs" pr="xs">
+                    <Paper bg="dark" radius={0}>
+                      <Group px="xs">
                         {row.map((_, columnId) => {
                           const active = isActiveToken(rowId, columnId);
-
                           const tokenId = dataPath(rowId, columnId);
                           const color = gameState[rowId][columnId];
                           const token = gameTokens.find(
@@ -168,9 +172,9 @@ export function Game() {
                           );
 
                           return (
-                            <div key={columnId}>
+                            <Box key={columnId}>
                               <input
-                                disabled={!activeRow}
+                                disabled={!isActiveRow}
                                 id={tokenId}
                                 name={tokenId}
                                 onClick={changeActiveToken}
@@ -181,15 +185,15 @@ export function Game() {
                               <label htmlFor={tokenId} tabIndex={0}>
                                 <GameToken active={active} token={token} />
                               </label>
-                            </div>
+                            </Box>
                           );
                         })}
                       </Group>
                     </Paper>
-                    <Center ml="xs">
+                    <Center mx="8px">
                       <button
                         className="button"
-                        disabled={!activeRow || !validGuess}
+                        disabled={!isActiveRow || !validGuess}
                         type="submit"
                       >
                         Try
@@ -197,7 +201,7 @@ export function Game() {
                     </Center>
                   </Center>
                   {divider}
-                </Box>
+                </Paper>
               );
             })}
           </Flex>

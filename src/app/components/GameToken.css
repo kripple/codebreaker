@@ -1,0 +1,38 @@
+:root {
+  --token-0: #ff006e;
+  --token-1: #ff6b0f;
+  --token-2: #ffd000;
+  --token-3: #00c03d;
+  --token-4: #357ffd;
+  --token-5: #9f4cfd;
+  --token-6: gray;
+  --token-7: gray;
+  --token-8: gray;
+  --token-9: gray;
+  --token-10: gray;
+  --token-11: gray;
+  --token-12: gray;
+  --token-13: gray;
+  --token-14: gray;
+  --token-15: gray;
+  --token-16: gray;
+}
+
+.token {
+  cursor: var(--cursor);
+}
+
+.active-token {
+  position: relative;
+}
+.active-token::before {
+  border-radius: 1px;
+  content: '';
+  height: 100%;
+  opacity: 0.8;
+  outline: 1.5px ridge white;
+  outline-offset: 2px;
+  position: absolute;
+  transform: scale(calc(8 / 7));
+  width: 100%;
+}
