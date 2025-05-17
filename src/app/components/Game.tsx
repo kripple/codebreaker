@@ -16,6 +16,7 @@ import {
 } from '@mantine/hooks';
 import { useEffect, useState } from 'react';
 
+import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
 import {
@@ -158,11 +159,13 @@ export function Game() {
                     <Paper bg="dark" className={rowClassName}>
                       <Group pl="xs" pr="xs">
                         {row.map((_, columnId) => {
-                          const activeToken = isActiveToken(rowId, columnId)
-                            ? 'token active-token'
-                            : 'token';
+                          const active = isActiveToken(rowId, columnId);
+
                           const tokenId = dataPath(rowId, columnId);
                           const color = gameState[rowId][columnId];
+                          const token = gameTokens.find(
+                            (gameToken) => gameToken.color === color,
+                          );
 
                           return (
                             <div key={columnId}>
@@ -176,12 +179,7 @@ export function Game() {
                                 value={color}
                               ></input>
                               <label htmlFor={tokenId} tabIndex={0}>
-                                <ColorSwatch
-                                  className={activeToken}
-                                  color={color}
-                                  mb="xs"
-                                  mt="xs"
-                                ></ColorSwatch>
+                                <GameToken active={active} token={token} />
                               </label>
                             </div>
                           );

@@ -1,5 +1,6 @@
-import { Flex, Paper } from '@mantine/core';
+import { ColorSwatch, Flex, Image, Paper } from '@mantine/core';
 
+import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
 import { gameTokens } from '@/app/constants';
 
@@ -34,16 +35,7 @@ export function TokenSelect({
                   }}
                   tabIndex={0}
                 >
-                  <span
-                    style={{
-                      backgroundColor: token.color,
-                      borderRadius: 'var(--token-size)',
-                      display: 'flex',
-                      height: 'var(--token-size)',
-                      margin: 'var(--mantine-spacing-xs)',
-                      width: 'var(--token-size)',
-                    }}
-                  ></span>
+                  <GameToken token={token} />
                 </label>
               </div>
             );
