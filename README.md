@@ -35,6 +35,11 @@ This project uses `NPM Scripts` to execute repeatable tasks.
 - Install dependencies: `npm install`
 - Install browsers for Playwright tests: `npm run setup`
 
+- Setup Postgres - https://orm.drizzle.team/docs/guides/postgresql-local-setup
+`docker run --name drizzle-postgres -e POSTGRES_PASSWORD=supersecure -p 5432:5432 postgres`
+`npx drizzle-kit push`
+`npx tsx src/db/index.ts`
+
 ### Local Development
 
 - Serve the fastify api: `npm run serve`
