@@ -8,34 +8,59 @@ import {
   Paper,
   SimpleGrid,
 } from '@mantine/core';
-import {
-  useEventListener,
-  useHash,
-  useLocalStorage,
-  useWindowEvent,
-} from '@mantine/hooks';
 import { useEffect, useState } from 'react';
+import * as uuid from 'uuid';
 
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
-import {
-  defaultColor,
-  feedbackTokens,
-  gameRow,
-  gameRows,
-  gameTokens,
-} from '@/app/constants';
+import { defaultColor, gameRow, gameRows, gameTokens } from '@/app/constants';
 import { useApi } from '@/app/hooks/useApi';
-import { useTrace } from '@/app/hooks/useTrace';
+import { useUser } from '@/app/hooks/useUser';
+
+const localStorageKey = 'user_id' as const;
 
 import '@/app/components/Game.css';
 
 export function Game() {
+  const [userId, setUserId] = useState<string | null>(
+    window.localStorage.getItem(localStorageKey),
+  );
+  useEffect(() => {
+    if (!uuid.validate(userId)) {
+      window.localStorage.removeItem(localStorageKey);
+    }
+  }, [userId]);
+
+  const { currentData, error } = useUser(userId);
+
+  useEffect(() => {
+    if (!currentData?.id) return;
+    const id = currentData.id;
+    if (!uuid.validate(id)) {
+      window.localStorage.removeItem(localStorageKey);
+      setUserId(null);
+    } else {
+      window.localStorage.setItem(localStorageKey, id);
+      setUserId(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentData]);
+
+  useEffect(() => {
+    if (!error) return;
+    console.log({ error });
+  }, [error]);
+  useEffect(() => {
+    console.log({ currentData });
+  }, [currentData]);
+  useEffect(() => {
+    console.log({ userId });
+  }, [userId]);
+
   const [activeRow, setActiveRow] = useState<number>(0);
   const [activeColumn, setActiveColumn] = useState<number>(0);
   const attemptNumber = activeRow + 1;
-  const [hash, setHash] = useHash();
 
   const getIsActiveRow = (rowId: number) => rowId === activeRow;
   const isActiveToken = (rowId: number, columnId: number) =>
@@ -47,22 +72,8 @@ export function Game() {
 
   const [gameState, setGameState] = useState<string[][]>(gameRows);
   const validGuess = !gameState[activeRow].includes(defaultColor);
-  const [getFeedback, { currentData }] = useApi();
+  // const [getFeedback, { currentData }] = useApi();
   const [feedback, setFeedback] = useState<{ [code: string]: string }>({});
-
-  // // The hook will read value from localStorage.getItem('color-scheme')
-  // // If localStorage is not available or value at a given key does not exist
-  // // 'dark' will be assigned to value variable
-  // const [value, setValue] = useLocalStorage({
-  //   key: 'color-scheme',
-  //   defaultValue: 'dark',
-  // });
-
-  // // Value is set both to state and localStorage at 'color-scheme'
-  // setValue('light');
-
-  // // You can also use callback like in useState hook to set value
-  // setValue((current) => (current === 'dark' ? 'light' : 'dark'));
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -79,20 +90,20 @@ export function Game() {
       })
       .join('');
 
-    getFeedback(code);
+    // getFeedback(code);
   };
 
-  useEffect(() => {
-    if (!currentData) return;
-    if (!currentData.code || !currentData.feedback) {
-      console.warn('response is missing required properties', currentData);
-      return;
-    }
-    setFeedback((draft) => ({
-      ...draft,
-      [currentData.code]: currentData.feedback,
-    }));
-  }, [currentData]); // only run effect exactly once for new response data
+  // useEffect(() => {
+  //   if (!currentData) return;
+  //   if (!currentData.code || !currentData.feedback) {
+  //     console.warn('response is missing required properties', currentData);
+  //     return;
+  //   }
+  //   setFeedback((draft) => ({
+  //     ...draft,
+  //     [currentData.code]: currentData.feedback,
+  //   }));
+  // }, [currentData]); // only run effect exactly once for new response data
 
   const select = (event: ClickEvent) => {
     const { name, value } = event.currentTarget;
