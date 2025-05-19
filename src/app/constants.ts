@@ -9,6 +9,7 @@ import { objectKeys } from '@/utils/object-keys';
 export const config = {
   allowedAttempts: 8,
   solutionLength: 4,
+  localStorageKey: 'user_id'
 } as const;
 
 export const defaultColor = 'gray' as const;

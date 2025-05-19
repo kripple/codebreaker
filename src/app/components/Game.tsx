@@ -14,34 +14,32 @@ import * as uuid from 'uuid';
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
-import { defaultColor, gameRow, gameRows, gameTokens } from '@/app/constants';
-import { useApi } from '@/app/hooks/useApi';
+import {
+  config,
+  defaultColor,
+  gameRow,
+  gameRows,
+  gameTokens,
+} from '@/app/constants';
 import { useUser } from '@/app/hooks/useUser';
-
-const localStorageKey = 'user_id' as const;
 
 import '@/app/components/Game.css';
 
 export function Game() {
+  const key = config.localStorageKey;
   const [userId, setUserId] = useState<string | null>(
-    window.localStorage.getItem(localStorageKey),
+    (() => {
+      const savedValue = window.localStorage.getItem(key);
+      return uuid.validate(savedValue) ? savedValue : null;
+    })(),
   );
-  useEffect(() => {
-    if (!uuid.validate(userId)) {
-      window.localStorage.removeItem(localStorageKey);
-    }
-  }, [userId]);
-
   const { currentData, error } = useUser(userId);
 
   useEffect(() => {
     if (!currentData?.id) return;
     const id = currentData.id;
-    if (!uuid.validate(id)) {
-      window.localStorage.removeItem(localStorageKey);
-      setUserId(null);
-    } else {
-      window.localStorage.setItem(localStorageKey, id);
+    if (uuid.validate(id)) {
+      window.localStorage.setItem(key, id);
       setUserId(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
