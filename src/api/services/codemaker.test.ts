@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { evaluateAttempt } from './codemaker';
+import { evaluateAttempt } from './services/codemaker';
 
 const testCases = [
   { solution: '1111', input: '1111', expected: 'XXXX' },
