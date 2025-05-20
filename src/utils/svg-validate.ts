@@ -23,6 +23,8 @@ export function validateSvg(
 ): void {
   const valid = match(svgString, data);
   if (!valid) {
-    console.warn(`SVG data does not match. Please update ${name}.svg`);
+    console.warn(
+      `SVG data does not match. Please update ${name}.svg or ${name}.ts`,
+    );
   }
 }

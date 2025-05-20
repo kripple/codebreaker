@@ -1,11 +1,11 @@
 :root {
   --token-0: #ff006e;
-  --token-1: #ff6b0f;
+  --token-1: #ff7926;
   --token-2: #ffd000;
-  --token-3: #00c03d;
-  --token-4: #357ffd;
-  --token-5: #9f4cfd;
-  --token-6: gray;
+  --token-3: #00d92f;
+  --token-4: #00e5ff;
+  --token-5: #4c8dff;
+  --token-6: #a95eff;
   --token-7: gray;
   --token-8: gray;
   --token-9: gray;
@@ -23,8 +23,9 @@
 }
 
 .token svg {
+  border-radius: inherit;
   color: #000000cc;
-  width: 85%;
+  transform: scale(0.85);
 }
 
 .active-token {
