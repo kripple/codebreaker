@@ -1,6 +1,6 @@
 import { boolean, integer, pgTable } from 'drizzle-orm/pg-core';
 
-import { config } from '@/app/constants';
+import { config } from '@/constants';
 import { id } from '@/db/helpers/id';
 import { timestamps } from '@/db/helpers/timestamps';
 import { Solution } from '@/db/schema/solution';

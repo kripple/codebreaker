@@ -1,24 +1,9 @@
 import * as uuid from 'uuid';
 
 import { evaluateAttempt } from '@/api/providers/codemaker';
-import { createNewGame, getGame } from '@/api/providers/game';
+import { getGame, getOrCreateGame } from '@/api/providers/game';
 import { server } from '@/api/providers/server';
 import { createNewUser, getUser } from '@/api/providers/user';
-import type { User } from '@/db/schema/user';
-
-async function getOrCreateGame(user: User) {
-  const currentGame = await getGame(user);
-  if (currentGame) server.log.info(`get game by id '${currentGame.id}'`);
-
-  const game = currentGame || (await createNewGame(user));
-  if (!currentGame) server.log.info(`create new game '${game.id}'`);
-
-  return {
-    id: user.uuid,
-    max_attempts: game.max_attempts,
-    win: game.win,
-  };
-}
 
 server.get('/game/new', async function (_request, reply) {
   try {
@@ -72,11 +57,12 @@ server.get<{
   if (!currentGame) throw Error('missing game');
   server.log.info(`get game by id '${currentGame.id}'`);
 
-  const data = evaluateAttempt(code);
+  // const data = evaluateAttempt(code);
+  const tempData = '----';
   const result = {
     id: currentUser.uuid,
     code,
-    feedback: data,
+    feedback: tempData,
   };
   reply.send(result);
 });

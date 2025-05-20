@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { integer, pgTable, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
 
-import { config } from '@/app/constants';
+import { config } from '@/constants';
 import { id } from '@/db/helpers/id';
 import { timestamps } from '@/db/helpers/timestamps';
 

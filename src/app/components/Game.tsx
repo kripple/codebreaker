@@ -19,7 +19,7 @@ import {
   gameRow,
   gameRows,
   gameTokens,
-} from '@/app/constants';
+} from '@/constants';
 import { useGame } from '@/app/hooks/useGame';
 
 import '@/app/components/Game.css';

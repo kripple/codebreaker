@@ -1,20 +1,15 @@
-// import type { GameToken } from '@/types/token';
-
-// type SecretCode = [GameToken, GameToken, GameToken, GameToken];
+import { config, gameTokens } from '@/constants';
+import { sample } from '@/utils/array-sample';
 
 export function makeSecretCode() {
-  // TODO: create random solution with array sample
-  const secretCode: string[] = ['1', '2', '3', '4'];
-  return secretCode.join('');
+  const ids = gameTokens.map((token) => token.id);
+  const selectedTokens = new Array(config.solutionLength)
+    .fill(0)
+    .map(() => sample(ids));
+  return selectedTokens.join('');
 }
 
-// TODO: generate, store, encrypt
-const tempSolution = makeSecretCode();
-
-export function evaluateAttempt(guess: string, _solution?: string) {
-  // TODO: throw error if solution input is used outside of a test env
-  const solution = _solution ? _solution : tempSolution;
-
+export function evaluateAttempt(guess: string, solution: string) {
   const tokens = guess.split('');
   const secretTokens = solution.split('');
   const feedback: string[] = [];

@@ -2,7 +2,7 @@ import { ColorSwatch, Flex, Image, Paper } from '@mantine/core';
 
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
-import { gameTokens } from '@/app/constants';
+import { gameTokens } from '@/constants';
 
 export function TokenSelect({
   dataPath,

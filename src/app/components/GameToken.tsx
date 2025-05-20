@@ -1,8 +1,8 @@
 import { ColorSwatch } from '@mantine/core';
 
 import { SvgIcon } from '@/app/components/SvgIcon';
-import type { GameToken as GameTokenType } from '@/app/constants';
-import { defaultColor } from '@/app/constants';
+import type { GameToken as GameTokenType } from '@/constants';
+import { defaultColor } from '@/constants';
 
 import '@/app/components/GameToken.css';
 

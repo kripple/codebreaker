@@ -1,4 +1,4 @@
-import { icons } from '@/app/constants';
+import { icons } from '@/constants';
 import { dev } from '@/utils/env';
 import { validateSvg } from '@/utils/svg-validate';
 
