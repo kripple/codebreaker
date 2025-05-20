@@ -15,4 +15,3 @@ export const Attempt = pgTable('attempt', {
 });
 
 export type Attempt = typeof Attempt.$inferSelect;
-export type InsertAttempt = typeof Attempt.$inferInsert;

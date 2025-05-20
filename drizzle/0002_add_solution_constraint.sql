@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "solution_idx" ON "solution" USING btree ("value",immutable_year("created_at"));

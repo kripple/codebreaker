@@ -36,9 +36,15 @@ This project uses `NPM Scripts` to execute repeatable tasks.
 - Install browsers for Playwright tests: `npm run setup`
 
 - Setup Postgres - https://orm.drizzle.team/docs/guides/postgresql-local-setup
-`docker run --name drizzle-postgres -e POSTGRES_PASSWORD=supersecure -p 5432:5432 postgres`
-`npx drizzle-kit push`
-`npx tsx src/db/index.ts`
+
+Create rebootable database instance: `docker run --name drizzle-postgres -e POSTGRES_PASSWORD=supersecure -d -p 5432:5432 postgres`
+
+For testing changes in development: `npx drizzle-kit push`
+
+Generating migrations:
+`npx drizzle-kit generate --help`
+`npx drizzle-kit generate --name create_tables --schema './src/db/schema' --dialect postgresql`
+`npx drizzle-kit migrate`
 
 ### Local Development
 
