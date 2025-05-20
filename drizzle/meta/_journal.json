@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1747763300352,
-      "tag": "0000_create_tables",
+      "when": 1747766291400,
+      "tag": "0000_add_custom_functions",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1747763482738,
-      "tag": "0001_add_immutable_function",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1747763622989,
-      "tag": "0002_add_solution_constraint",
+      "when": 1747766291402,
+      "tag": "0001_create_tables",
       "breakpoints": true
     }
   ]

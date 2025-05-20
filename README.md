@@ -43,7 +43,7 @@ For testing changes in development: `npx drizzle-kit push`
 
 Generating migrations:
 `npx drizzle-kit generate --help`
-`npx drizzle-kit generate --name create_tables --schema './src/db/schema' --dialect postgresql`
+`npx drizzle-kit generate --schema './src/db/schema' --dialect postgresql --name `
 `npx drizzle-kit migrate`
 
 ### Local Development

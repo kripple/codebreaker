@@ -14,9 +14,12 @@ export const Solution = pgTable(
     ...timestamps,
   },
   (solution) => [
-    uniqueIndex('solution_idx').on(
+    uniqueIndex('annually_unique_solution_idx').on(
       solution.value,
       sql`immutable_year(${solution.created_at})`,
+    ),
+    uniqueIndex('daily_challenge_idx').on(
+      sql`immutable_date(${solution.created_at})`,
     ),
   ],
 );

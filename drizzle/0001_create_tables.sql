@@ -40,4 +40,5 @@ CREATE TABLE "user" (
 ALTER TABLE "attempt" ADD CONSTRAINT "attempt_game_id_game_id_fk" FOREIGN KEY ("game_id") REFERENCES "public"."game"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game" ADD CONSTRAINT "game_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "game" ADD CONSTRAINT "game_solution_id_solution_id_fk" FOREIGN KEY ("solution_id") REFERENCES "public"."solution"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE UNIQUE INDEX "solution_idx" ON "solution" USING btree ("value",immutable_year("created_at"));--> statement-breakpoint
 CREATE UNIQUE INDEX "uuid_idx" ON "user" USING btree ("uuid");

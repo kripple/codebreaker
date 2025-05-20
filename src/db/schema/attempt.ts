@@ -6,7 +6,7 @@ import { Game } from '@/db/schema/game';
 
 export const Attempt = pgTable('attempt', {
   id,
-  code: varchar().notNull(),
+  value: varchar().notNull(),
   feedback: varchar().notNull(),
   game_id: integer()
     .references(() => Game.id)
