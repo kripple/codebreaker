@@ -13,13 +13,10 @@ function fastifyDrizzle(
 ) {
   const db = drizzle({
     connection: options.connection,
-    casing: 'snake_case',
   });
-
   if (!fastify.db) {
     fastify.decorate('db', db);
   }
-
   done();
 }
 

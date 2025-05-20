@@ -8,6 +8,11 @@ export const Attempt = pgTable('attempt', {
   id,
   code: varchar().notNull(),
   feedback: varchar().notNull(),
-  game_id: integer().references(() => Game.id).notNull(),
+  game_id: integer()
+    .references(() => Game.id)
+    .notNull(),
   ...timestamps,
 });
+
+export type Attempt = typeof Attempt.$inferSelect;
+export type InsertAttempt = typeof Attempt.$inferInsert;

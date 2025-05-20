@@ -6,20 +6,8 @@ export const api = createApi({
     baseUrl: 'http://127.0.0.1:3000',
   }),
   endpoints: (build) => ({
-    getFeedback: build.query<
-      {
-        code: string;
-        feedback: string;
-      },
-      string
-    >({
-      query: (code: string) => `/try/${code}`,
-    }),
-    getGame: build.query<unknown, void>({
-      query: () => '/games',
-    }),
-    getUser: build.query<{ id: string }, string>({
-      query: (id: string) => `/users/${id}`,
+    getGame: build.query<{ id: string }, string>({
+      query: (id: string) => `/game/${id}`,
     }),
   }),
 });

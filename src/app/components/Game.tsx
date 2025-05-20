@@ -21,7 +21,7 @@ import {
   gameRows,
   gameTokens,
 } from '@/app/constants';
-import { useUser } from '@/app/hooks/useUser';
+import { useGame } from '@/app/hooks/useGame';
 
 import '@/app/components/Game.css';
 
@@ -33,7 +33,7 @@ export function Game() {
       return uuid.validate(savedValue) ? savedValue : null;
     })(),
   );
-  const { currentData, error } = useUser(userId);
+  const { currentData, error } = useGame(userId);
 
   useEffect(() => {
     if (!currentData?.id) return;

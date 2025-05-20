@@ -12,3 +12,6 @@ export const User = pgTable(
   },
   (user) => [uniqueIndex('uuid_idx').on(user.uuid)],
 );
+
+export type User = typeof User.$inferSelect;
+export type InsertUser = typeof User.$inferInsert;
