@@ -16,15 +16,6 @@ await server.register(fastifyDrizzlePlugin, {
   connection: 'postgres://postgres:supersecure@localhost:5432/postgres',
 });
 
-// server.get('/users/:id/game/:game_id', async function (_req, reply) {
-//   // step 1 - is this a known user?
-//   //   yes -> get user
-//   //   no -> create a new user
-
-//   const users = await server.db.select().from(User);
-//   reply.send(users);
-// });
-
 async function createNewUser() {
   const users = await server.db
     .insert(User)
@@ -43,12 +34,11 @@ async function getUser(uuid: string) {
     .from(User)
     .where(sql`${User.uuid} = ${uuid}`);
   const user = users.pop();
-  if (!user) {
-    throw Error('failed to get user');
-  }
-  return {
-    id: user.uuid,
-  };
+  return user
+    ? {
+        id: user.uuid,
+      }
+    : undefined;
 }
 
 server.get('/users/new', async function (_request, reply) {
@@ -69,12 +59,7 @@ server.get<{
 }>('/users/:id', async function (request, reply) {
   try {
     const id = request.params.id;
-    // if (!uuid.validate(id)) {
-    //   const newUser = createNewUser();
-    //   reply.send(newUser);
-    //   return;
-    // }
-    const user = await getUser(id);
+    const user = uuid.validate(id) ? await getUser(id) : undefined;
     if (user) {
       server.log.info(`get user by id, return existing user '${user.id}'`);
       reply.send(user);
