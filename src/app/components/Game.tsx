@@ -4,9 +4,8 @@ import {
   ColorSwatch,
   Divider,
   Flex,
-  Group,
   Paper,
-  SimpleGrid,
+  Stack,
 } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import * as uuid from 'uuid';
@@ -136,92 +135,103 @@ export function Game() {
   // use backspace to remove current color
   // use arrow keys to toggle between selectable tokens
 
+  const feedbackToken = (columnId: number) => {
+    const feedbackTokenColor = 'gray';
+    return (
+      <ColorSwatch color={feedbackTokenColor} key={columnId} size="12px" />
+    );
+  };
+
+  const getFeedbackRows = (row: string[]) => {
+    if (row.length % 2 !== 0)
+      throw Error(
+        'Our understanding of the data is severely flawed, do not proceed.',
+      );
+    const center = row.length / 2;
+    return [row.slice(0, center), row.slice(center)];
+  };
+
   return (
     <Profiler component="Game">
-      <Paper withBorder>
-        <form onSubmit={submit}>
-          <Flex direction="column-reverse">
-            {gameRows.map((row, rowId) => {
-              const isActiveRow = getIsActiveRow(rowId);
-              const rowClassName = isActiveRow ? 'active-row row' : 'row';
-              const divider = rowId === 0 ? null : <Divider />;
+      <div className="game-board">
+        <Paper withBorder>
+          <form onSubmit={submit}>
+            <Flex direction="column-reverse">
+              {gameRows.map((row, rowId) => {
+                const isActiveRow = getIsActiveRow(rowId);
+                const rowClassName = isActiveRow ? 'active-row row' : 'row';
+                const divider = rowId === 0 ? null : <Divider />;
+                const feedbackRows = getFeedbackRows(row);
 
-              return (
-                <Paper
-                  bg={isActiveRow ? 'dark' : undefined}
-                  className={rowClassName}
-                  key={rowId}
-                >
-                  <Center>
-                    <SimpleGrid
-                      cols={2}
-                      mx="8px"
-                      spacing="xs"
-                      verticalSpacing="xs"
-                    >
-                      {row.map((_, columnId) => {
-                        const feedbackTokenColor = 'gray';
-                        return (
-                          <ColorSwatch
-                            color={feedbackTokenColor}
-                            key={columnId}
-                            size="12px"
-                          />
-                        );
-                      })}
-                    </SimpleGrid>
-                    <Paper bg="dark" radius={0}>
-                      <Group px="xs">
-                        {row.map((_, columnId) => {
-                          const active = isActiveToken(rowId, columnId);
-                          const tokenId = dataPath(rowId, columnId);
-                          const color = gameState[rowId][columnId];
-                          const token = gameTokens.find(
-                            (gameToken) => gameToken.color === color,
-                          );
+                return (
+                  <Paper
+                    bg={isActiveRow ? 'dark' : undefined}
+                    className={rowClassName}
+                    key={rowId}
+                  >
+                    <Center>
+                      <Stack gap="xs" mx="8px">
+                        {feedbackRows.map((feedbackRow, i) => (
+                          <Flex gap="xs" key={i}>
+                            {feedbackRow.map((_, columnId) =>
+                              feedbackToken(columnId),
+                            )}
+                          </Flex>
+                        ))}
+                      </Stack>
+                      <Paper bg="dark" radius={0}>
+                        <Flex gap="xs" px="xs">
+                          {row.map((_, columnId) => {
+                            const active = isActiveToken(rowId, columnId);
+                            const tokenId = dataPath(rowId, columnId);
+                            const color = gameState[rowId][columnId];
+                            const token = gameTokens.find(
+                              (gameToken) => gameToken.color === color,
+                            );
 
-                          return (
-                            <Box key={columnId}>
-                              <input
-                                disabled={!isActiveRow}
-                                id={tokenId}
-                                name={tokenId}
-                                onClick={changeActiveToken}
-                                readOnly
-                                style={{ display: 'none' }}
-                                value={color}
-                              ></input>
-                              <label htmlFor={tokenId} tabIndex={0}>
-                                <GameToken active={active} token={token} />
-                              </label>
-                            </Box>
-                          );
-                        })}
-                      </Group>
-                    </Paper>
-                    <Center mx="8px">
-                      <button
-                        className="button"
-                        disabled={!isActiveRow || !validGuess}
-                        type="submit"
-                      >
-                        Try
-                      </button>
+                            return (
+                              <Box key={columnId}>
+                                <input
+                                  disabled={!isActiveRow}
+                                  id={tokenId}
+                                  name={tokenId}
+                                  onClick={changeActiveToken}
+                                  readOnly
+                                  style={{ display: 'none' }}
+                                  value={color}
+                                ></input>
+                                <label htmlFor={tokenId} tabIndex={0}>
+                                  <GameToken active={active} token={token} />
+                                </label>
+                              </Box>
+                            );
+                          })}
+                        </Flex>
+                      </Paper>
+                      <Center mx="8px">
+                        <button
+                          className="button"
+                          disabled={!isActiveRow || !validGuess}
+                          type="submit"
+                        >
+                          Try
+                        </button>
+                      </Center>
                     </Center>
-                  </Center>
-                  {divider}
-                </Paper>
-              );
-            })}
-          </Flex>
-        </form>
-      </Paper>
-      <Box className="token-select">
-        <TokenSelect
-          dataPath={dataPath(activeRow, activeColumn)}
-          select={select}
-        />
-      </Box>
+                    {divider}
+                  </Paper>
+                );
+              })}
+            </Flex>
+          </form>
+        </Paper>
+        <Box className="token-select">
+          <TokenSelect
+            dataPath={dataPath(activeRow, activeColumn)}
+            select={select}
+          />
+        </Box>
+      </div>
     </Profiler>
   );
 }
