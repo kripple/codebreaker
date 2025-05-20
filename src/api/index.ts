@@ -1,9 +1,9 @@
 import * as uuid from 'uuid';
 
-import { evaluateAttempt } from '@/api/services/codemaker';
-import { createNewGame, getGame } from '@/api/services/game';
-import { server } from '@/api/services/server';
-import { createNewUser, getUser } from '@/api/services/user';
+import { evaluateAttempt } from '@/api/providers/codemaker';
+import { createNewGame, getGame } from '@/api/providers/game';
+import { server } from '@/api/providers/server';
+import { createNewUser, getUser } from '@/api/providers/user';
 import type { User } from '@/db/schema/user';
 
 async function getOrCreateGame(user: User) {
