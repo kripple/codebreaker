@@ -15,7 +15,7 @@ export function App() {
             <header>
               <Center>
                 <Title className="title" mb="md" mt="md" order={1}>
-                  CodeBreaker
+                  Code:Breaker
                 </Title>
               </Center>
             </header>
