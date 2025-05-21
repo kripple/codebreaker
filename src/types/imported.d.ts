@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 
-declare type ReactNode = import('@/types/imported').ReactNode;
+declare type ReactNode = import('@/types/external').ReactNode;
 
 // declare type SetValue = import('@/types/imported').ControlProps['onChange'];
 
 // declare type Form = import('@/types/form').Form;
 
 declare type FormEvent =
-  import('@/types/imported').ReactFormEvent<HTMLFormElement>;
+  import('@/types/external').ReactFormEvent<HTMLFormElement>;
 
 declare type ChangeEvent =
-  import('@/types/imported').ReactChangeEvent<HTMLInputElement>;
+  import('@/types/external').ReactChangeEvent<HTMLInputElement>;
 
-declare type ClickEvent = import('@/types/imported').ReactMouseEvent<
+declare type ClickEvent = import('@/types/external').ReactMouseEvent<
   HTMLInputElement,
   MouseEvent
 >;

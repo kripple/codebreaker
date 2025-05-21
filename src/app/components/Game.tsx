@@ -14,6 +14,7 @@ import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
 import { useGame } from '@/app/hooks/useGame';
+import { useMakeAttempt } from '@/app/hooks/useMakeAttempt';
 import {
   config,
   defaultColor,
@@ -32,32 +33,40 @@ export function Game() {
       return uuid.validate(savedValue) ? savedValue : null;
     })(),
   );
-  const { currentData, error } = useGame(userId);
+  const { currentData: gameData, currentError: gameError } = useGame(userId);
+  const [makeAttempt, { currentData: attemptData, error: attemptError }] =
+    useMakeAttempt();
 
   useEffect(() => {
-    if (!currentData?.id) return;
-    const id = currentData.id;
+    if (!gameData?.id) return;
+    const id = gameData.id;
     if (uuid.validate(id)) {
       window.localStorage.setItem(key, id);
       setUserId(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentData]);
+  }, [gameData]);
 
   useEffect(() => {
-    if (!error) return;
-    console.log({ error });
-  }, [error]);
+    if (!gameError) return;
+    console.log({ gameError });
+  }, [gameError]);
   useEffect(() => {
-    console.log({ currentData });
-  }, [currentData]);
+    console.log({ gameData });
+  }, [gameData]);
+  useEffect(() => {
+    if (!attemptError) return;
+    console.log({ attemptError });
+  }, [attemptError]);
+  useEffect(() => {
+    console.log({ attemptData });
+  }, [attemptData]);
   useEffect(() => {
     console.log({ userId });
   }, [userId]);
 
   const [activeRow, setActiveRow] = useState<number>(0);
   const [activeColumn, setActiveColumn] = useState<number>(0);
-  const attemptNumber = activeRow + 1;
 
   const getIsActiveRow = (rowId: number) => rowId === activeRow;
   const isActiveToken = (rowId: number, columnId: number) =>
@@ -69,13 +78,16 @@ export function Game() {
 
   const [gameState, setGameState] = useState<string[][]>(gameRows);
   const validGuess = !gameState[activeRow].includes(defaultColor);
-  // const [getFeedback, { currentData }] = useApi();
-  const [feedback, setFeedback] = useState<{ [code: string]: string }>({});
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
 
     const data = new FormData(event.currentTarget);
+    const currentId = data.get('userId');
+    if (!currentId || typeof currentId !== 'string') {
+      console.error('user id is missing');
+      return;
+    }
     const code = gameRow
       .map((_, i) => {
         const name = `${activeRow}.${i}`;
@@ -87,7 +99,7 @@ export function Game() {
       })
       .join('');
 
-    // getFeedback(code);
+    makeAttempt({ id: currentId, attempt: code });
   };
 
   // useEffect(() => {
@@ -156,6 +168,13 @@ export function Game() {
       <div className="game-board">
         <Paper withBorder>
           <form onSubmit={submit}>
+            <input
+              hidden
+              name="userId"
+              readOnly
+              style={{ display: 'none' }}
+              value={userId ? userId : undefined}
+            ></input>
             <Flex direction="column-reverse">
               {gameRows.map((row, rowId) => {
                 const isActiveRow = getIsActiveRow(rowId);

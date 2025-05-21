@@ -10,12 +10,10 @@ import {
   getOrCreateGame,
   updateGame,
 } from '@/api/helpers/game';
-import { type ResponseData, replyWith } from '@/api/helpers/replyWith';
+import { replyWith } from '@/api/helpers/replyWith';
 import { server } from '@/api/helpers/server';
-import { getSolutionById } from '@/api/helpers/solution';
 import { createNewUser, getUser } from '@/api/helpers/user';
-
-type Reply = { data: ResponseData } | { error: unknown };
+import type { Reply } from '@/types/reply';
 
 server.get<{
   Reply: Reply;
@@ -58,14 +56,11 @@ server.get<{
   }
 });
 
-// TODO: consider adding new data to the response manually instead of refetching
-// (manually augmenting the response would be faster, if more prone to human error)
-server.get<{
+server.post<{
   Params: {
     id: string;
     code: string;
   };
-  Reply: Reply;
 }>('/game/:id/try/:code', async function (request, reply) {
   try {
     const id = request.params.id;
@@ -109,10 +104,8 @@ server.get<{
       }
     }
 
-    // refetch game
-    const game = await getGameById(currentGame.id);
-    const gameData = await getGameData(currentGame);
-    reply.send({ data: replyWith({ user: currentUser, game, ...gameData }) });
+    reply.code(201);
+    reply.send({ id: currentUser.id });
   } catch (error) {
     server.log.error('unexpected error', error);
     reply.send({ error });
