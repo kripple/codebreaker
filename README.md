@@ -46,6 +46,10 @@ Generating migrations:
 `npx drizzle-kit generate --schema './src/db/schema' --dialect postgresql --name `
 `npx drizzle-kit migrate`
 
+TODO:
+- check queries for optimization opportunities (ex. column indexes, table joins)
+- use `eq` instead of `sql` where possible
+
 ### Local Development
 
 - Serve the fastify api: `npm run serve`

@@ -37,12 +37,20 @@ export const gameTokens = objectKeys(icons).map((icon, id) => ({
 }));
 export type GameToken = (typeof gameTokens)[number];
 
+const correct = 'X' as const;
 const feedbackTokenSet = [
-  { value: '-', label: 'empty', color: defaultColor },
-  { value: 'X', label: 'black', color: '#000000' },
-  { value: 'O', label: 'white', color: '#ffffff' },
+  { value: '-', label: 'incorrect color', color: defaultColor },
+  {
+    value: correct,
+    label: 'correct color, correct position',
+    color: '#000000',
+  },
+  { value: 'O', label: 'correct color, incorrect position', color: '#ffffff' },
 ] as const;
 export const feedbackTokens = feedbackTokenSet.map((token, id) => ({
   ...token,
   id,
 }));
+export const winningFeedback = new Array(config.solutionLength)
+  .fill(correct)
+  .join('');

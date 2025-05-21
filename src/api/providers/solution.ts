@@ -31,6 +31,17 @@ export async function getSolution(): Promise<Solution | undefined> {
   return solution;
 }
 
+export async function getSolutionById(
+  id: number,
+): Promise<Solution | undefined> {
+  const solutions = await server.db
+    .select()
+    .from(Solution)
+    .where(sql`${Solution.id} = ${id}`);
+  const solution = solutions.pop();
+  return solution;
+}
+
 export async function getOrCreateSolution(): Promise<Solution> {
   const dailyChallenge = await getSolution();
   if (dailyChallenge)
