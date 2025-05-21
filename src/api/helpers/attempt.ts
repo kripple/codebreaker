@@ -1,17 +1,15 @@
 import { asc, sql } from 'drizzle-orm';
 
-import { updateGame } from '@/api/providers/game';
-import { server } from '@/api/providers/server';
-import { winningFeedback } from '@/constants';
+import { server } from '@/api/helpers/server';
 import { Attempt } from '@/db/schema/attempt';
-import { Game, type GameData } from '@/db/schema/game';
+import { Game } from '@/db/schema/game';
 
 export async function createNewAttempt({
   game,
   attempt: value,
   feedback,
 }: {
-  game: GameData;
+  game: Game;
   attempt: string;
   feedback: string;
 }): Promise<Attempt> {
@@ -23,17 +21,6 @@ export async function createNewAttempt({
   const attempt = attempts.pop();
   if (!attempt) {
     throw Error('failed to create new attempt');
-  }
-  // did we win?
-  if (attempt.feedback === winningFeedback) {
-    // we win! update game record before proceeding
-    await updateGame({ id: game.id, win: true });
-  } else {
-    // was this our last chance?
-    if (game.attempts.length + 1 === game.max_attempts) {
-      // it *was* our last chance. update game record before proceeding
-      await updateGame({ id: game.id, win: false });
-    }
   }
   return attempt;
 }

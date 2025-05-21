@@ -1,5 +1,5 @@
 {
-  "id": "9fe928e9-b475-4498-8b30-98ea93f3f445",
+  "id": "56c7b74f-04b3-4caf-9f47-84a3f478c741",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -25,8 +25,8 @@
             "cycle": false
           }
         },
-        "code": {
-          "name": "code",
+        "value": {
+          "name": "value",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
@@ -220,6 +220,13 @@
           "notNull": true,
           "default": 4
         },
+        "creation_date": {
+          "name": "creation_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -240,32 +247,18 @@
           "notNull": false
         }
       },
-      "indexes": {
-        "solution_idx": {
-          "name": "solution_idx",
-          "columns": [
-            {
-              "expression": "value",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "immutable_year(\"created_at\")",
-              "asc": true,
-              "isExpression": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "solution_creation_date_unique": {
+          "name": "solution_creation_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "creation_date"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

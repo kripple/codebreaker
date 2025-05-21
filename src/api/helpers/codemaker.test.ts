@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { evaluateAttempt } from './services/codemaker';
+import { evaluateAttempt } from '@/api/helpers/codemaker';
 
 const testCases = [
   { solution: '1111', input: '1111', expected: 'XXXX' },
@@ -21,6 +21,6 @@ const testCases = [
 testCases.map(({ solution, input, expected }) => {
   test(`evaluates attempt '${input}' for solution '${solution}'`, () => {
     const actual = evaluateAttempt(input, solution);
-    expect(actual).toEqual(expected);
+    expect(actual.feedback).toEqual(expected);
   });
 });

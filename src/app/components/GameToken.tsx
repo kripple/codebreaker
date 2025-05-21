@@ -21,8 +21,8 @@ export function GameToken({
     <ColorSwatch
       className={className}
       color={color}
-      mb="xs"
-      mt="xs"
+      // mb="xs"
+      // mt="xs"
       pos="relative"
     >
       {icon}

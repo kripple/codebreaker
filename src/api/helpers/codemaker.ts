@@ -1,4 +1,4 @@
-import { config, gameTokens } from '@/constants';
+import { config, gameTokens, winningFeedback } from '@/constants';
 import { sample } from '@/utils/array-sample';
 
 export function makeSecretCode() {
@@ -42,5 +42,5 @@ export function evaluateAttempt(guess: string, solution: string) {
 
   // Pad the result
   const result = feedback.join('').padEnd(tokens.length, '-');
-  return result;
+  return { feedback: result, win: result === winningFeedback };
 }

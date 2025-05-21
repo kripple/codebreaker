@@ -1,47 +1,21 @@
 import * as uuid from 'uuid';
 
-import { createNewAttempt } from '@/api/providers/attempt';
-import { evaluateAttempt } from '@/api/providers/codemaker';
+import { createNewAttempt } from '@/api/helpers/attempt';
+import { evaluateAttempt } from '@/api/helpers/codemaker';
 import {
   createNewGame,
   getGame,
   getGameById,
+  getGameData,
   getOrCreateGame,
-} from '@/api/providers/game';
-import { server } from '@/api/providers/server';
-import { createNewUser, getUser } from '@/api/providers/user';
-import type { GameData } from '@/db/schema/game';
-import type { User } from '@/db/schema/user';
+  updateGame,
+} from '@/api/helpers/game';
+import { type ResponseData, replyWith } from '@/api/helpers/replyWith';
+import { server } from '@/api/helpers/server';
+import { getSolutionById } from '@/api/helpers/solution';
+import { createNewUser, getUser } from '@/api/helpers/user';
 
-type ResponseData = {
-  id: string;
-  maxAttempts: number;
-  solutionLength: number;
-  attempts: {
-    value: string;
-    feedback: string;
-  }[];
-};
 type Reply = { data: ResponseData } | { error: unknown };
-
-function replyWith({
-  user,
-  game,
-}: {
-  user: User;
-  game: GameData;
-}): ResponseData {
-  return {
-    id: user.uuid,
-    maxAttempts: game.max_attempts,
-    solutionLength: game.solution.length,
-    // TODO: make sure these are in the correct order
-    attempts: (game.attempts || []).map((attempt) => ({
-      value: attempt.value,
-      feedback: attempt.feedback,
-    })),
-  };
-}
 
 server.get<{
   Reply: Reply;
@@ -51,7 +25,8 @@ server.get<{
     server.log.info(`create new user '${user.id}'`);
     const game = await createNewGame(user);
     server.log.info(`create new game '${user.id}'`);
-    reply.send({ data: replyWith({ user, game }) });
+    const { solution, attempts } = await getGameData(game);
+    reply.send({ data: replyWith({ user, game, solution, attempts }) });
   } catch (error) {
     server.log.error('unexpected error', error);
     reply.send({ error });
@@ -75,13 +50,16 @@ server.get<{
       server.log.info(`failed to get user by id, create new user '${user.id}'`);
 
     const game = await getOrCreateGame(user);
-    reply.send({ data: replyWith({ user, game }) });
+    const { solution, attempts } = await getGameData(game);
+    reply.send({ data: replyWith({ user, game, solution, attempts }) });
   } catch (error) {
     server.log.error('unexpected error', error);
     reply.send({ error });
   }
 });
 
+// TODO: consider adding new data to the response manually instead of refetching
+// (manually augmenting the response would be faster, if more prone to human error)
 server.get<{
   Params: {
     id: string;
@@ -105,23 +83,36 @@ server.get<{
       reply.code(400);
       reply.send({ error: 'game is locked' });
     }
-    if (currentGame.attempts.length >= currentGame.max_attempts) {
+
+    const { solution, attempts } = await getGameData(currentGame);
+    if (attempts.length >= currentGame.max_attempts) {
       reply.code(400);
       reply.send({ error: 'exceeded max attempts' });
     }
 
-    const feedback = evaluateAttempt(attempt, currentGame.solution.value);
+    const { feedback, win } = evaluateAttempt(attempt, solution.value);
     await createNewAttempt({
       game: currentGame,
       feedback,
       attempt,
     });
 
+    // did we win?
+    if (win) {
+      // we win! update game record before proceeding
+      await updateGame({ id: currentGame.id, win: true });
+    } else {
+      // was this our last chance?
+      if (attempts.length + 1 === currentGame.max_attempts) {
+        // it *was* our last chance. update game record before proceeding
+        await updateGame({ id: currentGame.id, win: false });
+      }
+    }
+
     // refetch game
-    // TODO: consider adding new data to the response manually instead of refetching
-    // (manually augmenting the response would be faster, if more prone to human error)
     const game = await getGameById(currentGame.id);
-    reply.send({ data: replyWith({ user: currentUser, game }) });
+    const gameData = await getGameData(currentGame);
+    reply.send({ data: replyWith({ user: currentUser, game, ...gameData }) });
   } catch (error) {
     server.log.error('unexpected error', error);
     reply.send({ error });

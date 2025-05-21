@@ -1,4 +1,4 @@
-import { ColorSwatch, Flex, Image, Paper } from '@mantine/core';
+import { Box, Center, ColorSwatch, Flex, Image, Paper } from '@mantine/core';
 
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
@@ -18,7 +18,7 @@ export function TokenSelect({
           {gameTokens.map((token) => {
             const inputId = `${dataPath}-${token.color}`;
             return (
-              <div key={token.id}>
+              <Center key={token.id}>
                 <input
                   id={inputId}
                   name={dataPath}
@@ -30,7 +30,7 @@ export function TokenSelect({
                 <label htmlFor={inputId} tabIndex={0}>
                   <GameToken token={token} />
                 </label>
-              </div>
+              </Center>
             );
           })}
         </Flex>

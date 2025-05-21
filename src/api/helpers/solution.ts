@@ -1,10 +1,10 @@
 import { desc, sql } from 'drizzle-orm';
 
-import { makeSecretCode } from '@/api/providers/codemaker';
-import { server } from '@/api/providers/server';
+import { makeSecretCode } from '@/api/helpers/codemaker';
+import { server } from '@/api/helpers/server';
 import { Solution } from '@/db/schema/solution';
 
-export async function createNewSolution(): Promise<Solution> {
+async function createNewSolution(): Promise<Solution> {
   server.log.info('create new solution');
   const value = makeSecretCode();
   const solutions = await server.db
@@ -20,11 +20,11 @@ export async function createNewSolution(): Promise<Solution> {
   return solution;
 }
 
-export async function getSolution(): Promise<Solution | undefined> {
+async function getSolution(): Promise<Solution | undefined> {
   const solutions = await server.db
     .select()
     .from(Solution)
-    .where(sql`immutable_date(${Solution.created_at}) = CURRENT_DATE`)
+    .where(sql`${Solution.creation_date} = CURRENT_DATE`)
     .orderBy(desc(Solution.created_at))
     .limit(1);
   const solution = solutions.pop();

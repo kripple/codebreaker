@@ -1,6 +1,6 @@
 import { desc, sql } from 'drizzle-orm';
 
-import { server } from '@/api/providers/server';
+import { server } from '@/api/helpers/server';
 import { User } from '@/db/schema/user';
 
 export async function createNewUser(): Promise<User> {

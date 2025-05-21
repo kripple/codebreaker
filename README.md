@@ -37,18 +37,24 @@ This project uses `NPM Scripts` to execute repeatable tasks.
 
 - Setup Postgres - https://orm.drizzle.team/docs/guides/postgresql-local-setup
 
-Create rebootable database instance: `docker run --name drizzle-postgres -e POSTGRES_PASSWORD=supersecure -d -p 5432:5432 postgres`
+
+Create rebootable database instance: `docker run --name cbk-postgres -e POSTGRES_PASSWORD=supersecure -d -p 5432:5432 postgres`
+`npx drizzle-kit migrate`
+Connection URL: `postgres://postgres:supersecure@localhost:5432/postgres`
+
 
 For testing changes in development: `npx drizzle-kit push`
 
 Generating migrations:
 `npx drizzle-kit generate --help`
-`npx drizzle-kit generate --schema './src/db/schema' --dialect postgresql --name `
+`npx drizzle-kit generate --schema './src/db/schema' --dialect postgresql --name create_tables`
 `npx drizzle-kit migrate`
 
 TODO:
 - check queries for optimization opportunities (ex. column indexes, table joins)
 - use `eq` instead of `sql` where possible
+
+*** start with unit & integration tests for all of the api/db code
 
 ### Local Development
 

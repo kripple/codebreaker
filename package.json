@@ -16,7 +16,7 @@
     "preview": "vite preview",
     "setup": "playwright install",
     "test": "playwright test --config test/playwright.config.ts",
-    "test:api": "playwright test --config test/playwright.api-config.ts",
+    "test:integration": "playwright test --config test/playwright.integration-config.ts",
     "test:report": "playwright show-report",
     "optimize": "svgo src/app/assets"
   },

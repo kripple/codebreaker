@@ -13,6 +13,7 @@ import * as uuid from 'uuid';
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
+import { useGame } from '@/app/hooks/useGame';
 import {
   config,
   defaultColor,
@@ -20,7 +21,6 @@ import {
   gameRows,
   gameTokens,
 } from '@/constants';
-import { useGame } from '@/app/hooks/useGame';
 
 import '@/app/components/Game.css';
 
@@ -170,7 +170,7 @@ export function Game() {
                     key={rowId}
                   >
                     <Center>
-                      <Stack gap="xs" mx="8px">
+                      <Stack gap="xs" p="xs">
                         {feedbackRows.map((feedbackRow, i) => (
                           <Flex gap="xs" key={i}>
                             {feedbackRow.map((_, columnId) =>
@@ -179,35 +179,35 @@ export function Game() {
                           </Flex>
                         ))}
                       </Stack>
-                      <Paper bg="dark" radius={0}>
-                        <Flex gap="xs" px="xs">
-                          {row.map((_, columnId) => {
-                            const active = isActiveToken(rowId, columnId);
-                            const tokenId = dataPath(rowId, columnId);
-                            const color = gameState[rowId][columnId];
-                            const token = gameTokens.find(
-                              (gameToken) => gameToken.color === color,
-                            );
 
-                            return (
-                              <Box key={columnId}>
-                                <input
-                                  disabled={!isActiveRow}
-                                  id={tokenId}
-                                  name={tokenId}
-                                  onClick={changeActiveToken}
-                                  readOnly
-                                  style={{ display: 'none' }}
-                                  value={color}
-                                ></input>
-                                <label htmlFor={tokenId} tabIndex={0}>
-                                  <GameToken active={active} token={token} />
-                                </label>
-                              </Box>
-                            );
-                          })}
-                        </Flex>
-                      </Paper>
+                      <Flex gap="xs" p="xs">
+                        {row.map((_, columnId) => {
+                          const active = isActiveToken(rowId, columnId);
+                          const tokenId = dataPath(rowId, columnId);
+                          const color = gameState[rowId][columnId];
+                          const token = gameTokens.find(
+                            (gameToken) => gameToken.color === color,
+                          );
+
+                          return (
+                            <Box key={columnId}>
+                              <input
+                                disabled={!isActiveRow}
+                                id={tokenId}
+                                name={tokenId}
+                                onClick={changeActiveToken}
+                                readOnly
+                                style={{ display: 'none' }}
+                                value={color}
+                              ></input>
+                              <label htmlFor={tokenId} tabIndex={0}>
+                                <GameToken active={active} token={token} />
+                              </label>
+                            </Box>
+                          );
+                        })}
+                      </Flex>
+
                       <Center mx="8px">
                         <button
                           className="button"

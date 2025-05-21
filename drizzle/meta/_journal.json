@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1747766291400,
-      "tag": "0000_add_custom_functions",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1747766291402,
-      "tag": "0001_create_tables",
+      "when": 1747841405035,
+      "tag": "0000_create_tables",
       "breakpoints": true
     }
   ]
