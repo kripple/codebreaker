@@ -1,6 +1,3 @@
-
-type List<T> = T[] | ReadonlyArray<T>;
-
 // a less restrictive version of `includes`
 export function contains<T>(this: List<T>, searchElement: unknown) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -15,8 +15,10 @@ import {
   gameRow,
   gameRows,
   gameTokens,
+  winningFeedback,
 } from '@/constants';
 
+import '@/utils/array-last'; // is it necessary to import this?
 import '@/app/components/Game.css';
 
 export function Game() {
@@ -43,6 +45,20 @@ export function Game() {
   const activeRowId = gameData?.attempts.length || 0;
   const [activeColumnId, setActiveColumnId] = useState<number>(0);
   useEffect(() => setActiveColumnId(0), [gameData]);
+  const currentAttempt = gameData?.attempts.last();
+  const win = currentAttempt?.feedback === winningFeedback;
+  const secretCode = win ? currentAttempt.value : undefined;
+
+  const feedback = gameData?.attempts.map(({ feedback }) => feedback);
+
+  // useEffect(() => {
+  //   console.log({
+  //     secretCode,
+  //     currentAttempt,
+  //     win,
+  //     'gameData?.attempts': gameData?.attempts,
+  //   });
+  // }, [secretCode, currentAttempt, win, gameData]);
 
   const getIsActiveRow = (rowId: number) => rowId === activeRowId;
   const isActiveToken = (rowId: number, columnId: number) =>
@@ -52,6 +68,8 @@ export function Game() {
   const getRowValue = (value: string) => parseInt(value.split('.')[0]);
   const getColumnValue = (value: string) => parseInt(value.split('.')[1]);
 
+  const getToken = (id: string) =>
+    gameTokens.find((gameToken) => gameToken.id.toString() === id);
   const getTokenId = (color: string | FormDataEntryValue | null) =>
     gameTokens.find((gameToken) => gameToken.color === color)?.id;
 
@@ -137,7 +155,17 @@ export function Game() {
   return (
     <Profiler component="Game">
       <div className="game-board">
-        <Paper mb="xs" p="xs" withBorder></Paper>
+        <Paper mb="xs" p="xs" withBorder>
+          <Center>
+            <Flex gap="xs" p="xs">
+              {secretCode
+                ?.split('')
+                .map((tokenId, key) => (
+                  <GameToken key={key} token={getToken(tokenId)} />
+                ))}
+            </Flex>
+          </Center>
+        </Paper>
         <Paper withBorder>
           <form onSubmit={submit}>
             <input
@@ -169,7 +197,7 @@ export function Game() {
                     key={rowId}
                   >
                     <Center>
-                      <Stack gap="xs" p="xs">
+                      {/* <Stack gap="xs" p="xs">
                         {feedbackRows.map((feedbackRow, i) => {
                           return (
                             <Flex gap="xs" key={i}>
@@ -182,12 +210,6 @@ export function Game() {
                                     token.value === feedbackTokenValue,
                                 );
 
-                                // if (feedbackTokenValue)
-                                //   console.log({
-                                //     feedbackTokenValue,
-                                //     feedbackToken,
-                                //   });
-
                                 return (
                                   <FeedbackToken
                                     key={columnId}
@@ -198,7 +220,9 @@ export function Game() {
                             </Flex>
                           );
                         })}
-                      </Stack>
+                      </Stack> */}
+
+                      <Box p="xs">{feedback?.[rowId]}</Box>
 
                       <Flex gap="xs" p="xs">
                         {row.map((_, columnId) => {
