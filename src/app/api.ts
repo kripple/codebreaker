@@ -14,7 +14,10 @@ export const api = createApi({
       providesTags: ['Game'],
     }),
     makeAttempt: build.mutation<AttemptReply, { id: string; attempt: string }>({
-      query: ({ id, attempt }) => `/game/${id}/try/${attempt}`,
+      query: ({ id, attempt }) => ({
+        method: 'POST',
+        url: `/game/${id}/try/${attempt}`,
+      }),
       invalidatesTags: ['Game'],
     }),
   }),
