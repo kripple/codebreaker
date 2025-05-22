@@ -39,18 +39,35 @@ export type GameToken = (typeof gameTokens)[number];
 
 const correct = 'X' as const;
 const feedbackTokenSet = [
-  { value: '-', label: 'incorrect color', color: defaultColor },
+  {
+    value: '-',
+    label: 'incorrect color',
+    color: 'var(--feedback-token-0)',
+    // FIXME: feedback `-` is not the same as empty
+    icon: 'empty',
+  },
+  {
+    value: 'O',
+    label: 'correct color, incorrect position',
+    color: 'var(--feedback-token-1)',
+    icon: 'halfCorrect',
+  },
   {
     value: correct,
     label: 'correct color, correct position',
-    color: '#000000',
+    color: 'var(--feedback-token-2)',
+    icon: 'correct',
   },
-  { value: 'O', label: 'correct color, incorrect position', color: '#ffffff' },
 ] as const;
 export const feedbackTokens = feedbackTokenSet.map((token, id) => ({
   ...token,
   id,
 }));
+export const defaultFeedbackToken = feedbackTokens[0];
+export type FeedbackToken = (typeof feedbackTokens)[number];
+
 export const winningFeedback = new Array(config.solutionLength)
   .fill(correct)
   .join('');
+
+export type Token = GameToken | FeedbackToken;

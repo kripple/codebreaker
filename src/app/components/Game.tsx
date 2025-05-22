@@ -1,15 +1,8 @@
-import {
-  Box,
-  Center,
-  ColorSwatch,
-  Divider,
-  Flex,
-  Paper,
-  Stack,
-} from '@mantine/core';
+import { Box, Center, Divider, Flex, Paper, Stack } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import * as uuid from 'uuid';
 
+import { FeedbackToken } from '@/app/components/FeedbackToken';
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
@@ -18,6 +11,7 @@ import { useMakeAttempt } from '@/app/hooks/useMakeAttempt';
 import {
   config,
   defaultColor,
+  feedbackTokens,
   gameRow,
   gameRows,
   gameTokens,
@@ -34,8 +28,7 @@ export function Game() {
     })(),
   );
   const { currentData: gameData, currentError: gameError } = useGame(userId);
-  const [makeAttempt, { currentData: attemptData, error: attemptError }] =
-    useMakeAttempt();
+  const [makeAttempt, { currentError: attemptError }] = useMakeAttempt();
 
   useEffect(() => {
     if (!gameData?.id) return;
@@ -47,37 +40,33 @@ export function Game() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameData]);
 
-  useEffect(() => {
-    if (!gameError) return;
-    console.log({ gameError });
-  }, [gameError]);
-  useEffect(() => {
-    console.log({ gameData });
-  }, [gameData]);
-  useEffect(() => {
-    if (!attemptError) return;
-    console.log({ attemptError });
-  }, [attemptError]);
-  useEffect(() => {
-    console.log({ attemptData });
-  }, [attemptData]);
-  useEffect(() => {
-    console.log({ userId });
-  }, [userId]);
+  const activeRowId = gameData?.attempts.length || 0;
+  const [activeColumnId, setActiveColumnId] = useState<number>(0);
+  useEffect(() => setActiveColumnId(0), [gameData]);
 
-  const [activeRow, setActiveRow] = useState<number>(0);
-  const [activeColumn, setActiveColumn] = useState<number>(0);
-
-  const getIsActiveRow = (rowId: number) => rowId === activeRow;
+  const getIsActiveRow = (rowId: number) => rowId === activeRowId;
   const isActiveToken = (rowId: number, columnId: number) =>
-    rowId === activeRow && columnId === activeColumn;
+    rowId === activeRowId && columnId === activeColumnId;
 
   const dataPath = (rowId: number, columnId: number) => `${rowId}.${columnId}`;
   const getRowValue = (value: string) => parseInt(value.split('.')[0]);
   const getColumnValue = (value: string) => parseInt(value.split('.')[1]);
 
+  const getTokenId = (color: string | FormDataEntryValue | null) =>
+    gameTokens.find((gameToken) => gameToken.color === color)?.id;
+
+  const getTokenColor = (id: string) => {
+    const color = gameTokens.find(
+      (gameToken) => gameToken.id.toString() === id,
+    )?.color;
+    if (!color) throw Error(`invalid token id '${id}'`);
+    return color;
+  };
+
   const [gameState, setGameState] = useState<string[][]>(gameRows);
-  const validGuess = !gameState[activeRow].includes(defaultColor);
+
+  // FIXME this fails when the game is complete (activeRowId is outside of the array)
+  const validGuess = !gameState?.[activeRowId]?.includes(defaultColor);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -90,29 +79,15 @@ export function Game() {
     }
     const code = gameRow
       .map((_, i) => {
-        const name = `${activeRow}.${i}`;
+        const name = `${activeRowId}.${i}`;
         const color = data.get(name);
-        const id = gameTokens.find(
-          (gameToken) => gameToken.color === color,
-        )?.id;
+        const id = getTokenId(color);
         return id;
       })
       .join('');
 
     makeAttempt({ id: currentId, attempt: code });
   };
-
-  // useEffect(() => {
-  //   if (!currentData) return;
-  //   if (!currentData.code || !currentData.feedback) {
-  //     console.warn('response is missing required properties', currentData);
-  //     return;
-  //   }
-  //   setFeedback((draft) => ({
-  //     ...draft,
-  //     [currentData.code]: currentData.feedback,
-  //   }));
-  // }, [currentData]); // only run effect exactly once for new response data
 
   const select = (event: ClickEvent) => {
     const { name, value } = event.currentTarget;
@@ -124,35 +99,18 @@ export function Game() {
       draft[row][column] = value;
       return draft;
     });
+    setActiveColumnId((current) => current + 1);
   };
 
   const changeActiveToken = (event: ClickEvent) => {
     const name = event.currentTarget.name;
     const column = getColumnValue(name);
-    setActiveColumn(column);
+    setActiveColumnId(column);
   };
-
-  // useTrace(
-  //   {
-  //     activeRow,
-  //     activeColumn,
-  //     gameState,
-  //     submit,
-  //     select,
-  //   },
-  //   'Game',
-  // );
 
   // on select color, auto-focus the next token
   // use backspace to remove current color
   // use arrow keys to toggle between selectable tokens
-
-  const feedbackToken = (columnId: number) => {
-    const feedbackTokenColor = 'gray';
-    return (
-      <ColorSwatch color={feedbackTokenColor} key={columnId} size="12px" />
-    );
-  };
 
   const getFeedbackRows = (row: string[]) => {
     if (row.length % 2 !== 0)
@@ -163,9 +121,23 @@ export function Game() {
     return [row.slice(0, center), row.slice(center)];
   };
 
+  // useEffect(() => {
+  //   console.log({ gameState });
+  // }, [gameState]);
+
+  useEffect(() => {
+    if (!gameError) return;
+    console.log({ gameError });
+  }, [gameError]);
+  useEffect(() => {
+    if (!attemptError) return;
+    console.log({ attemptError });
+  }, [attemptError]);
+
   return (
     <Profiler component="Game">
       <div className="game-board">
+        <Paper mb="xs" p="xs" withBorder></Paper>
         <Paper withBorder>
           <form onSubmit={submit}>
             <input
@@ -182,6 +154,14 @@ export function Game() {
                 const divider = rowId === 0 ? null : <Divider />;
                 const feedbackRows = getFeedbackRows(row);
 
+                const attempt = gameData?.attempts?.[rowId]?.value
+                  ?.split('')
+                  .map((id) => getTokenColor(id));
+                const feedbackTokenValues =
+                  gameData?.attempts?.[rowId]?.feedback?.split('');
+
+                // console.log({ feedbackTokenValues });
+
                 return (
                   <Paper
                     bg={isActiveRow ? 'dark' : undefined}
@@ -190,20 +170,42 @@ export function Game() {
                   >
                     <Center>
                       <Stack gap="xs" p="xs">
-                        {feedbackRows.map((feedbackRow, i) => (
-                          <Flex gap="xs" key={i}>
-                            {feedbackRow.map((_, columnId) =>
-                              feedbackToken(columnId),
-                            )}
-                          </Flex>
-                        ))}
+                        {feedbackRows.map((feedbackRow, i) => {
+                          return (
+                            <Flex gap="xs" key={i}>
+                              {feedbackRow.map((_, columnId) => {
+                                const feedbackTokenValue =
+                                  feedbackTokenValues?.[columnId];
+                                const feedbackToken = feedbackTokens.find(
+                                  (token) =>
+                                    feedbackTokenValue &&
+                                    token.value === feedbackTokenValue,
+                                );
+
+                                // if (feedbackTokenValue)
+                                //   console.log({
+                                //     feedbackTokenValue,
+                                //     feedbackToken,
+                                //   });
+
+                                return (
+                                  <FeedbackToken
+                                    key={columnId}
+                                    token={feedbackToken}
+                                  />
+                                );
+                              })}
+                            </Flex>
+                          );
+                        })}
                       </Stack>
 
                       <Flex gap="xs" p="xs">
                         {row.map((_, columnId) => {
                           const active = isActiveToken(rowId, columnId);
                           const tokenId = dataPath(rowId, columnId);
-                          const color = gameState[rowId][columnId];
+                          const color =
+                            attempt?.[columnId] || gameState[rowId][columnId];
                           const token = gameTokens.find(
                             (gameToken) => gameToken.color === color,
                           );
@@ -246,7 +248,7 @@ export function Game() {
         </Paper>
         <Box className="token-select">
           <TokenSelect
-            dataPath={dataPath(activeRow, activeColumn)}
+            dataPath={dataPath(activeRowId, activeColumnId)}
             select={select}
           />
         </Box>
