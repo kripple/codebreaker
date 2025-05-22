@@ -13,8 +13,6 @@ export type ResponseData = {
   }[];
 };
 
-
-
 export function replyWith({
   user,
   game,
