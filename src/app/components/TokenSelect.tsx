@@ -1,4 +1,4 @@
-import { Box, Center, ColorSwatch, Flex, Image, Paper } from '@mantine/core';
+import { Box, Flex, Paper } from '@mantine/core';
 
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
@@ -13,28 +13,30 @@ export function TokenSelect({
 }) {
   return (
     <Profiler component="TokenSelect">
-      <Paper bg="dark" mt="lg" p="sm">
-        <Flex justify="space-around">
-          {gameTokens.map((token) => {
-            const inputId = `${dataPath}-${token.color}`;
-            return (
-              <Center key={token.id}>
-                <input
-                  id={inputId}
-                  name={dataPath}
-                  onClick={select}
-                  readOnly
-                  style={{ display: 'none' }}
-                  value={token.color}
-                ></input>
-                <label htmlFor={inputId} tabIndex={0}>
-                  <GameToken token={token} />
-                </label>
-              </Center>
-            );
-          })}
-        </Flex>
-      </Paper>
+      <Box className="token-select">
+        <Paper bg="dark">
+          <Flex justify="space-around">
+            {gameTokens.map((token) => {
+              const inputId = `${dataPath}-${token.color}`;
+              return (
+                <Box key={token.id}>
+                  <input
+                    id={inputId}
+                    name={dataPath}
+                    onClick={select}
+                    readOnly
+                    style={{ display: 'none' }}
+                    value={token.color}
+                  ></input>
+                  <label className="token-label" htmlFor={inputId} tabIndex={0}>
+                    <GameToken token={token} />
+                  </label>
+                </Box>
+              );
+            })}
+          </Flex>
+        </Paper>
+      </Box>
     </Profiler>
   );
 }

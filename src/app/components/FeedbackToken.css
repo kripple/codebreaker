@@ -1,0 +1,5 @@
+:root {
+  --feedback-token-incorrect: var(--mantine-color-body);
+  --feedback-token-halfCorrect: #dddddd;
+  --feedback-token-correct: #151515;
+}

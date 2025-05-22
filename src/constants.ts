@@ -5,7 +5,9 @@ import { ice } from '@/app/assets/ice';
 import { lightning } from '@/app/assets/lightning';
 import { rock } from '@/app/assets/rock';
 import { water } from '@/app/assets/water';
+import { lookup } from '@/utils/array-lookup';
 import { objectKeys } from '@/utils/object-keys';
+import { isString } from '@/utils/type-guards';
 
 export const config = {
   maxAttempts: 8,
@@ -42,32 +44,33 @@ const feedbackTokenSet = [
   {
     value: '-',
     label: 'incorrect color',
-    color: 'var(--feedback-token-0)',
-    // FIXME: feedback `-` is not the same as empty
-    icon: 'empty',
+    key: 'incorrect',
   },
   {
     value: 'O',
     label: 'correct color, incorrect position',
-    color: 'var(--feedback-token-1)',
-    icon: 'halfCorrect',
+    key: 'halfCorrect',
   },
   {
     value: correct,
     label: 'correct color, correct position',
-    color: 'var(--feedback-token-2)',
-    icon: 'correct',
+    key: 'correct',
   },
 ] as const;
 export const feedbackTokens = feedbackTokenSet.map((token, id) => ({
   ...token,
   id,
+  color: `var(--feedback-token-${token.key})`,
 }));
-export const defaultFeedbackToken = feedbackTokens[0];
+export const feedbackTokenByValue = lookup(feedbackTokens, 'value');
 export type FeedbackToken = (typeof feedbackTokens)[number];
+export function isFeedbackToken(
+  value?: unknown,
+): value is FeedbackToken['value'] {
+  if (!value || !isString(value)) return false;
+  return value in feedbackTokenByValue;
+}
 
 export const winningFeedback = new Array(config.solutionLength)
   .fill(correct)
   .join('');
-
-export type Token = GameToken | FeedbackToken;

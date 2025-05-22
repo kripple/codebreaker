@@ -15,7 +15,7 @@
 
 /* TODO: right-size the board based on the size of the screen */
 
-.game-board {
+/* .game-board {
   transform-origin: top center;
 }
 
@@ -33,4 +33,4 @@
   .game-board {
     transform: scale(1.1);
   }
-}
+} */

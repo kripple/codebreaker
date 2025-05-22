@@ -2,7 +2,7 @@ import { Box, Center, Divider, Flex, Paper, Stack } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import * as uuid from 'uuid';
 
-import { FeedbackToken } from '@/app/components/FeedbackToken';
+import { FeedbackGrid } from '@/app/components/FeedbackGrid';
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
@@ -17,9 +17,13 @@ import {
   gameTokens,
   winningFeedback,
 } from '@/constants';
+import { type FeedbackToken, isFeedbackToken } from '@/constants';
+import { last } from '@/utils/array-last';
 
-import '@/utils/array-last'; // is it necessary to import this?
 import '@/app/components/Game.css';
+
+// TODO: use backspace to remove current color
+// TODO: use arrow keys to toggle between selectable tokens
 
 export function Game() {
   const key = config.localStorageKey;
@@ -45,11 +49,25 @@ export function Game() {
   const activeRowId = gameData?.attempts.length || 0;
   const [activeColumnId, setActiveColumnId] = useState<number>(0);
   useEffect(() => setActiveColumnId(0), [gameData]);
-  const currentAttempt = gameData?.attempts.last();
+  const currentAttempt = last(gameData?.attempts);
   const win = currentAttempt?.feedback === winningFeedback;
   const secretCode = win ? currentAttempt.value : undefined;
 
-  const feedback = gameData?.attempts.map(({ feedback }) => feedback);
+  function selectFeedbackTokens(
+    rowId: number,
+  ): FeedbackToken['value'][] | undefined {
+    try {
+      return gameData?.attempts[rowId]?.feedback?.split('').map((token) => {
+        if (!isFeedbackToken(token)) {
+          throw Error(`unexpected feedback token value '${token}'`);
+        }
+        return token;
+      });
+    } catch (error) {
+      console.warn(error);
+      return undefined;
+    }
+  }
 
   // useEffect(() => {
   //   console.log({
@@ -126,23 +144,6 @@ export function Game() {
     setActiveColumnId(column);
   };
 
-  // on select color, auto-focus the next token
-  // use backspace to remove current color
-  // use arrow keys to toggle between selectable tokens
-
-  const getFeedbackRows = (row: string[]) => {
-    if (row.length % 2 !== 0)
-      throw Error(
-        'Our understanding of the data is severely flawed, do not proceed.',
-      );
-    const center = row.length / 2;
-    return [row.slice(0, center), row.slice(center)];
-  };
-
-  // useEffect(() => {
-  //   console.log({ gameState });
-  // }, [gameState]);
-
   useEffect(() => {
     if (!gameError) return;
     console.log({ gameError });
@@ -155,9 +156,9 @@ export function Game() {
   return (
     <Profiler component="Game">
       <div className="game-board">
-        <Paper mb="xs" p="xs" withBorder>
+        <Paper withBorder>
           <Center>
-            <Flex gap="xs" p="xs">
+            <Flex>
               {secretCode
                 ?.split('')
                 .map((tokenId, key) => (
@@ -180,15 +181,16 @@ export function Game() {
                 const isActiveRow = getIsActiveRow(rowId);
                 const rowClassName = isActiveRow ? 'active-row row' : 'row';
                 const divider = rowId === 0 ? null : <Divider />;
-                const feedbackRows = getFeedbackRows(row);
+                // const feedbackRows = getFeedbackRows(row);
+
+                // const feedbackTokenValues =
+                //   gameData?.attempts?.[rowId]?.feedback?.split('');
+
+                // console.log({ 'feedback?.[rowId]': feedback?.[rowId] });
 
                 const attempt = gameData?.attempts?.[rowId]?.value
                   ?.split('')
                   .map((id) => getTokenColor(id));
-                const feedbackTokenValues =
-                  gameData?.attempts?.[rowId]?.feedback?.split('');
-
-                // console.log({ feedbackTokenValues });
 
                 return (
                   <Paper
@@ -197,34 +199,8 @@ export function Game() {
                     key={rowId}
                   >
                     <Center>
-                      {/* <Stack gap="xs" p="xs">
-                        {feedbackRows.map((feedbackRow, i) => {
-                          return (
-                            <Flex gap="xs" key={i}>
-                              {feedbackRow.map((_, columnId) => {
-                                const feedbackTokenValue =
-                                  feedbackTokenValues?.[columnId];
-                                const feedbackToken = feedbackTokens.find(
-                                  (token) =>
-                                    feedbackTokenValue &&
-                                    token.value === feedbackTokenValue,
-                                );
-
-                                return (
-                                  <FeedbackToken
-                                    key={columnId}
-                                    token={feedbackToken}
-                                  />
-                                );
-                              })}
-                            </Flex>
-                          );
-                        })}
-                      </Stack> */}
-
-                      <Box p="xs">{feedback?.[rowId]}</Box>
-
-                      <Flex gap="xs" p="xs">
+                      <FeedbackGrid tokens={selectFeedbackTokens(rowId)} />
+                      <Flex>
                         {row.map((_, columnId) => {
                           const active = isActiveToken(rowId, columnId);
                           const tokenId = dataPath(rowId, columnId);
@@ -245,7 +221,11 @@ export function Game() {
                                 style={{ display: 'none' }}
                                 value={color}
                               ></input>
-                              <label htmlFor={tokenId} tabIndex={0}>
+                              <label
+                                className="token-label"
+                                htmlFor={tokenId}
+                                tabIndex={0}
+                              >
                                 <GameToken active={active} token={token} />
                               </label>
                             </Box>
@@ -253,7 +233,7 @@ export function Game() {
                         })}
                       </Flex>
 
-                      <Center mx="8px">
+                      <Center>
                         <button
                           className="button"
                           disabled={!isActiveRow || !validGuess}
@@ -270,12 +250,11 @@ export function Game() {
             </Flex>
           </form>
         </Paper>
-        <Box className="token-select">
-          <TokenSelect
-            dataPath={dataPath(activeRowId, activeColumnId)}
-            select={select}
-          />
-        </Box>
+
+        <TokenSelect
+          dataPath={dataPath(activeRowId, activeColumnId)}
+          select={select}
+        />
       </div>
     </Profiler>
   );

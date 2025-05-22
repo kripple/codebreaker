@@ -1,43 +1,61 @@
 import { Box, ColorSwatch } from '@mantine/core';
 
-import type { FeedbackToken as Token } from '@/constants';
+import {
+  type FeedbackToken as Token,
+  feedbackTokenByValue as lookup,
+} from '@/constants';
 
-export function FeedbackToken({ token }: { token?: Token }) {
+import '@/app/components/FeedbackToken.css';
+
+export function FeedbackToken({ token: value }: { token?: Token['value'] }) {
+  const key = value ? lookup[value].key : undefined;
   const size = '12px';
+  const showRightHalf = {
+    clipPath: 'inset(0 50% 0 0)',
+  };
+  const showLeftHalf = {
+    clipPath: 'inset(0 0 0 50%)',
+  };
 
   const correct = (
-    <ColorSwatch color="var(--feedback-token-2)" size={size}></ColorSwatch>
+    <ColorSwatch
+      color="var(--feedback-token-correct)"
+      size={size}
+    ></ColorSwatch>
   );
 
   const halfCorrect = (
-    <Box pos="relative">
+    <>
       <ColorSwatch
-        color="var(--feedback-token-2)"
+        color="var(--feedback-token-correct)"
         size={size}
-        style={{
-          clipPath: 'inset(0 50% 0 0)',
-        }}
+        style={showRightHalf}
       ></ColorSwatch>
       <ColorSwatch
-        color="var(--feedback-token-1)"
+        color="var(--feedback-token-halfCorrect)"
         left={0}
         pos="absolute"
         size={size}
-        style={{
-          clipPath: 'inset(0 0 0 50%)',
-        }}
+        style={showLeftHalf}
         top={0}
       ></ColorSwatch>
+    </>
+  );
+
+  const incorrect = (
+    <ColorSwatch
+      color="var(--feedback-token-incorrect)"
+      size={size}
+    ></ColorSwatch>
+  );
+
+  return (
+    <Box pos="relative">
+      {key === 'correct'
+        ? correct
+        : key === 'halfCorrect'
+          ? halfCorrect
+          : incorrect}
     </Box>
   );
-
-  const empty = (
-    <ColorSwatch color="var(--feedback-token-0)" size={size}></ColorSwatch>
-  );
-
-  return token?.icon === 'correct'
-    ? correct
-    : token?.icon === 'halfCorrect'
-      ? halfCorrect
-      : empty;
 }

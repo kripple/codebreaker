@@ -6,12 +6,6 @@
   --token-4: #00e5ff;
   --token-5: #4c8dff;
   --token-6: #a95eff;
-
-  --feedback-token-0: var(--mantine-color-body);
-  --feedback-token-1: #dddddd;
-  --feedback-token-2: #151515;
-
-  --token-empty: var(--mantine-color-body);
 }
 
 .token {
