@@ -3,13 +3,14 @@ import { Center, Divider, Flex, Paper } from '@mantine/core';
 import { FeedbackGrid } from '@/app/components/FeedbackGrid';
 import { GameRowColumn } from '@/app/components/GameRowColumn';
 import { Profiler } from '@/app/components/Profiler';
-import { gameTokens } from '@/constants';
+import { gameTokens as gameTokensLookup } from '@/constants';
 import { type FeedbackToken, defaultColor } from '@/constants';
 
 export function GameRow({
   active,
   activeColumnId,
   feedbackTokens,
+  gameDataRow,
   locked,
   row,
   rowId,
@@ -18,6 +19,7 @@ export function GameRow({
   active: boolean;
   activeColumnId: number;
   feedbackTokens?: FeedbackToken['value'][];
+  gameDataRow?: string[];
   locked?: boolean;
   row: string[];
   rowId: number;
@@ -30,9 +32,10 @@ export function GameRow({
 
   const rowClassName = active && !locked ? 'active-row row' : 'row';
   const divider = rowId === 0 ? null : <Divider />;
-
-  const selectToken = (color: string) =>
-    gameTokens.find((token) => token.color === color);
+  const selectTokenById = (id: string) =>
+    gameTokensLookup.find((token) => token.id.toString() === id);
+  const selectTokenByColor = (color: string) =>
+    gameTokensLookup.find((token) => token.color === color);
 
   return (
     <Profiler component="GameRow">
@@ -48,7 +51,11 @@ export function GameRow({
                 inputId={dataPath(columnId)}
                 key={columnId}
                 setColumnId={setColumnId}
-                token={selectToken(tokenColor)}
+                token={
+                  gameDataRow
+                    ? selectTokenById(gameDataRow[columnId])
+                    : selectTokenByColor(tokenColor)
+                }
               />
             ))}
           </Flex>

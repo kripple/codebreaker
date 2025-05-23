@@ -57,6 +57,9 @@ export function Game() {
       return undefined;
     }
   }
+  function selectGameTokens(rowId: number): string[] | undefined {
+    return gameData?.attempts[rowId]?.value?.split('');
+  }
 
   const dataPath = (rowId: number, columnId: number) => `${rowId}.${columnId}`;
   const getRowValue = (value: string) => parseInt(value.split('.')[0]);
@@ -122,6 +125,7 @@ export function Game() {
                 active={!locked && rowId === activeRowId}
                 activeColumnId={activeColumnId}
                 feedbackTokens={selectFeedbackTokens(rowId)}
+                gameDataRow={selectGameTokens(rowId)}
                 key={rowId}
                 locked={locked}
                 row={row}
