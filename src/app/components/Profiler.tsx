@@ -1,5 +1,6 @@
 import { Profiler as ReactProfiler } from 'react';
 
+import { config } from '@/constants';
 import { dev } from '@/utils/env';
 
 // id: The string id prop of the <Profiler> tree that has just committed. This lets you identify which part of the tree was committed if you are using multiple profilers.
@@ -21,7 +22,7 @@ export function Profiler({
   children: ReactNode;
   component: string;
 }) {
-  if (!dev) return children;
+  if (!dev || !config.profiler) return children;
 
   return (
     <ReactProfiler

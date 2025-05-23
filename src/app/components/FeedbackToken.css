@@ -3,3 +3,22 @@
   --feedback-token-halfCorrect: #dddddd;
   --feedback-token-correct: #151515;
 }
+
+.outline-overlay {
+  --color: var(--mantine-color-dark-5);
+  position: relative;
+  transform-style: preserve-3d;
+}
+.outline-overlay::before {
+  border-radius: inherit;
+  content: '';
+  inset: 0;
+  outline: 0.5px solid var(--color);
+  outline-offset: -1px;
+  position: absolute;
+  transform: translateZ(1px);
+}
+
+.outline-overlay svg {
+  color: var(--color);
+}

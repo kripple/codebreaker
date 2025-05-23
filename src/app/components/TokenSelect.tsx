@@ -15,37 +15,35 @@ export function TokenSelect({
 }) {
   return (
     <Profiler component="TokenSelect">
-      <Box className="token-select">
-        <Paper bg="dark">
-          <Flex justify="space-around">
-            {gameTokens.map((token) => {
-              const inputId = `${dataPath}-${token.color}`;
-              return (
-                <Box key={token.id}>
-                  <input
-                    id={inputId}
-                    name={dataPath}
-                    onClick={select}
-                    readOnly
-                    style={{ display: 'none' }}
-                    value={token.color}
-                  ></input>
-                  <label
-                    className="token-label"
-                    htmlFor={inputId}
-                    style={{
-                      cursor: locked ? 'default' : 'pointer',
-                    }}
-                    tabIndex={0}
-                  >
-                    <GameToken token={token} />
-                  </label>
-                </Box>
-              );
-            })}
-          </Flex>
-        </Paper>
-      </Box>
+      <Paper bg="dark" px="md" py="sm">
+        <Flex justify="space-around">
+          {gameTokens.map((token) => {
+            const inputId = `${dataPath}-${token.color}`;
+            return (
+              <Box key={token.id}>
+                <input
+                  id={inputId}
+                  name={dataPath}
+                  onClick={select}
+                  readOnly
+                  style={{ display: 'none' }}
+                  value={token.color}
+                ></input>
+                <label
+                  className="token"
+                  htmlFor={inputId}
+                  style={{
+                    cursor: locked ? 'default' : 'pointer',
+                  }}
+                  tabIndex={0}
+                >
+                  <GameToken token={token} />
+                </label>
+              </Box>
+            );
+          })}
+        </Flex>
+      </Paper>
     </Profiler>
   );
 }

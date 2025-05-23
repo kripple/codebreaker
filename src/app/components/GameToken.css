@@ -1,15 +1,11 @@
 :root {
-  --token-0: #ff006e;
-  --token-1: #ff7926;
-  --token-2: #ffd000;
-  --token-3: #00d92f;
-  --token-4: #00e5ff;
-  --token-5: #4c8dff;
-  --token-6: #a95eff;
-}
-
-.token {
-  cursor: var(--cursor);
+  --token-1: #ff006e;
+  --token-2: #ff7926;
+  --token-3: #ffd000;
+  --token-4: #00d92f;
+  --token-5: #00e5ff;
+  --token-6: #4c8dff;
+  --token-7: #a95eff;
 }
 
 .token svg {
@@ -17,18 +13,7 @@
   color: #000000cc;
   transform: scale(0.85);
 }
-
-.active-token {
-  position: relative;
-}
-.active-token::after {
-  border-radius: 1px;
-  content: '';
-  height: 100%;
-  opacity: 0.8;
-  outline: 1.5px ridge white;
-  outline-offset: 2px;
-  position: absolute;
-  transform: scale(calc(8 / 7));
-  width: 100%;
+.token svg.lock-icon {
+  opacity: 0.5;
+  transform: scale(0.99);
 }

@@ -13,6 +13,7 @@ export const config = {
   maxAttempts: 8,
   solutionLength: 4,
   localStorageKey: 'user_id',
+  profiler: true,
 } as const;
 
 export const defaultColor = 'gray' as const;
@@ -33,11 +34,14 @@ export const icons = {
   water,
   rock,
 } as const;
-export const gameTokens = objectKeys(icons).map((icon, id) => ({
-  icon,
-  color: `var(--token-${id})`,
-  id,
-}));
+export const gameTokens = objectKeys(icons).map((icon, id) => {
+  const tokenId = id + 1;
+  return {
+    icon,
+    color: `var(--token-${tokenId})`,
+    id: tokenId,
+  };
+});
 export type GameToken = (typeof gameTokens)[number];
 
 const correct = 'X' as const;

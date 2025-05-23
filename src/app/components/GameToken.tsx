@@ -7,19 +7,19 @@ import { defaultColor } from '@/constants';
 import '@/app/components/GameToken.css';
 
 export function GameToken({
-  active,
   token,
+  altIcon,
 }: {
-  active?: boolean;
   token?: Token;
+  altIcon?: boolean;
 }) {
-  const className = active ? 'token active-token' : 'token';
   const color = token?.color || defaultColor;
-  const icon = token?.icon ? <SvgIcon icon={token.icon} /> : null;
+  const icon = altIcon ? 'lock' : token?.icon ? token.icon : null;
+  const svg = icon ? <SvgIcon icon={icon} /> : null;
 
   return (
-    <ColorSwatch className={className} color={color} pos="relative">
-      {icon}
+    <ColorSwatch className="token" color={color} pos="relative">
+      {svg}
     </ColorSwatch>
   );
 }

@@ -1,8 +1,9 @@
-import { Center, Flex, Paper } from '@mantine/core';
+import { Box, Center, Flex, Paper } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import * as uuid from 'uuid';
 
 import { GameRow } from '@/app/components/GameRow';
+import { GameSolution } from '@/app/components/GameSolution';
 import { GameToken } from '@/app/components/GameToken';
 import { HiddenInput } from '@/app/components/HiddenInput';
 import { Profiler } from '@/app/components/Profiler';
@@ -12,6 +13,7 @@ import { useMakeAttempt } from '@/app/hooks/useMakeAttempt';
 import {
   type FeedbackToken,
   config,
+  defaultColor,
   gameRow,
   gameRows,
   gameTokens,
@@ -26,6 +28,9 @@ import '@/app/components/Game.css';
 // TODO: use arrow keys to toggle between selectable tokens
 // FIXME: game state should be derived from gameData
 // TODO: use number keys to "click" on TokenSelect
+// TODO: right-size the board based on the size of the screen
+
+// TODO: investigate batching DOM updates to minimize the number of repaints (group multiple DOM updates together and perform them in a single requestAnimationFrame callback)
 
 export function Game() {
   const key = config.localStorageKey;
@@ -77,9 +82,6 @@ export function Game() {
   const dataPath = (rowId: number, columnId: number) => `${rowId}.${columnId}`;
   const getRowValue = (value: string) => parseInt(value.split('.')[0]);
   const getColumnValue = (value: string) => parseInt(value.split('.')[1]);
-
-  const getToken = (id: string) =>
-    gameTokens.find((gameToken) => gameToken.id.toString() === id);
   const getTokenId = (color: string | FormDataEntryValue | null) =>
     gameTokens.find((gameToken) => gameToken.color === color)?.id;
 
@@ -131,43 +133,31 @@ export function Game() {
 
   return (
     <Profiler component="Game">
-      <div className="game-board">
-        <Paper withBorder>
-          <Center>
-            <Flex>
-              {secretCode
-                ?.split('')
-                .map((tokenId, key) => (
-                  <GameToken key={key} token={getToken(tokenId)} />
-                ))}
-            </Flex>
-          </Center>
-        </Paper>
-        <Paper withBorder>
-          <form onSubmit={submit}>
-            <HiddenInput name="userId" value={userId} />
-            <Flex direction="column-reverse">
-              {gameState.map((row, rowId) => (
-                <GameRow
-                  active={!locked && rowId === activeRowId}
-                  activeColumnId={activeColumnId}
-                  feedbackTokens={selectFeedbackTokens(rowId)}
-                  key={rowId}
-                  locked={locked}
-                  row={row}
-                  rowId={rowId}
-                  setColumnId={setColumnId}
-                />
-              ))}
-            </Flex>
-          </form>
-        </Paper>
-        <TokenSelect
-          dataPath={dataPath(activeRowId, activeColumnId)}
-          locked={locked}
-          select={select}
-        />
-      </div>
+      <GameSolution secretCode={secretCode} />
+      <Paper my="sm" withBorder>
+        <form onSubmit={submit}>
+          <HiddenInput name="userId" value={userId} />
+          <Flex direction="column-reverse">
+            {gameState.map((row, rowId) => (
+              <GameRow
+                active={!locked && rowId === activeRowId}
+                activeColumnId={activeColumnId}
+                feedbackTokens={selectFeedbackTokens(rowId)}
+                key={rowId}
+                locked={locked}
+                row={row}
+                rowId={rowId}
+                setColumnId={setColumnId}
+              />
+            ))}
+          </Flex>
+        </form>
+      </Paper>
+      <TokenSelect
+        dataPath={dataPath(activeRowId, activeColumnId)}
+        locked={locked}
+        select={select}
+      />
     </Profiler>
   );
 }

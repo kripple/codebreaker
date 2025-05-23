@@ -1,36 +1,10 @@
-/* :root {
-  --cursor: default;
-} */
-
-/* .active-row,
-.token-select {
-  --cursor: pointer;
-} */
-
-/* .button,
-.active-row label,
-.token-select label {
-  cursor: pointer;
-} */
-
 /* TODO: right-size the board based on the size of the screen */
 
-/* .game-board {
-  transform-origin: top center;
+.token {
+  border-radius: 1px;
+  display: flex;
+  height: 36px;
+  padding: 4px;
+  position: relative;
+  width: 36px;
 }
-
-@media screen and (max-width: 300px) {
-  .game-board {
-    transform: scale(0.8);
-  }
-}
-@media screen and (max-width: 350px) {
-  .game-board {
-    transform: scale(0.9);
-  }
-}
-@media screen and (min-width: 600px) {
-  .game-board {
-    transform: scale(1.1);
-  }
-} */

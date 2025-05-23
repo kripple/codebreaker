@@ -37,9 +37,9 @@ export function GameRow({
   return (
     <Profiler component="GameRow">
       <Paper bg={active ? 'dark' : undefined} className={rowClassName}>
-        <Center>
+        <Flex align="center" justify="space-between">
           <FeedbackGrid tokens={feedbackTokens} />
-          <Flex>
+          <Flex gap="2px">
             {row.map((tokenColor, columnId) => (
               <GameRowColumn
                 activeColumn={columnId === activeColumnId}
@@ -52,7 +52,7 @@ export function GameRow({
               />
             ))}
           </Flex>
-          <Center>
+          <Center p="xs">
             <button
               className="button"
               disabled={disableButton}
@@ -64,7 +64,7 @@ export function GameRow({
               Try
             </button>
           </Center>
-        </Center>
+        </Flex>
         {divider}
       </Paper>
     </Profiler>

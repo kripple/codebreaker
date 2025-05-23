@@ -2,7 +2,7 @@ import { Box } from '@mantine/core';
 
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
-import type { GameToken as Token } from '@/constants';
+import { type GameToken as Token, defaultColor } from '@/constants';
 
 export function GameRowColumn({
   activeRow,
@@ -22,26 +22,28 @@ export function GameRowColumn({
   return (
     <Profiler component="GameRowColumn">
       <Box>
-        {token ? (
-          <input
-            disabled={!activeRow}
-            id={inputId}
-            name={inputId}
-            onClick={() => setColumnId(columnId)}
-            readOnly
-            style={{ display: 'none' }}
-            value={token.color}
-          ></input>
-        ) : null}
+        <input
+          disabled={!activeRow}
+          id={inputId}
+          name={inputId}
+          onClick={() => setColumnId(columnId)}
+          readOnly
+          style={{ display: 'none' }}
+          value={token?.color || defaultColor}
+        ></input>
         <label
-          className="token-label"
+          className="token"
           htmlFor={inputId}
           style={{
             cursor: activeRow ? 'pointer' : 'default',
+            outline:
+              activeRow && activeColumn
+                ? '1.5px ridge rgba(255, 255, 255, 0.8)'
+                : undefined,
           }}
           tabIndex={0}
         >
-          <GameToken active={activeRow && activeColumn} token={token} />
+          <GameToken token={token} />
         </label>
       </Box>
     </Profiler>

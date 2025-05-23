@@ -27,36 +27,3 @@ body {
   font-family: var(--body-font);
   font-weight: 300;
 }
-
-.bullet-text {
-  font-family: monospace;
-}
-
-.overlay {
-  border-radius: inherit;
-}
-
-.top-secret {
-  border-radius: var(--mantine-radius-xs);
-  box-sizing: border-box;
-  color: var(--mantine-color-error);
-  font-family: var(--stencil-font);
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  line-height: 22px;
-  opacity: 0.5;
-  outline: thick double var(--mantine-color-error);
-  padding: 5px 10px 2px 10px;
-  text-transform: uppercase;
-}
-
-/* TODO: WIP */
-/* ensure enough touch area for selectable labels */
-/* label.token-label {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  min-height: 40px;
-  min-width: 40px;
-} */
