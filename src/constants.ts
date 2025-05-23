@@ -19,9 +19,10 @@ export const defaultColor = 'gray' as const;
 export const gameRow: string[] = new Array(config.solutionLength).fill(
   defaultColor,
 );
-export const gameRows: string[][] = new Array(config.maxAttempts)
+const _gameRows: string[][] = new Array(config.maxAttempts)
   .fill(defaultColor)
   .map(() => new Array(config.solutionLength).fill(defaultColor));
+export const gameRows = () => [..._gameRows];
 
 export const icons = {
   fairy,

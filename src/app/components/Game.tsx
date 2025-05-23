@@ -1,29 +1,30 @@
-import { Box, Center, Divider, Flex, Paper, Stack } from '@mantine/core';
+import { Center, Flex, Paper } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import * as uuid from 'uuid';
 
-import { FeedbackGrid } from '@/app/components/FeedbackGrid';
+import { GameRow } from '@/app/components/GameRow';
 import { GameToken } from '@/app/components/GameToken';
+import { HiddenInput } from '@/app/components/HiddenInput';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
 import { useGame } from '@/app/hooks/useGame';
 import { useMakeAttempt } from '@/app/hooks/useMakeAttempt';
 import {
+  type FeedbackToken,
   config,
-  defaultColor,
-  feedbackTokens,
   gameRow,
   gameRows,
   gameTokens,
+  isFeedbackToken,
   winningFeedback,
 } from '@/constants';
-import { type FeedbackToken, isFeedbackToken } from '@/constants';
 import { last } from '@/utils/array-last';
 
 import '@/app/components/Game.css';
 
 // TODO: use backspace to remove current color
 // TODO: use arrow keys to toggle between selectable tokens
+// FIXME: game state should be derived from gameData
 
 export function Game() {
   const key = config.localStorageKey;
@@ -36,6 +37,7 @@ export function Game() {
   const { currentData: gameData, currentError: gameError } = useGame(userId);
   const [makeAttempt, { currentError: attemptError }] = useMakeAttempt();
 
+  // TODO: extract as hook
   useEffect(() => {
     if (!gameData?.id) return;
     const id = gameData.id;
@@ -47,10 +49,12 @@ export function Game() {
   }, [gameData]);
 
   const activeRowId = gameData?.attempts.length || 0;
-  const [activeColumnId, setActiveColumnId] = useState<number>(0);
-  useEffect(() => setActiveColumnId(0), [gameData]);
+  const [activeColumnId, setColumnId] = useState<number>(0);
+  useEffect(() => setColumnId(0), [gameData]);
+
   const currentAttempt = last(gameData?.attempts);
   const win = currentAttempt?.feedback === winningFeedback;
+  const locked = win || gameData?.attempts.length === config.maxAttempts;
   const secretCode = win ? currentAttempt.value : undefined;
 
   function selectFeedbackTokens(
@@ -69,19 +73,6 @@ export function Game() {
     }
   }
 
-  // useEffect(() => {
-  //   console.log({
-  //     secretCode,
-  //     currentAttempt,
-  //     win,
-  //     'gameData?.attempts': gameData?.attempts,
-  //   });
-  // }, [secretCode, currentAttempt, win, gameData]);
-
-  const getIsActiveRow = (rowId: number) => rowId === activeRowId;
-  const isActiveToken = (rowId: number, columnId: number) =>
-    rowId === activeRowId && columnId === activeColumnId;
-
   const dataPath = (rowId: number, columnId: number) => `${rowId}.${columnId}`;
   const getRowValue = (value: string) => parseInt(value.split('.')[0]);
   const getColumnValue = (value: string) => parseInt(value.split('.')[1]);
@@ -91,18 +82,7 @@ export function Game() {
   const getTokenId = (color: string | FormDataEntryValue | null) =>
     gameTokens.find((gameToken) => gameToken.color === color)?.id;
 
-  const getTokenColor = (id: string) => {
-    const color = gameTokens.find(
-      (gameToken) => gameToken.id.toString() === id,
-    )?.color;
-    if (!color) throw Error(`invalid token id '${id}'`);
-    return color;
-  };
-
-  const [gameState, setGameState] = useState<string[][]>(gameRows);
-
-  // FIXME this fails when the game is complete (activeRowId is outside of the array)
-  const validGuess = !gameState?.[activeRowId]?.includes(defaultColor);
+  const [gameState, setGameState] = useState<string[][]>(gameRows());
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
@@ -135,15 +115,10 @@ export function Game() {
       draft[row][column] = value;
       return draft;
     });
-    setActiveColumnId((current) => current + 1);
+    setColumnId((current) => current + 1);
   };
 
-  const changeActiveToken = (event: ClickEvent) => {
-    const name = event.currentTarget.name;
-    const column = getColumnValue(name);
-    setActiveColumnId(column);
-  };
-
+  // TODO: error handling
   useEffect(() => {
     if (!gameError) return;
     console.log({ gameError });
@@ -169,88 +144,23 @@ export function Game() {
         </Paper>
         <Paper withBorder>
           <form onSubmit={submit}>
-            <input
-              hidden
-              name="userId"
-              readOnly
-              style={{ display: 'none' }}
-              value={userId ? userId : undefined}
-            ></input>
+            <HiddenInput name="userId" value={userId} />
             <Flex direction="column-reverse">
-              {gameRows.map((row, rowId) => {
-                const isActiveRow = getIsActiveRow(rowId);
-                const rowClassName = isActiveRow ? 'active-row row' : 'row';
-                const divider = rowId === 0 ? null : <Divider />;
-                // const feedbackRows = getFeedbackRows(row);
-
-                // const feedbackTokenValues =
-                //   gameData?.attempts?.[rowId]?.feedback?.split('');
-
-                // console.log({ 'feedback?.[rowId]': feedback?.[rowId] });
-
-                const attempt = gameData?.attempts?.[rowId]?.value
-                  ?.split('')
-                  .map((id) => getTokenColor(id));
-
-                return (
-                  <Paper
-                    bg={isActiveRow ? 'dark' : undefined}
-                    className={rowClassName}
-                    key={rowId}
-                  >
-                    <Center>
-                      <FeedbackGrid tokens={selectFeedbackTokens(rowId)} />
-                      <Flex>
-                        {row.map((_, columnId) => {
-                          const active = isActiveToken(rowId, columnId);
-                          const tokenId = dataPath(rowId, columnId);
-                          const color =
-                            attempt?.[columnId] || gameState[rowId][columnId];
-                          const token = gameTokens.find(
-                            (gameToken) => gameToken.color === color,
-                          );
-
-                          return (
-                            <Box key={columnId}>
-                              <input
-                                disabled={!isActiveRow}
-                                id={tokenId}
-                                name={tokenId}
-                                onClick={changeActiveToken}
-                                readOnly
-                                style={{ display: 'none' }}
-                                value={color}
-                              ></input>
-                              <label
-                                className="token-label"
-                                htmlFor={tokenId}
-                                tabIndex={0}
-                              >
-                                <GameToken active={active} token={token} />
-                              </label>
-                            </Box>
-                          );
-                        })}
-                      </Flex>
-
-                      <Center>
-                        <button
-                          className="button"
-                          disabled={!isActiveRow || !validGuess}
-                          type="submit"
-                        >
-                          Try
-                        </button>
-                      </Center>
-                    </Center>
-                    {divider}
-                  </Paper>
-                );
-              })}
+              {gameState.map((row, rowId) => (
+                <GameRow
+                  active={!locked && rowId === activeRowId}
+                  activeColumnId={activeColumnId}
+                  feedbackTokens={selectFeedbackTokens(rowId)}
+                  key={rowId}
+                  locked={locked}
+                  row={row}
+                  rowId={rowId}
+                  setColumnId={setColumnId}
+                />
+              ))}
             </Flex>
           </form>
         </Paper>
-
         <TokenSelect
           dataPath={dataPath(activeRowId, activeColumnId)}
           select={select}

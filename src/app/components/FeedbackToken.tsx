@@ -7,6 +7,7 @@ import {
 
 import '@/app/components/FeedbackToken.css';
 
+// FIXME: empty and incorrect are not the same state
 export function FeedbackToken({ token: value }: { token?: Token['value'] }) {
   const key = value ? lookup[value].key : undefined;
   const size = '12px';
