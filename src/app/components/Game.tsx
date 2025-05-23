@@ -6,6 +6,7 @@ import { GameSolution } from '@/app/components/GameSolution';
 import { HiddenInput } from '@/app/components/HiddenInput';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
+import { useConfetti } from '@/app/hooks/useConfetti';
 import { useGame } from '@/app/hooks/useGame';
 import { useMakeAttempt } from '@/app/hooks/useMakeAttempt';
 import {
@@ -39,6 +40,7 @@ export function Game() {
 
   const currentAttempt = last(gameData?.attempts);
   const win = currentAttempt?.feedback === winningFeedback;
+  useConfetti(win);
   const locked = win || gameData?.attempts.length === config.maxAttempts;
   const secretCode = win ? currentAttempt.value : undefined;
 
