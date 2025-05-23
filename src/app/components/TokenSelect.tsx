@@ -6,9 +6,11 @@ import { gameTokens } from '@/constants';
 
 export function TokenSelect({
   dataPath,
+  locked,
   select,
 }: {
   dataPath: string;
+  locked: boolean;
   select: (event: ClickEvent) => void;
 }) {
   return (
@@ -28,7 +30,14 @@ export function TokenSelect({
                     style={{ display: 'none' }}
                     value={token.color}
                   ></input>
-                  <label className="token-label" htmlFor={inputId} tabIndex={0}>
+                  <label
+                    className="token-label"
+                    htmlFor={inputId}
+                    style={{
+                      cursor: locked ? 'default' : 'pointer',
+                    }}
+                    tabIndex={0}
+                  >
                     <GameToken token={token} />
                   </label>
                 </Box>

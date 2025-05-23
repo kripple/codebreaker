@@ -5,6 +5,7 @@ export function HiddenInput({
   name: string;
   value?: string | null;
 }) {
+  if (!value) return null;
   return (
     <input
       aria-hidden
@@ -12,7 +13,7 @@ export function HiddenInput({
       name={name}
       readOnly
       style={{ display: 'none' }}
-      value={value ? value : undefined}
+      value={value}
     ></input>
   );
 }

@@ -25,6 +25,7 @@ import '@/app/components/Game.css';
 // TODO: use backspace to remove current color
 // TODO: use arrow keys to toggle between selectable tokens
 // FIXME: game state should be derived from gameData
+// TODO: use number keys to "click" on TokenSelect
 
 export function Game() {
   const key = config.localStorageKey;
@@ -163,6 +164,7 @@ export function Game() {
         </Paper>
         <TokenSelect
           dataPath={dataPath(activeRowId, activeColumnId)}
+          locked={locked}
           select={select}
         />
       </div>
