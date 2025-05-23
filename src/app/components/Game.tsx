@@ -1,10 +1,8 @@
-import { Box, Center, Flex, Paper } from '@mantine/core';
+import { Flex, Paper } from '@mantine/core';
 import { useEffect, useState } from 'react';
-import * as uuid from 'uuid';
 
 import { GameRow } from '@/app/components/GameRow';
 import { GameSolution } from '@/app/components/GameSolution';
-import { GameToken } from '@/app/components/GameToken';
 import { HiddenInput } from '@/app/components/HiddenInput';
 import { Profiler } from '@/app/components/Profiler';
 import { TokenSelect } from '@/app/components/TokenSelect';
@@ -13,7 +11,6 @@ import { useMakeAttempt } from '@/app/hooks/useMakeAttempt';
 import {
   type FeedbackToken,
   config,
-  defaultColor,
   gameRow,
   gameRows,
   gameTokens,
@@ -33,26 +30,8 @@ import '@/app/components/Game.css';
 // TODO: investigate batching DOM updates to minimize the number of repaints (group multiple DOM updates together and perform them in a single requestAnimationFrame callback)
 
 export function Game() {
-  const key = config.localStorageKey;
-  const [userId, setUserId] = useState<string | null>(
-    (() => {
-      const savedValue = window.localStorage.getItem(key);
-      return uuid.validate(savedValue) ? savedValue : null;
-    })(),
-  );
-  const { currentData: gameData, currentError: gameError } = useGame(userId);
+  const { currentData: gameData, currentError: gameError, userId } = useGame();
   const [makeAttempt, { currentError: attemptError }] = useMakeAttempt();
-
-  // TODO: extract as hook
-  useEffect(() => {
-    if (!gameData?.id) return;
-    const id = gameData.id;
-    if (uuid.validate(id)) {
-      window.localStorage.setItem(key, id);
-      setUserId(id);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameData]);
 
   const activeRowId = gameData?.attempts.length || 0;
   const [activeColumnId, setColumnId] = useState<number>(0);

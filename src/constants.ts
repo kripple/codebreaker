@@ -12,7 +12,6 @@ import { isString } from '@/utils/type-guards';
 export const config = {
   maxAttempts: 8,
   solutionLength: 4,
-  localStorageKey: 'user_id',
   profiler: true,
 } as const;
 
