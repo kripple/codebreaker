@@ -37,13 +37,9 @@ This project uses `NPM Scripts` to execute repeatable tasks.
 
 - Setup Postgres - https://orm.drizzle.team/docs/guides/postgresql-local-setup
 
-
 Create rebootable database instance: `docker run --name cbk-postgres -e POSTGRES_PASSWORD=supersecure -d -p 5432:5432 postgres`
 
-
-
 Connection URL: `postgres://postgres:supersecure@localhost:5432/postgres`
-
 
 For testing changes in development: `npx drizzle-kit push`
 
