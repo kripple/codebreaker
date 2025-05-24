@@ -1,7 +1,7 @@
-import type { Attempt } from '@/db/schema/attempt';
-import type { Game } from '@/db/schema/game';
-import type { Solution } from '@/db/schema/solution';
-import type { User } from '@/db/schema/user';
+import type { Attempt } from '@/db/schema/attempts';
+import type { Game } from '@/db/schema/daily_games';
+import type { Solution } from '@/db/schema/solutions';
+import type { User } from '@/db/schema/users';
 
 export type ResponseData = {
   id: string;

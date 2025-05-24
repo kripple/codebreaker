@@ -1,15 +1,15 @@
 import { asc, sql } from 'drizzle-orm';
 
-import { server } from '@/api/helpers/server';
-import { Attempt } from '@/db/schema/attempt';
-import { Game } from '@/db/schema/game';
+import { server } from '@/api/server';
+import { Attempt } from '@/db/schema/attempts';
+import { DailyGame } from '@/db/schema/daily_games';
 
 export async function createNewAttempt({
   game,
   attempt: value,
   feedback,
 }: {
-  game: Game;
+  game: DailyGame;
   attempt: string;
   feedback: string;
 }): Promise<Attempt> {
@@ -25,7 +25,7 @@ export async function createNewAttempt({
   return attempt;
 }
 
-export async function getAttempts(game: Game): Promise<Attempt[]> {
+export async function getAttempts(game: DailyGame): Promise<Attempt[]> {
   const attempts = await server.db
     .select()
     .from(Attempt)
