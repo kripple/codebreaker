@@ -2,12 +2,11 @@ import { defineConfig, devices } from '@playwright/test';
 
 const port = 5173 as const;
 const url = `http://localhost:${port}` as const;
-const name = 'app' as const;
 
 export default defineConfig({
   fullyParallel: true,
   reporter: 'list',
-  outputDir: name,
+  outputDir: 'temp',
   projects: [
     {
       name: 'chromium',
