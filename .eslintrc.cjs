@@ -50,16 +50,10 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['**/test/**/*', '**/*.test.*'],
+      files: ['**/*.test.*', '**/*.e2e.*'],
       rules: {
         ...defaultRules,
-      },
-    },
-    {
-      files: ['src/api/**/*'],
-      rules: {
-        ...defaultRules,
-        '@typescript-eslint/no-restricted-imports': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
       },
     },
   ],
