@@ -1,65 +1,20 @@
-// import { expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-// import {
-//   createNewGame,
-//   getGame,
-//   getGameById,
-//   getOrCreateGame,
-//   updateGame,
-// } from '@/db/adapters/adhoc_games';
-// import { createNewUser } from '@/db/adapters/users';
+import {
+  createNewAdhocGame,
+  getAdhocGameById,
+} from '@/db/adapters/adhoc_games';
+import { createNewUser } from '@/db/adapters/users';
 
-// // start the database and server before running these tests
+test.describe('adhoc_games', () => {
+  test('new adhoc game', async () => {
+    const user = await createNewUser();
+    expect(user).toBeTruthy();
 
-// test.describe('games', () => {
-//   test('new game', async () => {
-//     const user = await createNewUser();
-//     expect(user).toBeTruthy();
+    const game = await createNewAdhocGame(user);
+    expect(game).toBeTruthy();
 
-//     const game = await createNewGame(user);
-//     expect(game).toBeTruthy();
-//   });
-
-//   test('automatic new game', async () => {
-//     const user = await createNewUser();
-//     expect(user).toBeTruthy();
-
-//     const game = await getOrCreateGame(user);
-//     expect(game).toBeTruthy();
-//   });
-
-//   test('current game', async () => {
-//     const user = await createNewUser();
-//     expect(user).toBeTruthy();
-
-//     const altUser = await createNewUser();
-//     expect(altUser).toBeTruthy();
-
-//     const game = await createNewGame(user);
-//     expect(game).toBeTruthy();
-
-//     const currentGame = await getGame(user);
-//     expect(currentGame).toBeTruthy();
-//     expect(game).toEqual(currentGame);
-
-//     const gameById = await getGameById(game.id);
-//     expect(gameById).toBeTruthy();
-//     expect(game).toEqual(gameById);
-
-//     const alsoCurrentGame = await getOrCreateGame(user);
-//     expect(alsoCurrentGame).toBeTruthy();
-//     expect(game).toEqual(alsoCurrentGame);
-
-//     const altGame = await getOrCreateGame(altUser);
-//     expect(altGame).toBeTruthy();
-//     expect(game).not.toEqual(altGame);
-
-//     // await updateGame({ id: game.id, win: true });
-//     // const updatedGame = await getGameById(game.id);
-//     // expect(updatedGame.win).toBe(true);
-
-//     // await updateGame({ id: altGame.id, win: false });
-//     // const altUpdatedGame = await getGameById(altGame.id);
-//     // expect(altUpdatedGame.win).toBe(false);
-//   });
-// });
+    const currentGame = await getAdhocGameById(game.id);
+    expect(game).toEqual(currentGame);
+  });
+});
