@@ -1,7 +1,6 @@
-import { date, pgTable, varchar } from 'drizzle-orm/pg-core';
+import { date, pgTable, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
 
 import { id } from '@/db/helpers/id';
-import { indexOn } from '@/db/helpers/indexOn';
 import { timestamps } from '@/db/helpers/timestamps';
 
 export const Solution = pgTable(
@@ -12,7 +11,7 @@ export const Solution = pgTable(
     date: date().defaultNow().notNull().unique(),
     ...timestamps,
   },
-  (table) => [indexOn({ table, columnName: 'not_date', unique: true })],
+  (table) => [uniqueIndex('daily_game_solution_date_idx').on(table.date)],
 );
 
 export type Solution = typeof Solution.$inferSelect;

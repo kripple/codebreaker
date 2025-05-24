@@ -1,8 +1,7 @@
 import { sql } from 'drizzle-orm';
-import { check, integer, pgTable, varchar } from 'drizzle-orm/pg-core';
+import { check, index, integer, pgTable, varchar } from 'drizzle-orm/pg-core';
 
 import { id } from '@/db/helpers/id';
-import { indexOn } from '@/db/helpers/indexOn';
 import { timestamps } from '@/db/helpers/timestamps';
 import { AdhocGame } from '@/db/schema/adhoc_games';
 import { DailyGame } from '@/db/schema/daily_games';
@@ -26,8 +25,8 @@ export const Attempt = pgTable(
       (${table.daily_game_id} IS NULL AND ${table.adhoc_game_id} IS NOT NULL)
     `,
     ),
-    indexOn({ table, columnName: 'daily_game_id', unique: false }),
-    indexOn({ table, columnName: 'adhoc_game_id', unique: false }),
+    index('daily_game_attempt_idx').on(table.daily_game_id),
+    index('adhoc_game_attempt_idx').on(table.adhoc_game_id),
   ],
 );
 

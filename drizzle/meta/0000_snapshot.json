@@ -1,11 +1,11 @@
 {
-  "id": "56c7b74f-04b3-4caf-9f47-84a3f478c741",
+  "id": "b25205b0-2b5e-448f-b0df-d1d034278a7a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.attempt": {
-      "name": "attempt",
+    "public.adhoc_games": {
+      "name": "adhoc_games",
       "schema": "",
       "columns": {
         "id": {
@@ -15,7 +15,7 @@
           "notNull": true,
           "identity": {
             "type": "always",
-            "name": "attempt_id_seq",
+            "name": "adhoc_games_id_seq",
             "schema": "public",
             "increment": "1",
             "startWith": "1",
@@ -25,20 +25,14 @@
             "cycle": false
           }
         },
-        "value": {
-          "name": "value",
+        "solution": {
+          "name": "solution",
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
         },
-        "feedback": {
-          "name": "feedback",
-          "type": "varchar",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "game_id": {
-          "name": "game_id",
+        "user_id": {
+          "name": "user_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
@@ -63,14 +57,30 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "adhoc_game_user_idx": {
+          "name": "adhoc_game_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "attempt_game_id_game_id_fk": {
-          "name": "attempt_game_id_game_id_fk",
-          "tableFrom": "attempt",
-          "tableTo": "game",
+        "adhoc_games_user_id_users_id_fk": {
+          "name": "adhoc_games_user_id_users_id_fk",
+          "tableFrom": "adhoc_games",
+          "tableTo": "users",
           "columnsFrom": [
-            "game_id"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -85,8 +95,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.game": {
-      "name": "game",
+    "public.attempts": {
+      "name": "attempts",
       "schema": "",
       "columns": {
         "id": {
@@ -96,7 +106,7 @@
           "notNull": true,
           "identity": {
             "type": "always",
-            "name": "game_id_seq",
+            "name": "attempts_id_seq",
             "schema": "public",
             "increment": "1",
             "startWith": "1",
@@ -106,18 +116,141 @@
             "cycle": false
           }
         },
-        "win": {
-          "name": "win",
-          "type": "boolean",
+        "value": {
+          "name": "value",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "feedback": {
+          "name": "feedback",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "daily_game_id": {
+          "name": "daily_game_id",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "max_attempts": {
-          "name": "max_attempts",
+        "adhoc_game_id": {
+          "name": "adhoc_game_id",
           "type": "integer",
           "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
           "notNull": true,
-          "default": 8
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "daily_game_attempt_idx": {
+          "name": "daily_game_attempt_idx",
+          "columns": [
+            {
+              "expression": "daily_game_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "adhoc_game_attempt_idx": {
+          "name": "adhoc_game_attempt_idx",
+          "columns": [
+            {
+              "expression": "adhoc_game_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "attempts_daily_game_id_daily_games_id_fk": {
+          "name": "attempts_daily_game_id_daily_games_id_fk",
+          "tableFrom": "attempts",
+          "tableTo": "daily_games",
+          "columnsFrom": [
+            "daily_game_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "attempts_adhoc_game_id_adhoc_games_id_fk": {
+          "name": "attempts_adhoc_game_id_adhoc_games_id_fk",
+          "tableFrom": "attempts",
+          "tableTo": "adhoc_games",
+          "columnsFrom": [
+            "adhoc_game_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "game_type": {
+          "name": "game_type",
+          "value": "\n      (\"attempts\".\"daily_game_id\" IS NOT NULL AND \"attempts\".\"adhoc_game_id\" IS NULL)\n      OR\n      (\"attempts\".\"daily_game_id\" IS NULL AND \"attempts\".\"adhoc_game_id\" IS NOT NULL)\n    "
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.daily_games": {
+      "name": "daily_games",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "daily_games_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
         },
         "user_id": {
           "name": "user_id",
@@ -151,12 +284,43 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "daily_game_user_idx": {
+          "name": "daily_game_user_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "daily_game_solution_idx": {
+          "name": "daily_game_solution_idx",
+          "columns": [
+            {
+              "expression": "solution_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
-        "game_user_id_user_id_fk": {
-          "name": "game_user_id_user_id_fk",
-          "tableFrom": "game",
-          "tableTo": "user",
+        "daily_games_user_id_users_id_fk": {
+          "name": "daily_games_user_id_users_id_fk",
+          "tableFrom": "daily_games",
+          "tableTo": "users",
           "columnsFrom": [
             "user_id"
           ],
@@ -166,10 +330,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "game_solution_id_solution_id_fk": {
-          "name": "game_solution_id_solution_id_fk",
-          "tableFrom": "game",
-          "tableTo": "solution",
+        "daily_games_solution_id_solutions_id_fk": {
+          "name": "daily_games_solution_id_solutions_id_fk",
+          "tableFrom": "daily_games",
+          "tableTo": "solutions",
           "columnsFrom": [
             "solution_id"
           ],
@@ -186,8 +350,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.solution": {
-      "name": "solution",
+    "public.solutions": {
+      "name": "solutions",
       "schema": "",
       "columns": {
         "id": {
@@ -197,7 +361,7 @@
           "notNull": true,
           "identity": {
             "type": "always",
-            "name": "solution_id_seq",
+            "name": "solutions_id_seq",
             "schema": "public",
             "increment": "1",
             "startWith": "1",
@@ -213,15 +377,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "length": {
-          "name": "length",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 4
-        },
-        "creation_date": {
-          "name": "creation_date",
+        "date": {
+          "name": "date",
           "type": "date",
           "primaryKey": false,
           "notNull": true,
@@ -247,15 +404,38 @@
           "notNull": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "daily_game_solution_date_idx": {
+          "name": "daily_game_solution_date_idx",
+          "columns": [
+            {
+              "expression": "date",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "solution_creation_date_unique": {
-          "name": "solution_creation_date_unique",
+        "solutions_value_unique": {
+          "name": "solutions_value_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "creation_date"
+            "value"
+          ]
+        },
+        "solutions_date_unique": {
+          "name": "solutions_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "date"
           ]
         }
       },
@@ -263,8 +443,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user": {
-      "name": "user",
+    "public.users": {
+      "name": "users",
       "schema": "",
       "columns": {
         "id": {
@@ -274,7 +454,7 @@
           "notNull": true,
           "identity": {
             "type": "always",
-            "name": "user_id_seq",
+            "name": "users_id_seq",
             "schema": "public",
             "increment": "1",
             "startWith": "1",
@@ -331,8 +511,8 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "user_uuid_unique": {
-          "name": "user_uuid_unique",
+        "users_uuid_unique": {
+          "name": "users_uuid_unique",
           "nullsNotDistinct": false,
           "columns": [
             "uuid"

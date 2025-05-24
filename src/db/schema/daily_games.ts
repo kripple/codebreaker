@@ -1,7 +1,6 @@
-import { integer, pgTable } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable } from 'drizzle-orm/pg-core';
 
 import { id } from '@/db/helpers/id';
-import { indexOn } from '@/db/helpers/indexOn';
 import { timestamps } from '@/db/helpers/timestamps';
 import { Solution } from '@/db/schema/solutions';
 import { User } from '@/db/schema/users';
@@ -19,8 +18,8 @@ export const DailyGame = pgTable(
     ...timestamps,
   },
   (table) => [
-    indexOn({ table, columnName: 'user_id', unique: false }),
-    indexOn({ table, columnName: 'solution_id', unique: false }),
+    index('daily_game_user_idx').on(table.user_id),
+    index('daily_game_solution_idx').on(table.solution_id),
   ],
 );
 

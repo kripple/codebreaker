@@ -1,7 +1,6 @@
-import { integer, pgTable, varchar } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, varchar } from 'drizzle-orm/pg-core';
 
 import { id } from '@/db/helpers/id';
-import { indexOn } from '@/db/helpers/indexOn';
 import { timestamps } from '@/db/helpers/timestamps';
 import { User } from '@/db/schema/users';
 
@@ -15,7 +14,7 @@ export const AdhocGame = pgTable(
       .references(() => User.id),
     ...timestamps,
   },
-  (table) => [indexOn({ table, columnName: 'user_id', unique: false })],
+  (table) => [index('adhoc_game_user_idx').on(table.user_id)],
 );
 
 export type AdhocGame = typeof AdhocGame.$inferSelect;
