@@ -7,6 +7,15 @@ import {
 } from '@/db/adapters/solutions';
 
 test.describe('solutions', () => {
+  test('get or create solution', async () => {
+    const solution = await getOrCreateSolution();
+    expect(solution).toBeTruthy();
+
+    const solutionById = await getSolutionById(solution.id);
+    expect(solutionById).toBeTruthy();
+    expect(solution).toEqual(solutionById);
+  });
+
   // TODO: we need a clean db for this test
   test.skip('get solution', async () => {
     const currentSolution = await getSolution();

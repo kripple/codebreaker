@@ -43,7 +43,7 @@ export async function getSolutionById(
 }
 
 export async function getOrCreateSolution(): Promise<Solution> {
-  const currentSolution = await createNewSolution();
+  const currentSolution = await getSolution();
   if (currentSolution) server.log.info(`get solution '${currentSolution.id}'`);
 
   const solution = currentSolution || (await createNewSolution());
