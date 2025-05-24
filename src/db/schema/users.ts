@@ -1,16 +1,17 @@
-import { pgTable, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, uuid } from 'drizzle-orm/pg-core';
 
 import { id } from '@/db/helpers/id';
+import { indexOn } from '@/db/helpers/indexOn';
 import { timestamps } from '@/db/helpers/timestamps';
 
 export const User = pgTable(
-  'user',
+  'users',
   {
     id,
     uuid: uuid().defaultRandom().unique().notNull(),
     ...timestamps,
   },
-  (user) => [uniqueIndex('uuid_idx').on(user.uuid)],
+  (table) => [indexOn({ table, columnName: 'uuid', unique: true })],
 );
 
 export type User = typeof User.$inferSelect;
