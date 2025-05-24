@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import { makeSecretCode } from '@/api/helpers/codemaker';
 import { server } from '@/api/server';
@@ -37,7 +37,7 @@ export async function getSolutionById(
   const solutions = await server.db
     .select()
     .from(Solution)
-    .where(sql`${Solution.id} = ${id}`);
+    .where(eq(Solution.id, id));
   const solution = solutions.pop();
   return solution;
 }

@@ -1,4 +1,4 @@
-import { desc, sql } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 import { server } from '@/api/server';
 import { User } from '@/db/schema/users';
@@ -16,7 +16,7 @@ export async function getUser(uuid: string): Promise<User | undefined> {
   const users = await server.db
     .select()
     .from(User)
-    .where(sql`${User.uuid} = ${uuid}`)
+    .where(eq(User.uuid, uuid))
     .orderBy(desc(User.created_at))
     .limit(1);
   const user = users.pop();

@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { makeSecretCode } from '@/api/helpers/codemaker';
 import { server } from '@/api/server';
@@ -24,7 +24,7 @@ export async function getAdhocGameById(id: number): Promise<AdhocGame> {
   const games = await server.db
     .select()
     .from(AdhocGame)
-    .where(sql`${AdhocGame.id} = ${id}`);
+    .where(eq(AdhocGame.id, id));
   const game = games.pop();
   if (!game) throw Error('failed to find adhoc game by id');
   return game;

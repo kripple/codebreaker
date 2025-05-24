@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import { server } from '@/api/server';
 import { getOrCreateSolution } from '@/db/adapters/solutions';
@@ -46,7 +46,7 @@ export async function getDailyGameById(
   const games = await server.db
     .select()
     .from(DailyGame)
-    .where(sql`${DailyGame.id} = ${id}`);
+    .where(eq(DailyGame.id, id));
   const game = games.pop();
   return game;
 }
