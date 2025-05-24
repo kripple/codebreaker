@@ -10,7 +10,7 @@
   "type": "module",
   "scripts": {
     "start": "vite",
-    "api": "tsx src/api/routes.ts",
+    "api": "tsx src/api/start.ts",
     "build": "tsc && vite build",
     "lint": "eslint . && stylelint '**/*.css' && prettier --check .",
     "preview": "vite preview",
