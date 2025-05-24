@@ -39,7 +39,9 @@ This project uses `NPM Scripts` to execute repeatable tasks.
 
 
 Create rebootable database instance: `docker run --name cbk-postgres -e POSTGRES_PASSWORD=supersecure -d -p 5432:5432 postgres`
-`npx drizzle-kit migrate`
+
+
+
 Connection URL: `postgres://postgres:supersecure@localhost:5432/postgres`
 
 
@@ -47,8 +49,10 @@ For testing changes in development: `npx drizzle-kit push`
 
 Generating migrations:
 `npx drizzle-kit generate --help`
-`npx drizzle-kit generate --schema './src/db/schema' --dialect postgresql --name create_tables`
-`npx drizzle-kit migrate`
+
+`npx drizzle-kit generate --config config/drizzle.config.ts`
+
+`npx drizzle-kit migrate --config config/drizzle.config.ts`
 
 TODO:
 - check queries for optimization opportunities (ex. column indexes, table joins)
