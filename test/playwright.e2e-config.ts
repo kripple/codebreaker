@@ -1,11 +1,11 @@
 import { defineConfig } from '@playwright/test';
 
-const name = 'api' as const;
+const name = 'e2e' as const;
 
 export default defineConfig({
   fullyParallel: true,
   outputDir: name,
   reporter: 'line',
-  testDir: `../src/${name}`,
-  testMatch: '**/*.integration-test.ts',
+  testDir: '../src',
+  testMatch: `**/*.${name}.ts`,
 });
