@@ -1,57 +1,64 @@
-import { desc, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { server } from '@/api/server';
-// import { createNewSolution } from '@/db/adapters/solutions';
+import { getOrCreateSolution } from '@/db/adapters/solutions';
 import { DailyGame } from '@/db/schema/daily_games';
-import { Solution } from '@/db/schema/solutions';
+import type { User } from '@/db/schema/users';
 
-// async function createNewDailySolution(): Promise<DailyGame> {
-//   server.log.info('create new daily solution');
+async function createNewDailyGame(user: User): Promise<DailyGame> {
+  server.log.info('create new daily solution');
 
-//   const solution = await createNewSolution();
-//   const daily_solutions = await server.db
-//     .insert(Solution)
-//     .values({
-//       solution_id: solution.id,
-//     })
-//     .returning();
-//   const daily_solution = daily_solutions.pop();
-//   if (!daily_solution) {
-//     throw Error('failed to create new daily solution');
-//   }
-//   return daily_solution;
-// }
+  const solution = await getOrCreateSolution();
+  const daily_solutions = await server.db
+    .insert(DailyGame)
+    .values({
+      user_id: user.id,
+      solution_id: solution.id,
+    })
+    .returning();
+  const daily_solution = daily_solutions.pop();
+  if (!daily_solution) {
+    throw Error('failed to create new daily solution');
+  }
+  return daily_solution;
+}
 
-// async function getDailySolution(): Promise<DailyGame | undefined> {
-//   const daily_solutions = await server.db
-//     .select()
-//     .from(DailyGame)
-//     .where(sql`${DailyGame.date} = CURRENT_DATE`)
-//     .orderBy(desc(DailyGame.created_at))
-//     .limit(1);
-//   const daily_solution = daily_solutions.pop();
-//   return daily_solution;
-// }
+async function getDailyGame(user: User): Promise<DailyGame | undefined> {
+  server.log.info('get daily solution');
+  const solution = await getOrCreateSolution();
+  const games = await server.db
+    .select()
+    .from(DailyGame)
+    .where(
+      and(
+        eq(DailyGame.user_id, user.id),
+        eq(DailyGame.solution_id, solution.id),
+      ),
+    );
+  const game = games.pop();
+  return game;
+}
 
-// export async function getDailySolutionById(
-//   id: number,
-// ): Promise<DailyGame | undefined> {
-//   const daily_solutions = await server.db
-//     .select()
-//     .from(DailyGame)
-//     .where(sql`${DailyGame.id} = ${id}`);
-//   const daily_solution = daily_solutions.pop();
-//   return daily_solution;
-// }
+export async function getDailyGameById(
+  id: number,
+): Promise<DailyGame | undefined> {
+  server.log.info('get daily solution by id');
+  const games = await server.db
+    .select()
+    .from(DailyGame)
+    .where(sql`${DailyGame.id} = ${id}`);
+  const game = games.pop();
+  return game;
+}
 
-// export async function getOrCreateDailySolution(): Promise<DailyGame> {
-//   const currentSolution = await getDailySolution();
-//   if (currentSolution)
-//     server.log.info(`get daily challenge '${currentSolution.id}'`);
+export async function getOrCreateDailyGame(user: User): Promise<DailyGame> {
+  server.log.info('get or create daily game');
 
-//   const solution = currentSolution || (await createNewDailySolution());
-//   if (!currentSolution)
-//     server.log.info(`create new daily solution '${solution.id}'`);
+  const currentGame = await getDailyGame(user);
+  if (currentGame) server.log.info(`get daily game '${currentGame.id}'`);
 
-//   return solution;
-// }
+  const game = currentGame || (await createNewDailyGame(user));
+  if (!currentGame) server.log.info(`create new daily game '${game.id}'`);
+
+  return game;
+}

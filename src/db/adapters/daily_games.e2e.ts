@@ -1,17 +1,22 @@
-// import { expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-// import { getOrCreateSolution, getSolutionById } from '@/db/adapters/solutions';
+import {
+  getDailyGameById,
+  getOrCreateDailyGame,
+} from '@/db/adapters/daily_games';
+import { createNewUser } from '@/db/adapters/users';
 
-// // start the database and server before running these tests
+test.describe('daily_games', () => {
+  test('get or create daily game', async () => {
+    const user = await createNewUser();
+    expect(user).toBeTruthy();
 
-// test.describe('dailys', () => {
-//   test('solution', async () => {
-//     const solution = await getOrCreateSolution();
-//     expect(solution).toBeTruthy();
+    const game = await getOrCreateDailyGame(user);
+    expect(game).toBeTruthy();
 
-//     const solutionById = await getSolutionById(solution.id);
-//     expect(solutionById).toBeTruthy();
+    const gameById = await getDailyGameById(game.id);
+    expect(gameById).toBeTruthy();
 
-//     expect(solution).toEqual(solutionById);
-//   });
-// });
+    expect(game).toEqual(gameById);
+  });
+});
