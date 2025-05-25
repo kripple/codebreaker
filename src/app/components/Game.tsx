@@ -102,7 +102,12 @@ export function Game() {
       draft[row][column] = value;
       return draft;
     });
-    setColumnId((current) => current + 1);
+    const maxColumnId = config.solutionLength - 1;
+    setColumnId((current) => {
+      const draft = current + 1;
+      if (draft > maxColumnId) return 0;
+      return draft;
+    });
   };
 
   // TODO: error handling
