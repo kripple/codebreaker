@@ -2,7 +2,7 @@ import { Box, Flex, Paper } from '@mantine/core';
 
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
-import { gameTokens } from '@/constants';
+import { gameTokens } from '@/constants/tokens';
 
 export function TokenSelect({
   dataPath,

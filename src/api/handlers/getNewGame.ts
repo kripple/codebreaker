@@ -1,6 +1,6 @@
-import { getAttempts } from '@/db/adapters/attempts';
-import { getOrCreateDailyGame } from '@/db/adapters/daily_games';
-import { createNewUser } from '@/db/adapters/users';
+import { getAttempts } from '@/api/db/adapters/attempts';
+import { getOrCreateDailyGame } from '@/api/db/adapters/daily_games';
+import { createNewUser } from '@/api/db/adapters/users';
 
 export async function getNewGame() {
   const user = await createNewUser();

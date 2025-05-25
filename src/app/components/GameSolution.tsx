@@ -1,7 +1,8 @@
 import { Box, Center, Flex, Paper } from '@mantine/core';
 
 import { GameToken } from '@/app/components/GameToken';
-import { config, gameTokens } from '@/constants';
+import { config } from '@/constants/config';
+import { gameTokens } from '@/constants/tokens';
 
 export function GameSolution({
   secretCode,

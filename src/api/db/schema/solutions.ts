@@ -1,7 +1,7 @@
 import { date, pgTable, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
 
-import { id } from '@/db/helpers/id';
-import { timestamps } from '@/db/helpers/timestamps';
+import { id } from '@/api/db/helpers/id';
+import { timestamps } from '@/api/db/helpers/timestamps';
 
 export const Solution = pgTable(
   'solutions',

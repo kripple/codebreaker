@@ -1,9 +1,9 @@
 import { and, eq } from 'drizzle-orm';
 
 import { server } from '@/api/server';
-import { getOrCreateSolution } from '@/db/adapters/solutions';
-import { DailyGame } from '@/db/schema/daily_games';
-import type { User } from '@/db/schema/users';
+import { getOrCreateSolution } from '@/api/db/adapters/solutions';
+import { DailyGame } from '@/api/db/schema/daily_games';
+import type { User } from '@/api/db/schema/users';
 
 async function createNewDailyGame(user: User): Promise<DailyGame> {
   server.log.info('create new daily solution');

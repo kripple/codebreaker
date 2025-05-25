@@ -2,7 +2,7 @@ import { eq, sql } from 'drizzle-orm';
 
 import { makeSecretCode } from '@/api/helpers/codemaker';
 import { server } from '@/api/server';
-import { Solution } from '@/db/schema/solutions';
+import { Solution } from '@/api/db/schema/solutions';
 
 async function createNewSolution(): Promise<Solution> {
   server.log.info('create new solution');

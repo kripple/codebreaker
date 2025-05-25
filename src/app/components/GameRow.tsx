@@ -3,8 +3,11 @@ import { Center, Divider, Flex, Paper } from '@mantine/core';
 import { FeedbackGrid } from '@/app/components/FeedbackGrid';
 import { GameRowColumn } from '@/app/components/GameRowColumn';
 import { Profiler } from '@/app/components/Profiler';
-import { gameTokens as gameTokensLookup } from '@/constants';
-import { type FeedbackToken, defaultColor } from '@/constants';
+import {
+  type FeedbackToken,
+  defaultColor,
+  gameTokens as gameTokensLookup,
+} from '@/constants/tokens';
 
 export function GameRow({
   active,

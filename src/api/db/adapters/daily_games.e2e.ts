@@ -3,8 +3,8 @@ import { expect, test } from '@playwright/test';
 import {
   getDailyGameById,
   getOrCreateDailyGame,
-} from '@/db/adapters/daily_games';
-import { createNewUser } from '@/db/adapters/users';
+} from '@/api/db/adapters/daily_games';
+import { createNewUser } from '@/api/db/adapters/users';
 
 test.describe('daily_games', () => {
   test('get or create daily game', async () => {

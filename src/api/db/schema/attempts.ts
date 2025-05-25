@@ -1,10 +1,10 @@
 import { sql } from 'drizzle-orm';
 import { check, index, integer, pgTable, varchar } from 'drizzle-orm/pg-core';
 
-import { id } from '@/db/helpers/id';
-import { timestamps } from '@/db/helpers/timestamps';
-import { AdhocGame } from '@/db/schema/adhoc_games';
-import { DailyGame } from '@/db/schema/daily_games';
+import { id } from '@/api/db/helpers/id';
+import { timestamps } from '@/api/db/helpers/timestamps';
+import { AdhocGame } from '@/api/db/schema/adhoc_games';
+import { DailyGame } from '@/api/db/schema/daily_games';
 
 export const Attempt = pgTable(
   'attempts',

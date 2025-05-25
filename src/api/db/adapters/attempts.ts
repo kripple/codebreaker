@@ -1,9 +1,9 @@
 import { asc, eq } from 'drizzle-orm';
 
 import { server } from '@/api/server';
-import type { AdhocGame } from '@/db/schema/adhoc_games';
-import { Attempt } from '@/db/schema/attempts';
-import type { DailyGame } from '@/db/schema/daily_games';
+import type { AdhocGame } from '@/api/db/schema/adhoc_games';
+import { Attempt } from '@/api/db/schema/attempts';
+import type { DailyGame } from '@/api/db/schema/daily_games';
 
 type Props<T extends DailyGame | AdhocGame> = {
   game: T;

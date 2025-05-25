@@ -1,7 +1,7 @@
 import { desc, eq } from 'drizzle-orm';
 
 import { server } from '@/api/server';
-import { User } from '@/db/schema/users';
+import { User } from '@/api/db/schema/users';
 
 export async function createNewUser(): Promise<User> {
   const users = await server.db.insert(User).values({}).returning();

@@ -1,19 +1,6 @@
-import { fairy } from '@/app/assets/fairy';
-import { fire } from '@/app/assets/fire';
-import { grass } from '@/app/assets/grass';
-import { ice } from '@/app/assets/ice';
-import { lightning } from '@/app/assets/lightning';
-import { rock } from '@/app/assets/rock';
-import { water } from '@/app/assets/water';
+import { config } from '@/constants/config';
 import { lookup } from '@/utils/array-lookup';
-import { objectKeys } from '@/utils/object-keys';
 import { isString } from '@/utils/type-guards';
-
-export const config = {
-  maxAttempts: 8,
-  solutionLength: 4,
-  profiler: true,
-} as const;
 
 export const defaultColor = 'gray' as const;
 export const gameRow: string[] = new Array(config.solutionLength).fill(
@@ -24,16 +11,16 @@ const _gameRows: string[][] = new Array(config.maxAttempts)
   .map(() => new Array(config.solutionLength).fill(defaultColor));
 export const gameRows = () => [..._gameRows];
 
-export const icons = {
-  fairy,
-  fire,
-  lightning,
-  grass,
-  ice,
-  water,
-  rock,
-} as const;
-export const gameTokens = objectKeys(icons).map((icon, id) => {
+export const icons = [
+  'fairy',
+  'fire',
+  'lightning',
+  'grass',
+  'ice',
+  'water',
+  'rock',
+] as const;
+export const gameTokens = icons.map((icon, id) => {
   const tokenId = id + 1;
   return {
     icon,

@@ -1,0 +1,9 @@
+[dev]
+  framework = "#custom" # prevent Netlify from starting Vite or anything else
+  command = "npm run api"
+  targetPort = 3000
+
+[build]
+  command: "npm run build:api"
+  publish: /Users/kelly/Workspace/codebreaker/dist
+

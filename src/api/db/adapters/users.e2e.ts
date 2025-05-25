@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { createNewUser, getUser } from '@/db/adapters/users';
+import { createNewUser, getUser } from '@/api/db/adapters/users';
 
 test.describe('users', () => {
   test('user', async () => {

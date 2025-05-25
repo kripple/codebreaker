@@ -9,15 +9,15 @@ import { TokenSelect } from '@/app/components/TokenSelect';
 import { useConfetti } from '@/app/hooks/useConfetti';
 import { useGame } from '@/app/hooks/useGame';
 import { useMakeAttempt } from '@/app/hooks/useMakeAttempt';
+import { config } from '@/constants/config';
 import {
   type FeedbackToken,
-  config,
   gameRow,
   gameRows,
   gameTokens,
   isFeedbackToken,
   winningFeedback,
-} from '@/constants';
+} from '@/constants/tokens';
 import { last } from '@/utils/array-last';
 
 import '@/app/components/Game.css';
@@ -31,8 +31,8 @@ import '@/app/components/Game.css';
 // TODO: investigate batching DOM updates to minimize the number of repaints (group multiple DOM updates together and perform them in a single requestAnimationFrame callback)
 
 export function Game() {
-  const { currentData: gameData, currentError: gameError, userId } = useGame();
-  const [makeAttempt, { currentError: attemptError }] = useMakeAttempt();
+  const { currentData: gameData, error: gameError, userId } = useGame();
+  const [makeAttempt, { error: attemptError }] = useMakeAttempt();
 
   const activeRowId = gameData?.attempts.length || 0;
   const [activeColumnId, setColumnId] = useState<number>(0);

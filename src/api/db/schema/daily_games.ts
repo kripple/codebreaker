@@ -1,9 +1,9 @@
 import { index, integer, pgTable } from 'drizzle-orm/pg-core';
 
-import { id } from '@/db/helpers/id';
-import { timestamps } from '@/db/helpers/timestamps';
-import { Solution } from '@/db/schema/solutions';
-import { User } from '@/db/schema/users';
+import { id } from '@/api/db/helpers/id';
+import { timestamps } from '@/api/db/helpers/timestamps';
+import { Solution } from '@/api/db/schema/solutions';
+import { User } from '@/api/db/schema/users';
 
 export const DailyGame = pgTable(
   'daily_games',

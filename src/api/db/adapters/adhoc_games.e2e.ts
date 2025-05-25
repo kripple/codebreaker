@@ -3,8 +3,8 @@ import { expect, test } from '@playwright/test';
 import {
   createNewAdhocGame,
   getAdhocGameById,
-} from '@/db/adapters/adhoc_games';
-import { createNewUser } from '@/db/adapters/users';
+} from '@/api/db/adapters/adhoc_games';
+import { createNewUser } from '@/api/db/adapters/users';
 
 test.describe('adhoc_games', () => {
   test('new adhoc game', async () => {

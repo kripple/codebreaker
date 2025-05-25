@@ -1,5 +1,5 @@
-import type { Attempt } from '@/db/schema/attempts';
-import type { User } from '@/db/schema/users';
+import type { Attempt } from '@/api/db/schema/attempts';
+import type { User } from '@/api/db/schema/users';
 import type { Game } from '@/types/game';
 
 export function getGame({

@@ -46,6 +46,8 @@ For testing changes in development: `npx drizzle-kit push`
 Generating migrations:
 `npx drizzle-kit generate --help`
 
+# DATABASE_URL=postgres://postgres:supersecure@localhost:5432/postgres
+
 `npx drizzle-kit generate --config config/drizzle.config.ts`
 
 `npx drizzle-kit migrate --config config/drizzle.config.ts`

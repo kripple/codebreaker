@@ -1,7 +1,7 @@
 import cors from '@fastify/cors';
 import Fastify from 'fastify';
 
-import fastifyDrizzlePlugin from '@/plugins/drizzle-plugin';
+import fastifyDrizzlePlugin from '@/api/plugins/drizzle-plugin';
 
 const fastify = Fastify({
   logger: true,

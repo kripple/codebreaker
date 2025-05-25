@@ -5,7 +5,7 @@ import {
   type FeedbackToken as Token,
   defaultColor,
   feedbackTokenByValue as lookup,
-} from '@/constants';
+} from '@/constants/tokens';
 
 import '@/app/components/FeedbackToken.css';
 

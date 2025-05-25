@@ -4,7 +4,7 @@ import {
   getOrCreateSolution,
   getSolution,
   getSolutionById,
-} from '@/db/adapters/solutions';
+} from '@/api/db/adapters/solutions';
 
 test.describe('solutions', () => {
   test('get or create solution', async () => {

@@ -2,7 +2,7 @@ import { Box } from '@mantine/core';
 
 import { GameToken } from '@/app/components/GameToken';
 import { Profiler } from '@/app/components/Profiler';
-import { type GameToken as Token, defaultColor } from '@/constants';
+import { type GameToken as Token, defaultColor } from '@/constants/tokens';
 
 export function GameRowColumn({
   activeRow,

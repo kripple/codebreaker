@@ -1,4 +1,5 @@
-import { config, gameTokens, winningFeedback } from '@/constants';
+import { config } from '@/constants/config';
+import { gameTokens, winningFeedback } from '@/constants/tokens';
 import { sample } from '@/utils/array-sample';
 
 export function makeSecretCode() {

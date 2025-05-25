@@ -1,7 +1,7 @@
 import { Flex, Stack } from '@mantine/core';
 
 import { FeedbackToken } from '@/app/components/FeedbackToken';
-import { type FeedbackToken as Token } from '@/constants';
+import { type FeedbackToken as Token } from '@/constants/tokens';
 
 export function FeedbackGrid({ tokens }: { tokens?: Token['value'][] }) {
   // TODO: add support for configurable solution lengths

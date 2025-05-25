@@ -1,6 +1,6 @@
 import { Profiler as ReactProfiler } from 'react';
 
-import { config } from '@/constants';
+import { config } from '@/constants/config';
 import { dev } from '@/utils/env';
 
 // id: The string id prop of the <Profiler> tree that has just committed. This lets you identify which part of the tree was committed if you are using multiple profilers.

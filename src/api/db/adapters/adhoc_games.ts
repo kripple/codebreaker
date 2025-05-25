@@ -2,8 +2,8 @@ import { eq } from 'drizzle-orm';
 
 import { makeSecretCode } from '@/api/helpers/codemaker';
 import { server } from '@/api/server';
-import { AdhocGame } from '@/db/schema/adhoc_games';
-import type { User } from '@/db/schema/users';
+import { AdhocGame } from '@/api/db/schema/adhoc_games';
+import type { User } from '@/api/db/schema/users';
 
 export async function createNewAdhocGame(user: User): Promise<AdhocGame> {
   server.log.info(`create new adhoc game for user '${user.id}'`);

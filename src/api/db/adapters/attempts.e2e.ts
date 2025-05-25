@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-import { createNewAdhocGame } from '@/db/adapters/adhoc_games';
-import { createNewAttempt, getAttempts } from '@/db/adapters/attempts';
-import { getOrCreateDailyGame } from '@/db/adapters/daily_games';
-import { createNewUser } from '@/db/adapters/users';
+import { createNewAdhocGame } from '@/api/db/adapters/adhoc_games';
+import { createNewAttempt, getAttempts } from '@/api/db/adapters/attempts';
+import { getOrCreateDailyGame } from '@/api/db/adapters/daily_games';
+import { createNewUser } from '@/api/db/adapters/users';
 
 test.describe('attempts', () => {
   test.describe('daily game', () => {

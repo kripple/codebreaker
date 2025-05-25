@@ -1,10 +1,10 @@
 import * as uuid from 'uuid';
 
+import { createNewAttempt } from '@/api/db/adapters/attempts';
+import { getOrCreateDailyGame } from '@/api/db/adapters/daily_games';
+import { getSolutionById } from '@/api/db/adapters/solutions';
+import { getUser } from '@/api/db/adapters/users';
 import { evaluateAttempt } from '@/api/helpers/codemaker';
-import { createNewAttempt } from '@/db/adapters/attempts';
-import { getOrCreateDailyGame } from '@/db/adapters/daily_games';
-import { getSolutionById } from '@/db/adapters/solutions';
-import { getUser } from '@/db/adapters/users';
 
 export async function makeAttempt({
   id,
