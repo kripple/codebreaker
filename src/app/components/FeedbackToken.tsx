@@ -44,21 +44,11 @@ export function FeedbackToken({ token: value }: { token?: Token['value'] }) {
       style={{ color: 'var(--mantine-color-text)', textAlign: 'center' }}
       w={137}
     >
-      <Box>
-        <ColorSwatch
-          color="var(--feedback-token-correct)"
-          size={size}
-          style={showRightHalf}
-        ></ColorSwatch>
-        <ColorSwatch
-          color="var(--feedback-token-halfCorrect)"
-          left={0}
-          pos="absolute"
-          size={size}
-          style={showLeftHalf}
-          top={0}
-        ></ColorSwatch>
-      </Box>
+      <ColorSwatch
+        bd="1px solid var(--mantine-color-dark-4)"
+        color="var(--feedback-token-halfCorrect)"
+        size={size}
+      ></ColorSwatch>
     </Tooltip>
   );
 
