@@ -1,14 +1,27 @@
 import { getGameById } from '@/api/handlers/getGameById';
 import { getNewGame } from '@/api/handlers/getNewGame';
 import { makeAttempt } from '@/api/handlers/makeAttempt';
-import { type Data, type Route, replyWith } from '@/api/helpers/replyWith';
+import { type Route, replyWith } from '@/api/helpers/replyWith';
 import type { server as apiServer } from '@/api/server';
+// import type { GameData, GetResponse, PostResponse } from '@/types/response';
+
+type GameData = {
+  id: string;
+  attempts: {
+    value: string;
+    feedback: string;
+  }[];
+};
+
+type ApiResponse<Data> =
+  | { data: Data; error?: never }
+  | { data?: never; error: unknown };
 
 type Server = typeof apiServer;
 
 export const routes = [
   (server: Server) =>
-    server.get<Route<void, Data>>(
+    server.get<Route<void, ApiResponse<GameData>>>(
       '/game/new',
       async function (_request, reply) {
         try {
@@ -22,7 +35,7 @@ export const routes = [
     ),
 
   (server: Server) =>
-    server.get<Route<{ id: string }, Data>>(
+    server.get<Route<{ id: string }, ApiResponse<GameData>>>(
       '/game/:id',
       async function (request, reply) {
         try {
@@ -43,7 +56,7 @@ export const routes = [
           id: string;
           code: string;
         },
-        { id: string }
+        ApiResponse<{ id: string }>
       >
     >('/game/:id/try/:code', async function (request, reply) {
       try {

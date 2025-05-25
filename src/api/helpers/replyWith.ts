@@ -1,5 +1,14 @@
 import type { Attempt } from '@/db/schema/attempts';
 import type { User } from '@/db/schema/users';
+// import type { GameData } from '@/types/response';
+
+type GameData = {
+  id: string;
+  attempts: {
+    value: string;
+    feedback: string;
+  }[];
+};
 
 export function replyWith({
   user,
@@ -7,7 +16,7 @@ export function replyWith({
 }: {
   user: User;
   attempts: Attempt[];
-}) {
+}): GameData {
   return {
     id: user.uuid,
     attempts: (attempts || []).map((attempt) => ({
@@ -16,8 +25,8 @@ export function replyWith({
     })),
   };
 }
-export type Data = ReturnType<typeof replyWith>;
+
 export type Route<T, D> = {
   Params: T;
-  Reply: { data: D; error?: never } | { data?: never; error: unknown };
+  Reply: D;
 };
