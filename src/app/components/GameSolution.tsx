@@ -1,7 +1,7 @@
 import { Box, Center, Flex, Paper } from '@mantine/core';
 
 import { GameToken } from '@/app/components/GameToken';
-import { config, gameTokens } from '@/constants';
+import { config, gameTokensById } from '@/constants';
 
 export function GameSolution({
   secretCode,
@@ -10,8 +10,6 @@ export function GameSolution({
 }) {
   const hiddenCode = new Array(config.solutionLength).fill('*').join('');
   const solution = secretCode || hiddenCode;
-  const getToken = (id: string) =>
-    gameTokens.find((gameToken) => gameToken.id.toString() === id);
 
   return (
     <Paper p="xs" withBorder>
@@ -19,7 +17,10 @@ export function GameSolution({
         <Flex gap="2px">
           {solution.split('').map((tokenId, key) => (
             <Box className="token" key={key}>
-              <GameToken altIcon={tokenId === '*'} token={getToken(tokenId)} />
+              <GameToken
+                altIcon={tokenId === '*'}
+                token={gameTokensById[tokenId]}
+              />
             </Box>
           ))}
         </Flex>

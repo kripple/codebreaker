@@ -3,7 +3,7 @@ import { Center, Divider, Flex, Paper } from '@mantine/core';
 import { FeedbackGrid } from '@/app/components/FeedbackGrid';
 import { GameRowColumn } from '@/app/components/GameRowColumn';
 import { Profiler } from '@/app/components/Profiler';
-import { gameTokens as gameTokensLookup } from '@/constants';
+import { gameTokensByColor, gameTokensById } from '@/constants';
 import { type FeedbackToken, defaultColor } from '@/constants';
 
 export function GameRow({
@@ -32,10 +32,6 @@ export function GameRow({
 
   const rowClassName = active && !locked ? 'active-row row' : 'row';
   const divider = rowId === 0 ? null : <Divider />;
-  const selectTokenById = (id: string) =>
-    gameTokensLookup.find((token) => token.id.toString() === id);
-  const selectTokenByColor = (color: string) =>
-    gameTokensLookup.find((token) => token.color === color);
 
   return (
     <Profiler component="GameRow">
@@ -43,21 +39,23 @@ export function GameRow({
         <Flex align="center" justify="space-between">
           <FeedbackGrid tokens={feedbackTokens} />
           <Flex gap="2px">
-            {row.map((tokenColor, columnId) => (
-              <GameRowColumn
-                activeColumn={columnId === activeColumnId}
-                activeRow={active}
-                columnId={columnId}
-                inputId={dataPath(columnId)}
-                key={columnId}
-                setColumnId={setColumnId}
-                token={
-                  gameDataRow
-                    ? selectTokenById(gameDataRow[columnId])
-                    : selectTokenByColor(tokenColor)
-                }
-              />
-            ))}
+            {row.map((tokenColor, columnId) => {
+              const token = gameDataRow
+                ? gameTokensById[gameDataRow[columnId]]
+                : gameTokensByColor[tokenColor];
+
+              return (
+                <GameRowColumn
+                  activeColumn={columnId === activeColumnId}
+                  activeRow={active}
+                  columnId={columnId}
+                  inputId={dataPath(columnId)}
+                  key={columnId}
+                  setColumnId={setColumnId}
+                  token={token}
+                />
+              );
+            })}
           </Flex>
           <Center p="xs">
             <button
