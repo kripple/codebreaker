@@ -1,126 +1,59 @@
-import * as uuid from 'uuid';
+import { getGameById } from '@/api/handlers/getGameById';
+import { getNewGame } from '@/api/handlers/getNewGame';
+import { makeAttempt } from '@/api/handlers/makeAttempt';
+import { type Data, type Route, replyWith } from '@/api/helpers/replyWith';
+import type { server as apiServer } from '@/api/server';
 
-import { evaluateAttempt } from '@/api/helpers/codemaker';
-import { replyWith } from '@/api/helpers/replyWith';
-import { server } from '@/api/server';
-import { createNewAttempt } from '@/db/adapters/attempts';
-// import {
-//   createNewGame,
-//   getGame,
-//   getGameData,
-//   getOrCreateGame,
-//   updateGame,
-// } from '@/db/adapters/daily_games';
-import { createNewUser, getUser } from '@/db/adapters/users';
-import type { Reply } from '@/types/reply';
+type Server = typeof apiServer;
 
-// server.get<{
-//   Reply: Reply;
-// }>('/game/new', async function (_request, reply) {
-//   try {
-//     const user = await createNewUser();
-//     server.log.info(`create new user '${user.id}'`);
-//     const game = await createNewGame(user);
-//     server.log.info(`create new game '${user.id}'`);
-//     const { solution, attempts } = await getGameData(game);
-//     reply.send({ data: replyWith({ user, game, solution, attempts }) });
-//   } catch (error) {
-//     server.log.error('unexpected error', error);
-//     reply.send({ error });
-//   }
-// });
+export const routes = [
+  (server: Server) =>
+    server.get<Route<void, Data>>(
+      '/game/new',
+      async function (_request, reply) {
+        try {
+          const data = await getNewGame();
+          reply.send({ data: replyWith(data) });
+        } catch (error) {
+          server.log.error('unexpected error', error);
+          reply.send({ error });
+        }
+      },
+    ),
 
-// server.get<{
-//   Params: {
-//     id: string;
-//   };
-//   Reply: Reply;
-// }>('/game/:id', async function (request, reply) {
-//   try {
-//     const id = request.params.id;
+  (server: Server) =>
+    server.get<Route<{ id: string }, Data>>(
+      '/game/:id',
+      async function (request, reply) {
+        try {
+          const id = request.params.id;
+          const data = await getGameById(id);
+          reply.send({ data: replyWith(data) });
+        } catch (error) {
+          server.log.error('unexpected error', error);
+          reply.send({ error });
+        }
+      },
+    ),
 
-//     const currentUser = uuid.validate(id) ? await getUser(id) : undefined;
-//     if (currentUser) server.log.info(`get user by id '${currentUser.id}'`);
-
-//     const user = currentUser || (await createNewUser());
-//     if (!currentUser)
-//       server.log.info(`failed to get user by id, create new user '${user.id}'`);
-
-//     const game = await getOrCreateGame(user);
-//     const { solution, attempts } = await getGameData(game);
-//     reply.send({ data: replyWith({ user, game, solution, attempts }) });
-//   } catch (error) {
-//     server.log.error('unexpected error', error);
-//     reply.send({ error });
-//   }
-// });
-
-// server.post<{
-//   Params: {
-//     id: string;
-//     code: string;
-//   };
-// }>('/game/:id/try/:code', async function (request, reply) {
-//   try {
-//     const id = request.params.id;
-//     const attempt = request.params.code;
-
-//     const currentUser = uuid.validate(id) ? await getUser(id) : undefined;
-//     if (!currentUser) throw Error('missing user');
-//     server.log.info(`get user by id '${currentUser.id}'`);
-
-//     const currentGame = await getGame(currentUser);
-//     if (!currentGame) throw Error('missing game');
-//     server.log.info(`get game by id '${currentGame.id}'`);
-
-//     if (currentGame.win !== null) {
-//       reply.code(400);
-//       reply.send({ error: 'game is locked' });
-//     }
-
-//     const { solution, attempts } = await getGameData(currentGame);
-//     if (attempts.length >= currentGame.max_attempts) {
-//       reply.code(400);
-//       reply.send({ error: 'exceeded max attempts' });
-//     }
-
-//     const { feedback, win } = evaluateAttempt(attempt, solution.value);
-//     await createNewAttempt({
-//       game: currentGame,
-//       feedback,
-//       attempt,
-//     });
-
-//     // did we win?
-//     if (win) {
-//       // we win! update game record before proceeding
-//       await updateGame({ id: currentGame.id, win: true });
-//     } else {
-//       // was this our last chance?
-//       if (attempts.length + 1 === currentGame.max_attempts) {
-//         // it *was* our last chance. update game record before proceeding
-//         await updateGame({ id: currentGame.id, win: false });
-//       }
-//     }
-
-//     reply.code(201);
-//     reply.send({ id: currentUser.id });
-//   } catch (error) {
-//     server.log.error('unexpected error', error);
-//     reply.send({ error });
-//   }
-// });
-
-const start = async () => {
-  try {
-    await server.listen({ port: 3000 });
-    const address = server.server.address();
-    const port = typeof address === 'string' ? address : address?.port;
-    server.log.info(`Server listening on port ${port}.`);
-  } catch (error) {
-    server.log.error(error);
-    process.exit(1);
-  }
-};
-
-start();
+  (server: Server) =>
+    server.post<
+      Route<
+        {
+          id: string;
+          code: string;
+        },
+        { id: string }
+      >
+    >('/game/:id/try/:code', async function (request, reply) {
+      try {
+        const id = request.params.id;
+        const attempt = request.params.code;
+        const data = await makeAttempt({ id, attempt });
+        reply.send({ data });
+      } catch (error) {
+        server.log.error('unexpected error', error);
+        reply.send({ error });
+      }
+    }),
+] as const;

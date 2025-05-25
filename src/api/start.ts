@@ -1,6 +1,9 @@
+import { routes } from '@/api/routes';
 import { server } from '@/api/server';
 
-// add routes here
+routes.map((handler) => {
+  handler(server);
+});
 
 const start = async () => {
   try {

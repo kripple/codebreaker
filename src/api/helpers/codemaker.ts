@@ -9,6 +9,7 @@ export function makeSecretCode() {
   return selectedTokens.join('');
 }
 
+// FIXME: get feedback contents from constants instead of hardcoding them here
 export function evaluateAttempt(guess: string, solution: string) {
   const tokens = guess.split('');
   const secretTokens = solution.split('');
