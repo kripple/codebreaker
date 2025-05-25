@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export function lookup<
   T extends object & { [key in K]: string },
   K extends keyof T,

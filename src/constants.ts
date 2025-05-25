@@ -38,11 +38,9 @@ export const gameTokens = objectKeys(icons).map((icon, id) => {
   return {
     icon,
     color: `var(--token-${tokenId})`,
-    id: tokenId.toString(),
+    id: tokenId,
   };
 });
-export const gameTokensByColor = lookup(gameTokens, 'color');
-export const gameTokensById = lookup(gameTokens, 'id');
 export type GameToken = (typeof gameTokens)[number];
 
 const correct = 'X' as const;

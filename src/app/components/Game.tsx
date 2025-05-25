@@ -15,7 +15,6 @@ import {
   gameRow,
   gameRows,
   gameTokens,
-  gameTokensByColor,
   isFeedbackToken,
   winningFeedback,
 } from '@/constants';
@@ -67,6 +66,8 @@ export function Game() {
   const dataPath = (rowId: number, columnId: number) => `${rowId}.${columnId}`;
   const getRowValue = (value: string) => parseInt(value.split('.')[0]);
   const getColumnValue = (value: string) => parseInt(value.split('.')[1]);
+  const getTokenId = (color: string | FormDataEntryValue | null) =>
+    gameTokens.find((gameToken) => gameToken.color === color)?.id;
 
   const [gameState, setGameState] = useState<string[][]>(gameRows());
 
@@ -83,9 +84,7 @@ export function Game() {
       .map((_, i) => {
         const name = `${activeRowId}.${i}`;
         const color = data.get(name);
-        if (typeof color !== 'string')
-          throw TypeError('unexpected form value type');
-        const id = gameTokensByColor[color];
+        const id = getTokenId(color);
         return id;
       })
       .join('');
