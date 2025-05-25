@@ -13,22 +13,19 @@ export const useGame = () => {
   );
   const id = userId || 'new';
   const response = api.useGetGameQuery(id);
-  const data = response.currentData?.data;
-  const error = response.currentData?.error;
+  const currentId = response.currentData?.id;
 
   useEffect(() => {
     setUserId((current) => {
-      if (!data?.id || data.id === current || !uuid.validate(data.id))
+      if (!currentId || currentId === current || !uuid.validate(currentId))
         return current;
-      window.localStorage.setItem(key, data.id);
-      return data.id;
+      window.localStorage.setItem(key, currentId);
+      return currentId;
     });
-  }, [data]);
+  }, [currentId]);
 
   return {
     ...response,
-    currentData: data,
-    currentError: error,
     userId,
   };
 };

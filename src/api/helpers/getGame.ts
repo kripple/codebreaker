@@ -1,22 +1,14 @@
 import type { Attempt } from '@/db/schema/attempts';
 import type { User } from '@/db/schema/users';
-// import type { GameData } from '@/types/response';
+import type { Game } from '@/types/game';
 
-type GameData = {
-  id: string;
-  attempts: {
-    value: string;
-    feedback: string;
-  }[];
-};
-
-export function replyWith({
+export function getGame({
   user,
   attempts,
 }: {
   user: User;
   attempts: Attempt[];
-}): GameData {
+}): Game {
   return {
     id: user.uuid,
     attempts: (attempts || []).map((attempt) => ({
@@ -25,8 +17,3 @@ export function replyWith({
     })),
   };
 }
-
-export type Route<T, D> = {
-  Params: T;
-  Reply: D;
-};

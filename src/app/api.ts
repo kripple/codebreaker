@@ -1,16 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-type GameData = {
-  id: string;
-  attempts: {
-    value: string;
-    feedback: string;
-  }[];
-};
-
-type ApiResponse<Data> =
-  | { data: Data; error?: never }
-  | { data?: never; error: unknown };
+import type { Game } from '@/types/game';
 
 export const api = createApi({
   // TODO: use env vars to set the correct url
@@ -19,12 +9,12 @@ export const api = createApi({
   }),
   tagTypes: ['Game'],
   endpoints: (build) => ({
-    getGame: build.query<ApiResponse<GameData>, string>({
+    getGame: build.query<Game, string>({
       query: (id: string) => `/game/${id}`,
       providesTags: ['Game'],
     }),
     makeAttempt: build.mutation<
-      ApiResponse<{ id: string }>,
+      { id: string },
       { id: string; attempt: string }
     >({
       query: ({ id, attempt }) => ({
