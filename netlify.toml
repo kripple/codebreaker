@@ -5,9 +5,6 @@
   command = ""
   publish = "netlify/edge-functions"
 
-[functions]
-  deno_import_map = "./config/import_map.json"
-
 [[edge_functions]]
   path = "/game/new"
   function = "game-new"

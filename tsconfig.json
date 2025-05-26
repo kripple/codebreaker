@@ -45,7 +45,6 @@
     "src",
     "config",
     "vite.config.ts",
-    "vite.api-config.ts",
-    "netlify"
+    "vite.api-config.ts"
   ]
 }

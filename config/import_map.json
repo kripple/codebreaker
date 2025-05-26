@@ -1,6 +1,0 @@
-{
-  "imports": {
-    "drizzle-orm/": "https://esm.sh/drizzle-orm/",
-    "@neondatabase/serverless": "https://esm.sh/@neondatabase/serverless"
-  }
-}

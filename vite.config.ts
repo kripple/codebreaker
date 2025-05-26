@@ -18,9 +18,6 @@ export default defineConfig({
   },
   clearScreen: false,
   plugins: [react()],
-  esbuild: {
-    exclude: ['src/api/**'],
-  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),

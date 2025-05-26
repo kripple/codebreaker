@@ -10,9 +10,9 @@
   "type": "module",
   "scripts": {
     "start": "vite",
-    "api": "tsx src/api/start.ts",
-    "build": "tsc -p tsconfig.build.json && vite build",
-    "build:api": "vite build --config vite.api-config.ts",
+    "api": "netlify dev",
+    "build": "tsc -p tsconfig.app.json && vite build",
+    "build:api": "rm -rf netlify/edge-functions && tsc -p tsconfig.api.json && tsx vite.api-config.ts",
     "lint": "eslint . && stylelint '**/*.css' && prettier --check .",
     "preview": "vite preview",
     "setup": "playwright install",
@@ -23,8 +23,7 @@
     "e2e": "playwright test --config config/playwright.e2e-config.ts",
     "test:report": "playwright show-report",
     "optimize": "svgo src/app/assets  --config config/svgo.config.mjs",
-    "auth": "netlify login",
-    "dev": "netlify dev",
+    "login": "netlify login",
     "env": "netlify env:import .env",
     "deploy": "netlify deploy --prod"
   },
@@ -68,6 +67,6 @@
     "svgo": "^3.3.2",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
-    "vite": "^6.3.5"
+    "vite": "5.2.0"
   }
 }
