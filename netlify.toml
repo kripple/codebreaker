@@ -1,9 +1,17 @@
 [dev]
-  framework = "#custom" # prevent Netlify from starting Vite or anything else
-  command = "npm run api"
-  targetPort = 3000
+  framework = "#static"
 
-[build]
-  command: "npm run build:api"
-  publish: /Users/kelly/Workspace/codebreaker/dist
+[functions]
+  deno_import_map = "./config/import_map.json"
 
+[[edge_functions]]
+  path = "/game/new"
+  function = "game-new"
+
+[[edge_functions]]
+  path = "/game/*/try/*"
+  function = "game-attempt"
+
+[[edge_functions]]
+  path = "/game/*"
+  function = "game-id"

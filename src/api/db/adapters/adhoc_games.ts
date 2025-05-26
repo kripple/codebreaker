@@ -1,15 +1,21 @@
 import { eq } from 'drizzle-orm';
+import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
-import { makeSecretCode } from '@/api/helpers/codemaker';
-import { server } from '@/api/server';
 import { AdhocGame } from '@/api/db/schema/adhoc_games';
 import type { User } from '@/api/db/schema/users';
+import { makeSecretCode } from '@/api/helpers/codemaker';
 
-export async function createNewAdhocGame(user: User): Promise<AdhocGame> {
-  server.log.info(`create new adhoc game for user '${user.id}'`);
+export async function createNewAdhocGame({
+  db,
+  user,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+  user: User;
+}): Promise<AdhocGame> {
+  console.info(`create new adhoc game for user '${user.id}'`);
 
   const solution = makeSecretCode();
-  const games = await server.db
+  const games = await db
     .insert(AdhocGame)
     .values({ user_id: user.id, solution })
     .returning();
@@ -20,11 +26,14 @@ export async function createNewAdhocGame(user: User): Promise<AdhocGame> {
   return game;
 }
 
-export async function getAdhocGameById(id: number): Promise<AdhocGame> {
-  const games = await server.db
-    .select()
-    .from(AdhocGame)
-    .where(eq(AdhocGame.id, id));
+export async function getAdhocGameById({
+  db,
+  id,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+  id: number;
+}): Promise<AdhocGame> {
+  const games = await db.select().from(AdhocGame).where(eq(AdhocGame.id, id));
   const game = games.pop();
   if (!game) throw Error('failed to find adhoc game by id');
   return game;

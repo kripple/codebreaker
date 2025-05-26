@@ -29,14 +29,12 @@
     "deploy": "netlify deploy --prod"
   },
   "dependencies": {
-    "@fastify/cors": "^11.0.1",
-    "@fastify/postgres": "^6.0.2",
     "@mantine/core": "^8.0.0",
+    "@neondatabase/serverless": "^1.0.0",
+    "@netlify/edge-functions": "^2.12.0",
     "@reduxjs/toolkit": "^2.8.2",
     "canvas-confetti": "^1.9.3",
     "drizzle-orm": "^0.43.1",
-    "fastify": "^5.3.2",
-    "fastify-plugin": "^5.0.1",
     "pg": "8.10.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -44,6 +42,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@netlify/edge-handler-types": "^0.34.1",
     "@playwright/test": "^1.51.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^22.14.0",

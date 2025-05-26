@@ -1,33 +1,36 @@
-import dns from 'dns';
 import { resolve } from 'path';
 
-import { defineConfig } from 'vite';
+import { build } from 'vite';
 
-dns.setDefaultResultOrder('verbatim');
-const outDir = 'dist' as const;
+const outDir = 'netlify/edge-functions' as const;
+const edgeFunctions = ['game-new', 'game-id', 'game-attempt'] as const;
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  build: {
-    copyPublicDir: false,
-    emptyOutDir: true,
-    lib: {
-      entry: 'src/api/start.ts',
-      name: 'codebreaker-api',
-      formats: ['es'],
+for (const name of edgeFunctions) {
+  await build({
+    build: {
+      copyPublicDir: false,
+      emptyOutDir: false,
+      modulePreload: { polyfill: false },
+      outDir,
+      rollupOptions: {
+        input: resolve(__dirname, `src/api/edge-functions/${name}.ts`),
+        output: {
+          entryFileNames: '[name].js',
+          format: 'es',
+          inlineDynamicImports: true,
+        },
+      },
+      ssr: true, // stops vite from externalizing modules for browser compatibility
+      target: 'node22',
     },
-    modulePreload: { polyfill: false },
-    outDir,
-    ssr: true, // stops vite from externalizing modules for browser compatibility
-    target: 'node22',
-  },
-  clearScreen: false,
-  esbuild: {
-    exclude: ['src/app/**'],
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src'),
+    clearScreen: false,
+    esbuild: {
+      exclude: ['src/app/**'],
     },
-  },
-});
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, 'src'),
+      },
+    },
+  });
+}

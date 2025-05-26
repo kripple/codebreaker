@@ -41,5 +41,11 @@
     "sourceMap": true
     // "composite": true
   },
-  "include": ["src", "config", "vite.config.ts", "vite.api-config.ts"]
+  "include": [
+    "src",
+    "config",
+    "vite.config.ts",
+    "vite.api-config.ts",
+    "netlify"
+  ]
 }

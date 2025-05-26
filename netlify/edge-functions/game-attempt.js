@@ -1,29 +1,8 @@
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 import * as uuid from "uuid";
-import { sql, eq, asc, and, desc } from "drizzle-orm";
-import cors from "@fastify/cors";
-import Fastify from "fastify";
-import { drizzle } from "drizzle-orm/node-postgres";
-import fp from "fastify-plugin";
+import { sql, eq, and, desc } from "drizzle-orm";
 import { integer, timestamp, pgTable, uuid as uuid$1, uniqueIndex, varchar, index, date, check } from "drizzle-orm/pg-core";
-import crypto from "crypto";
-function fastifyDrizzle(fastify2, options2, done) {
-  const db = drizzle({
-    connection: options2.connection
-  });
-  if (!fastify2.db) {
-    fastify2.decorate("db", db);
-  }
-  done();
-}
-const fastifyDrizzlePlugin = fp(fastifyDrizzle, { name: "fastify-drizzle" });
-const fastify = Fastify({
-  logger: true
-});
-await fastify.register(cors, {});
-await fastify.register(fastifyDrizzlePlugin, {
-  connection: "postgres://postgres:supersecure@localhost:5432/postgres"
-});
-const server = fastify;
 const id = integer().primaryKey().generatedAlwaysAsIdentity();
 const options = { withTimezone: true };
 const timestamps = {
@@ -97,13 +76,14 @@ const Attempt = pgTable(
   ]
 );
 async function createNewAttempt({
+  db,
   game,
   attempt: value,
   feedback
 }) {
-  server.log.info("create new attempt");
+  console.info("create new attempt");
   const isDailyGame = "solution_id" in game;
-  const attempts = await server.db.insert(Attempt).values({
+  const attempts = await db.insert(Attempt).values({
     [isDailyGame ? "daily_game_id" : "adhoc_game_id"]: game.id,
     value,
     feedback
@@ -113,14 +93,6 @@ async function createNewAttempt({
     throw Error("failed to create new attempt");
   }
   return attempt;
-}
-async function getAttempts(game) {
-  server.log.info("get attempts");
-  const isDailyGame = "solution_id" in game;
-  const attempts = await server.db.select().from(Attempt).where(
-    isDailyGame ? eq(Attempt.daily_game_id, game.id) : eq(Attempt.adhoc_game_id, game.id)
-  ).orderBy(asc(Attempt.created_at));
-  return attempts;
 }
 const config = {
   maxAttempts: 8,
@@ -223,10 +195,12 @@ function evaluateAttempt(guess, solution) {
   const result = feedback.join("").padEnd(tokens.length, "-");
   return { feedback: result, win: result === winningFeedback };
 }
-async function createNewSolution() {
-  server.log.info("create new solution");
+async function createNewSolution({
+  db
+}) {
+  console.info("create new solution");
   const value = makeSecretCode();
-  const solutions = await server.db.insert(Solution).values({
+  const solutions = await db.insert(Solution).values({
     value
   }).returning();
   const solution = solutions.pop();
@@ -235,29 +209,39 @@ async function createNewSolution() {
   }
   return solution;
 }
-async function getSolution() {
-  server.log.info("get daily solution");
-  const solutions = await server.db.select().from(Solution).where(sql`${Solution.date} = CURRENT_DATE`);
+async function getSolution({
+  db
+}) {
+  console.info("get daily solution");
+  const solutions = await db.select().from(Solution).where(sql`${Solution.date} = CURRENT_DATE`);
   const solution = solutions.pop();
   return solution;
 }
-async function getSolutionById(id2) {
-  server.log.info(`get solution by id '${id2}'`);
-  const solutions = await server.db.select().from(Solution).where(eq(Solution.id, id2));
+async function getSolutionById({
+  db,
+  id: id2
+}) {
+  console.info(`get solution by id '${id2}'`);
+  const solutions = await db.select().from(Solution).where(eq(Solution.id, id2));
   const solution = solutions.pop();
   return solution;
 }
-async function getOrCreateSolution() {
-  const currentSolution = await getSolution();
-  if (currentSolution) server.log.info(`get solution '${currentSolution.id}'`);
-  const solution = currentSolution || await createNewSolution();
-  if (!currentSolution) server.log.info(`create new solution '${solution.id}'`);
+async function getOrCreateSolution({
+  db
+}) {
+  const currentSolution = await getSolution({ db });
+  if (currentSolution) console.info(`get solution '${currentSolution.id}'`);
+  const solution = currentSolution || await createNewSolution({ db });
+  if (!currentSolution) console.info(`create new solution '${solution.id}'`);
   return solution;
 }
-async function createNewDailyGame(user) {
-  server.log.info("create new daily solution");
-  const solution = await getOrCreateSolution();
-  const daily_solutions = await server.db.insert(DailyGame).values({
+async function createNewDailyGame({
+  db,
+  user
+}) {
+  console.info("create new daily solution");
+  const solution = await getOrCreateSolution({ db });
+  const daily_solutions = await db.insert(DailyGame).values({
     user_id: user.id,
     solution_id: solution.id
   }).returning();
@@ -267,10 +251,13 @@ async function createNewDailyGame(user) {
   }
   return daily_solution;
 }
-async function getDailyGame(user) {
-  server.log.info("get daily solution");
-  const solution = await getOrCreateSolution();
-  const games = await server.db.select().from(DailyGame).where(
+async function getDailyGame({
+  db,
+  user
+}) {
+  console.info("get daily solution");
+  const solution = await getOrCreateSolution({ db });
+  const games = await db.select().from(DailyGame).where(
     and(
       eq(DailyGame.user_id, user.id),
       eq(DailyGame.solution_id, solution.id)
@@ -279,113 +266,61 @@ async function getDailyGame(user) {
   const game = games.pop();
   return game;
 }
-async function getOrCreateDailyGame(user) {
-  server.log.info("get or create daily game");
-  const currentGame = await getDailyGame(user);
-  if (currentGame) server.log.info(`get daily game '${currentGame.id}'`);
-  const game = currentGame || await createNewDailyGame(user);
-  if (!currentGame) server.log.info(`create new daily game '${game.id}'`);
+async function getOrCreateDailyGame({
+  db,
+  user
+}) {
+  console.info("get or create daily game");
+  const currentGame = await getDailyGame({ db, user });
+  if (currentGame) console.info(`get daily game '${currentGame.id}'`);
+  const game = currentGame || await createNewDailyGame({ db, user });
+  if (!currentGame) console.info(`create new daily game '${game.id}'`);
   return game;
 }
-async function createNewUser() {
-  const users = await server.db.insert(User).values({}).returning();
-  const user = users.pop();
-  if (!user) {
-    throw Error("failed to create new user");
-  }
-  return user;
-}
-async function getUser(uuid2) {
-  const users = await server.db.select().from(User).where(eq(User.uuid, uuid2)).orderBy(desc(User.created_at)).limit(1);
+async function getUser({
+  db,
+  uuid: uuid2
+}) {
+  const users = await db.select().from(User).where(eq(User.uuid, uuid2)).orderBy(desc(User.created_at)).limit(1);
   const user = users.pop();
   return user;
-}
-async function getGameById(id2) {
-  const currentUser = uuid.validate(id2) ? await getUser(id2) : void 0;
-  const user = currentUser || await createNewUser();
-  const game = await getOrCreateDailyGame(user);
-  const attempts = await getAttempts(game);
-  return { user, attempts };
-}
-async function getNewGame() {
-  const user = await createNewUser();
-  const game = await getOrCreateDailyGame(user);
-  const attempts = await getAttempts(game);
-  return { user, attempts };
 }
 async function makeAttempt({
-  id: id2,
-  attempt
+  attempt,
+  db,
+  id: id2
 }) {
-  const user = uuid.validate(id2) ? await getUser(id2) : void 0;
+  const user = uuid.validate(id2) ? await getUser({ db, uuid: id2 }) : void 0;
   if (!user) throw Error("missing user");
-  const game = await getOrCreateDailyGame(user);
-  const solution = await getSolutionById(game.solution_id);
+  const game = await getOrCreateDailyGame({ db, user });
+  const solution = await getSolutionById({ db, id: game.solution_id });
   if (!solution) throw Error("missing solution");
   const { feedback } = evaluateAttempt(attempt, solution.value);
   await createNewAttempt({
+    db,
     game,
     feedback,
     attempt
   });
   return { id: user.uuid };
 }
-function getGame({
-  user,
-  attempts
-}) {
-  return {
-    id: user.uuid,
-    attempts: (attempts || []).map((attempt) => ({
-      value: attempt.value,
-      feedback: attempt.feedback
-    }))
-  };
-}
-const routes = [
-  (server2) => server2.get("/game/new", async function(_request, reply) {
-    try {
-      const data = await getNewGame();
-      reply.send(getGame(data));
-    } catch (error) {
-      server2.log.error("unexpected error", error);
-      reply.code(500);
-    }
-  }),
-  (server2) => server2.get("/game/:id", async function(request, reply) {
-    try {
-      const id2 = request.params.id;
-      const data = await getGameById(id2);
-      reply.send(getGame(data));
-    } catch (error) {
-      server2.log.error("unexpected error", error);
-      reply.code(500);
-    }
-  }),
-  (server2) => server2.post("/game/:id/try/:code", async function(request, reply) {
-    try {
-      const id2 = request.params.id;
-      const attempt = request.params.code;
-      const data = await makeAttempt({ id: id2, attempt });
-      reply.send(data);
-    } catch (error) {
-      server2.log.error("unexpected error", error);
-      reply.code(500);
-    }
-  })
-];
-routes.map((handler) => {
-  handler(server);
-});
-const start = async () => {
+async function handler(request) {
   try {
-    await server.listen({ port: 3e3 });
-    const address = server.server.address();
-    const port = typeof address === "string" ? address : address?.port;
-    server.log.info(`Server listening on port ${port}.`);
+    const sql2 = neon(Netlify.env.get("DATABASE_URL"));
+    const db = drizzle({ client: sql2 });
+    const url = new URL(request.url);
+    const parts = url.pathname.split("/");
+    const id2 = parts[2];
+    const code = parts[4];
+    const result = await makeAttempt({ db, id: id2, attempt: code });
+    return new Response(JSON.stringify(result), {
+      headers: { "Content-Type": "application/json" }
+    });
   } catch (error) {
-    server.log.error(error);
-    process.exit(1);
+    console.error("Unexpected error in /game/:id/try/:code", error);
+    return new Response("Internal Server Error", { status: 500 });
   }
+}
+export {
+  handler as default
 };
-start();

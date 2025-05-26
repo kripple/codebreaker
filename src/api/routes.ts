@@ -16,7 +16,7 @@ export const routes = [
         const data = await getNewGame();
         reply.send(getGame(data));
       } catch (error) {
-        server.log.error('unexpected error', error);
+        console.error('unexpected error', error);
         reply.code(500);
       }
     }),
@@ -31,7 +31,7 @@ export const routes = [
         const data = await getGameById(id);
         reply.send(getGame(data));
       } catch (error) {
-        server.log.error('unexpected error', error);
+        console.error('unexpected error', error);
         reply.code(500);
       }
     }),
@@ -52,7 +52,7 @@ export const routes = [
         const data = await makeAttempt({ id, attempt });
         reply.send(data);
       } catch (error) {
-        server.log.error('unexpected error', error);
+        console.error('unexpected error', error);
         reply.code(500);
       }
     }),

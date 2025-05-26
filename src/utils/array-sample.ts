@@ -1,5 +1,3 @@
-import crypto from 'crypto';
-
 function getRandomInteger(max: number) {
   const byteArray = new Uint32Array(1);
   crypto.getRandomValues(byteArray);

@@ -1,3 +1,4 @@
+import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 import * as uuid from 'uuid';
 
 import { createNewAttempt } from '@/api/db/adapters/attempts';
@@ -7,21 +8,24 @@ import { getUser } from '@/api/db/adapters/users';
 import { evaluateAttempt } from '@/api/helpers/codemaker';
 
 export async function makeAttempt({
-  id,
   attempt,
+  db,
+  id,
 }: {
-  id: string;
   attempt: string;
+  db: PgDatabase<PgQueryResultHKT>;
+  id: string;
 }) {
-  const user = uuid.validate(id) ? await getUser(id) : undefined;
+  const user = uuid.validate(id) ? await getUser({ db, uuid: id }) : undefined;
   if (!user) throw Error('missing user');
 
-  const game = await getOrCreateDailyGame(user);
-  const solution = await getSolutionById(game.solution_id);
+  const game = await getOrCreateDailyGame({ db, user });
+  const solution = await getSolutionById({ db, id: game.solution_id });
   if (!solution) throw Error('missing solution');
 
   const { feedback } = evaluateAttempt(attempt, solution.value);
   await createNewAttempt({
+    db,
     game,
     feedback,
     attempt,

@@ -1,13 +1,17 @@
 import { eq, sql } from 'drizzle-orm';
+import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
-import { makeSecretCode } from '@/api/helpers/codemaker';
-import { server } from '@/api/server';
 import { Solution } from '@/api/db/schema/solutions';
+import { makeSecretCode } from '@/api/helpers/codemaker';
 
-async function createNewSolution(): Promise<Solution> {
-  server.log.info('create new solution');
+async function createNewSolution({
+  db,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+}): Promise<Solution> {
+  console.info('create new solution');
   const value = makeSecretCode();
-  const solutions = await server.db
+  const solutions = await db
     .insert(Solution)
     .values({
       value,
@@ -20,9 +24,13 @@ async function createNewSolution(): Promise<Solution> {
   return solution;
 }
 
-export async function getSolution(): Promise<Solution | undefined> {
-  server.log.info('get daily solution');
-  const solutions = await server.db
+export async function getSolution({
+  db,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+}): Promise<Solution | undefined> {
+  console.info('get daily solution');
+  const solutions = await db
     .select()
     .from(Solution)
     .where(sql`${Solution.date} = CURRENT_DATE`);
@@ -30,24 +38,29 @@ export async function getSolution(): Promise<Solution | undefined> {
   return solution;
 }
 
-export async function getSolutionById(
-  id: number,
-): Promise<Solution | undefined> {
-  server.log.info(`get solution by id '${id}'`);
-  const solutions = await server.db
-    .select()
-    .from(Solution)
-    .where(eq(Solution.id, id));
+export async function getSolutionById({
+  db,
+  id,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+  id: number;
+}): Promise<Solution | undefined> {
+  console.info(`get solution by id '${id}'`);
+  const solutions = await db.select().from(Solution).where(eq(Solution.id, id));
   const solution = solutions.pop();
   return solution;
 }
 
-export async function getOrCreateSolution(): Promise<Solution> {
-  const currentSolution = await getSolution();
-  if (currentSolution) server.log.info(`get solution '${currentSolution.id}'`);
+export async function getOrCreateSolution({
+  db,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+}): Promise<Solution> {
+  const currentSolution = await getSolution({ db });
+  if (currentSolution) console.info(`get solution '${currentSolution.id}'`);
 
-  const solution = currentSolution || (await createNewSolution());
-  if (!currentSolution) server.log.info(`create new solution '${solution.id}'`);
+  const solution = currentSolution || (await createNewSolution({ db }));
+  if (!currentSolution) console.info(`create new solution '${solution.id}'`);
 
   return solution;
 }

@@ -1,15 +1,21 @@
 import { and, eq } from 'drizzle-orm';
+import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
-import { server } from '@/api/server';
 import { getOrCreateSolution } from '@/api/db/adapters/solutions';
 import { DailyGame } from '@/api/db/schema/daily_games';
 import type { User } from '@/api/db/schema/users';
 
-async function createNewDailyGame(user: User): Promise<DailyGame> {
-  server.log.info('create new daily solution');
+async function createNewDailyGame({
+  db,
+  user,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+  user: User;
+}): Promise<DailyGame> {
+  console.info('create new daily solution');
 
-  const solution = await getOrCreateSolution();
-  const daily_solutions = await server.db
+  const solution = await getOrCreateSolution({ db });
+  const daily_solutions = await db
     .insert(DailyGame)
     .values({
       user_id: user.id,
@@ -23,10 +29,16 @@ async function createNewDailyGame(user: User): Promise<DailyGame> {
   return daily_solution;
 }
 
-async function getDailyGame(user: User): Promise<DailyGame | undefined> {
-  server.log.info('get daily solution');
-  const solution = await getOrCreateSolution();
-  const games = await server.db
+async function getDailyGame({
+  db,
+  user,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+  user: User;
+}): Promise<DailyGame | undefined> {
+  console.info('get daily solution');
+  const solution = await getOrCreateSolution({ db });
+  const games = await db
     .select()
     .from(DailyGame)
     .where(
@@ -39,26 +51,33 @@ async function getDailyGame(user: User): Promise<DailyGame | undefined> {
   return game;
 }
 
-export async function getDailyGameById(
-  id: number,
-): Promise<DailyGame | undefined> {
-  server.log.info('get daily solution by id');
-  const games = await server.db
-    .select()
-    .from(DailyGame)
-    .where(eq(DailyGame.id, id));
+export async function getDailyGameById({
+  db,
+  id,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+  id: number;
+}): Promise<DailyGame | undefined> {
+  console.info('get daily solution by id');
+  const games = await db.select().from(DailyGame).where(eq(DailyGame.id, id));
   const game = games.pop();
   return game;
 }
 
-export async function getOrCreateDailyGame(user: User): Promise<DailyGame> {
-  server.log.info('get or create daily game');
+export async function getOrCreateDailyGame({
+  db,
+  user,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+  user: User;
+}): Promise<DailyGame> {
+  console.info('get or create daily game');
 
-  const currentGame = await getDailyGame(user);
-  if (currentGame) server.log.info(`get daily game '${currentGame.id}'`);
+  const currentGame = await getDailyGame({ db, user });
+  if (currentGame) console.info(`get daily game '${currentGame.id}'`);
 
-  const game = currentGame || (await createNewDailyGame(user));
-  if (!currentGame) server.log.info(`create new daily game '${game.id}'`);
+  const game = currentGame || (await createNewDailyGame({ db, user }));
+  if (!currentGame) console.info(`create new daily game '${game.id}'`);
 
   return game;
 }

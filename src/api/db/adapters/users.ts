@@ -1,10 +1,14 @@
 import { desc, eq } from 'drizzle-orm';
+import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
-import { server } from '@/api/server';
 import { User } from '@/api/db/schema/users';
 
-export async function createNewUser(): Promise<User> {
-  const users = await server.db.insert(User).values({}).returning();
+export async function createNewUser({
+  db,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+}): Promise<User> {
+  const users = await db.insert(User).values({}).returning();
   const user = users.pop();
   if (!user) {
     throw Error('failed to create new user');
@@ -12,8 +16,14 @@ export async function createNewUser(): Promise<User> {
   return user;
 }
 
-export async function getUser(uuid: string): Promise<User | undefined> {
-  const users = await server.db
+export async function getUser({
+  db,
+  uuid,
+}: {
+  db: PgDatabase<PgQueryResultHKT>;
+  uuid: string;
+}): Promise<User | undefined> {
+  const users = await db
     .select()
     .from(User)
     .where(eq(User.uuid, uuid))
