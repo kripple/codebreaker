@@ -9,7 +9,7 @@ export function respondWith<T extends object>(
     return new Response(null, {
       status: 204,
       headers: {
-        'Access-Control-Allow-Origin': import.meta.env.VITE_API_URL,
+        'Access-Control-Allow-Origin': import.meta.env.VITE_APP_URL,
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
       },
@@ -21,7 +21,7 @@ export function respondWith<T extends object>(
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': import.meta.env.VITE_API_URL,
+        'Access-Control-Allow-Origin': import.meta.env.VITE_APP_URL,
       },
     });
   }
