@@ -10822,5 +10822,5 @@ async function ql(n) {
   }
 }
 export {
-  ql as handler
+  ql as default
 };

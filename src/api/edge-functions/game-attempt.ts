@@ -3,7 +3,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 
 import { makeAttempt } from '@/api/handlers/makeAttempt';
 
-export async function handler(request: Request) {
+export default async function handler(request: Request) {
   try {
     const sql = neon(Netlify.env.get('DATABASE_URL')!);
     const db = drizzle({ client: sql });

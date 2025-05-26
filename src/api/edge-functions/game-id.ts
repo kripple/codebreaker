@@ -4,7 +4,7 @@ import { drizzle } from 'drizzle-orm/neon-http';
 import { getGameById } from '@/api/handlers/getGameById';
 import { getGame } from '@/api/helpers/getGame';
 
-export async function handler(request: Request) {
+export default async function handler(request: Request) {
   try {
     const sql = neon(Netlify.env.get('DATABASE_URL')!);
     const db = drizzle({ client: sql });

@@ -18,7 +18,7 @@ for (const name of edgeFunctions) {
       emptyOutDir: false,
       lib: {
         entry: resolve(__dirname, `src/api/edge-functions/${name}.ts`),
-        fileName: '[name].js',
+        fileName: '[name]',
         formats: ['es'],
         name: 'handler',
       },
