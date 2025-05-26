@@ -11,7 +11,7 @@
   "scripts": {
     "start": "vite",
     "api": "tsx src/api/start.ts",
-    "build": "tsc && vite build",
+    "build": "tsc -p tsconfig.build.json && vite build",
     "build:api": "vite build --config vite.api-config.ts",
     "lint": "eslint . && stylelint '**/*.css' && prettier --check .",
     "preview": "vite preview",

@@ -1,6 +1,10 @@
 [dev]
   framework = "#static"
 
+[build]
+  command = ""
+  publish = "netlify/edge-functions"
+
 [functions]
   deno_import_map = "./config/import_map.json"
 

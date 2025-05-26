@@ -3,9 +3,8 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { Game } from '@/types/game';
 
 export const api = createApi({
-  // TODO: use env vars to set the correct url
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://127.0.0.1:3000',
+    baseUrl: import.meta.env.API_URL,
   }),
   tagTypes: ['Game'],
   endpoints: (build) => ({
