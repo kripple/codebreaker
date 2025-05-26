@@ -10802,7 +10802,7 @@ function nr(n, e) {
   return n === "options" ? new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "https://kripple.github.io/codebreaker/",
+      "Access-Control-Allow-Origin": "https://kripple.github.io",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization"
     }
@@ -10810,7 +10810,7 @@ function nr(n, e) {
     status: 200,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "https://kripple.github.io/codebreaker/"
+      "Access-Control-Allow-Origin": "https://kripple.github.io"
     }
   }) : (n === "data" && e === void 0 && console.error("data is missing"), n !== "error" && console.error(`invalid key '${n}'`), new Response("Internal Server Error", { status: 500 }));
 }

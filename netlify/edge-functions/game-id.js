@@ -253,7 +253,7 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
     if (a === l)
       return 0;
     let p = a.length, T = l.length;
-    for (let N = 0, k = Math.min(p, T); N < k; ++N)
+    for (let N = 0, D = Math.min(p, T); N < D; ++N)
       if (a[N] !== l[N]) {
         p = a[N], T = l[N];
         break;
@@ -289,14 +289,14 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
         l += a[p].length;
     let T = o.allocUnsafe(l), N = 0;
     for (p = 0; p < a.length; ++p) {
-      let k = a[p];
-      if (xe(k, Uint8Array))
-        N + k.length > T.length ? (o.isBuffer(k) || (k = o.from(k)), k.copy(T, N)) : Uint8Array.prototype.set.call(T, k, N);
-      else if (o.isBuffer(k))
-        k.copy(T, N);
+      let D = a[p];
+      if (xe(D, Uint8Array))
+        N + D.length > T.length ? (o.isBuffer(D) || (D = o.from(D)), D.copy(T, N)) : Uint8Array.prototype.set.call(T, D, N);
+      else if (o.isBuffer(D))
+        D.copy(T, N);
       else
         throw new TypeError('"list" argument must be an Array of Buffers');
-      N += k.length;
+      N += D.length;
     }
     return T;
   }, "concat");
@@ -434,16 +434,16 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
       return 1;
     if (l >>>= 0, p >>>= 0, T >>>= 0, N >>>= 0, this === a)
       return 0;
-    let k = N - T, Q = p - l, se = Math.min(k, Q), ce = this.slice(
+    let D = N - T, Q = p - l, se = Math.min(D, Q), ce = this.slice(
       T,
       N
     ), oe = a.slice(l, p);
     for (let ie = 0; ie < se; ++ie)
       if (ce[ie] !== oe[ie]) {
-        k = ce[ie], Q = oe[ie];
+        D = ce[ie], Q = oe[ie];
         break;
       }
-    return k < Q ? -1 : Q < k ? 1 : 0;
+    return D < Q ? -1 : Q < D ? 1 : 0;
   }, "compare");
   function P(a, l, p, T, N) {
     if (a.length === 0)
@@ -468,14 +468,14 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
   }
   g(P, "bidirectionalIndexOf");
   function A(a, l, p, T, N) {
-    let k = 1, Q = a.length, se = l.length;
+    let D = 1, Q = a.length, se = l.length;
     if (T !== void 0 && (T = String(T).toLowerCase(), T === "ucs2" || T === "ucs-2" || T === "utf16le" || T === "utf-16le")) {
       if (a.length < 2 || l.length < 2)
         return -1;
-      k = 2, Q /= 2, se /= 2, p /= 2;
+      D = 2, Q /= 2, se /= 2, p /= 2;
     }
     function ce(ie, ue) {
-      return k === 1 ? ie[ue] : ie.readUInt16BE(ue * k);
+      return D === 1 ? ie[ue] : ie.readUInt16BE(ue * D);
     }
     g(ce, "read");
     let oe;
@@ -484,7 +484,7 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
       for (oe = p; oe < Q; oe++)
         if (ce(a, oe) === ce(l, ie === -1 ? 0 : oe - ie)) {
           if (ie === -1 && (ie = oe), oe - ie + 1 === se)
-            return ie * k;
+            return ie * D;
         } else
           ie !== -1 && (oe -= oe - ie), ie = -1;
     } else
@@ -515,8 +515,8 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
     p = Number(p) || 0;
     let N = a.length - p;
     T ? (T = Number(T), T > N && (T = N)) : T = N;
-    let k = l.length;
-    T > k / 2 && (T = k / 2);
+    let D = l.length;
+    T > D / 2 && (T = D / 2);
     let Q;
     for (Q = 0; Q < T; ++Q) {
       let se = parseInt(l.substr(Q * 2, 2), 16);
@@ -563,7 +563,7 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
     if ((p === void 0 || p > N) && (p = N), a.length > 0 && (p < 0 || l < 0) || l > this.length)
       throw new RangeError("Attempt to write outside buffer bounds");
     T || (T = "utf8");
-    let k = !1;
+    let D = !1;
     for (; ; )
       switch (T) {
         case "hex":
@@ -583,9 +583,9 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
         case "utf-16le":
           return F(this, a, l, p);
         default:
-          if (k)
+          if (D)
             throw new TypeError("Unknown encoding: " + T);
-          T = ("" + T).toLowerCase(), k = !0;
+          T = ("" + T).toLowerCase(), D = !0;
       }
   }, "write"), o.prototype.toJSON = g(function() {
     return { type: "Buffer", data: Array.prototype.slice.call(this._arr || this, 0) };
@@ -598,21 +598,21 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
     p = Math.min(a.length, p);
     let T = [], N = l;
     for (; N < p; ) {
-      let k = a[N], Q = null, se = k > 239 ? 4 : k > 223 ? 3 : k > 191 ? 2 : 1;
+      let D = a[N], Q = null, se = D > 239 ? 4 : D > 223 ? 3 : D > 191 ? 2 : 1;
       if (N + se <= p) {
         let ce, oe, ie, ue;
         switch (se) {
           case 1:
-            k < 128 && (Q = k);
+            D < 128 && (Q = D);
             break;
           case 2:
-            ce = a[N + 1], (ce & 192) === 128 && (ue = (k & 31) << 6 | ce & 63, ue > 127 && (Q = ue));
+            ce = a[N + 1], (ce & 192) === 128 && (ue = (D & 31) << 6 | ce & 63, ue > 127 && (Q = ue));
             break;
           case 3:
-            ce = a[N + 1], oe = a[N + 2], (ce & 192) === 128 && (oe & 192) === 128 && (ue = (k & 15) << 12 | (ce & 63) << 6 | oe & 63, ue > 2047 && (ue < 55296 || ue > 57343) && (Q = ue));
+            ce = a[N + 1], oe = a[N + 2], (ce & 192) === 128 && (oe & 192) === 128 && (ue = (D & 15) << 12 | (ce & 63) << 6 | oe & 63, ue > 2047 && (ue < 55296 || ue > 57343) && (Q = ue));
             break;
           case 4:
-            ce = a[N + 1], oe = a[N + 2], ie = a[N + 3], (ce & 192) === 128 && (oe & 192) === 128 && (ie & 192) === 128 && (ue = (k & 15) << 18 | (ce & 63) << 12 | (oe & 63) << 6 | ie & 63, ue > 65535 && ue < 1114112 && (Q = ue));
+            ce = a[N + 1], oe = a[N + 2], ie = a[N + 3], (ce & 192) === 128 && (oe & 192) === 128 && (ie & 192) === 128 && (ue = (D & 15) << 18 | (ce & 63) << 12 | (oe & 63) << 6 | ie & 63, ue > 65535 && ue < 1114112 && (Q = ue));
         }
       }
       Q === null ? (Q = 65533, se = 1) : Q > 65535 && (Q -= 65536, T.push(Q >>> 10 & 1023 | 55296), Q = 56320 | Q & 1023), T.push(Q), N += se;
@@ -651,15 +651,15 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
     let T = a.length;
     (!l || l < 0) && (l = 0), (!p || p < 0 || p > T) && (p = T);
     let N = "";
-    for (let k = l; k < p; ++k)
-      N += di[a[k]];
+    for (let D = l; D < p; ++D)
+      N += di[a[D]];
     return N;
   }
   g(ne, "hexSlice");
   function be(a, l, p) {
     let T = a.slice(l, p), N = "";
-    for (let k = 0; k < T.length - 1; k += 2)
-      N += String.fromCharCode(T[k] + T[k + 1] * 256);
+    for (let D = 0; D < T.length - 1; D += 2)
+      N += String.fromCharCode(T[D] + T[D + 1] * 256);
     return N;
   }
   g(be, "utf16leSlice"), o.prototype.slice = g(function(a, l) {
@@ -677,9 +677,9 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
   g(ae, "checkOffset"), o.prototype.readUintLE = o.prototype.readUIntLE = g(
     function(a, l, p) {
       a = a >>> 0, l = l >>> 0, p || ae(a, l, this.length);
-      let T = this[a], N = 1, k = 0;
-      for (; ++k < l && (N *= 256); )
-        T += this[a + k] * N;
+      let T = this[a], N = 1, D = 0;
+      for (; ++D < l && (N *= 256); )
+        T += this[a + D] * N;
       return T;
     },
     "readUIntLE"
@@ -711,13 +711,13 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
   }, "readUInt32LE"), o.prototype.readUint32BE = o.prototype.readUInt32BE = g(function(a, l) {
     return a = a >>> 0, l || ae(a, 4, this.length), this[a] * 16777216 + (this[a + 1] << 16 | this[a + 2] << 8 | this[a + 3]);
   }, "readUInt32BE"), o.prototype.readBigUInt64LE = Ne(g(function(a) {
-    a = a >>> 0, De(a, "offset");
+    a = a >>> 0, ke(a, "offset");
     let l = this[a], p = this[a + 7];
     (l === void 0 || p === void 0) && Je(a, this.length - 8);
     let T = l + this[++a] * 2 ** 8 + this[++a] * 2 ** 16 + this[++a] * 2 ** 24, N = this[++a] + this[++a] * 2 ** 8 + this[++a] * 2 ** 16 + p * 2 ** 24;
     return BigInt(T) + (BigInt(N) << BigInt(32));
   }, "readBigUInt64LE")), o.prototype.readBigUInt64BE = Ne(g(function(a) {
-    a = a >>> 0, De(a, "offset");
+    a = a >>> 0, ke(a, "offset");
     let l = this[a], p = this[a + 7];
     (l === void 0 || p === void 0) && Je(a, this.length - 8);
     let T = l * 2 ** 24 + this[++a] * 2 ** 16 + this[++a] * 2 ** 8 + this[++a], N = this[++a] * 2 ** 24 + this[++a] * 2 ** 16 + this[++a] * 2 ** 8 + p;
@@ -730,16 +730,16 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
       l,
       this.length
     );
-    let T = this[a], N = 1, k = 0;
-    for (; ++k < l && (N *= 256); )
-      T += this[a + k] * N;
+    let T = this[a], N = 1, D = 0;
+    for (; ++D < l && (N *= 256); )
+      T += this[a + D] * N;
     return N *= 128, T >= N && (T -= Math.pow(2, 8 * l)), T;
   }, "readIntLE"), o.prototype.readIntBE = g(function(a, l, p) {
     a = a >>> 0, l = l >>> 0, p || ae(a, l, this.length);
-    let T = l, N = 1, k = this[a + --T];
+    let T = l, N = 1, D = this[a + --T];
     for (; T > 0 && (N *= 256); )
-      k += this[a + --T] * N;
-    return N *= 128, k >= N && (k -= Math.pow(2, 8 * l)), k;
+      D += this[a + --T] * N;
+    return N *= 128, D >= N && (D -= Math.pow(2, 8 * l)), D;
   }, "readIntBE"), o.prototype.readInt8 = g(function(a, l) {
     return a = a >>> 0, l || ae(a, 1, this.length), this[a] & 128 ? (255 - this[a] + 1) * -1 : this[a];
   }, "readInt8"), o.prototype.readInt16LE = g(function(a, l) {
@@ -759,7 +759,7 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
   }, "readInt32LE"), o.prototype.readInt32BE = g(function(a, l) {
     return a = a >>> 0, l || ae(a, 4, this.length), this[a] << 24 | this[a + 1] << 16 | this[a + 2] << 8 | this[a + 3];
   }, "readInt32BE"), o.prototype.readBigInt64LE = Ne(g(function(a) {
-    a = a >>> 0, De(a, "offset");
+    a = a >>> 0, ke(a, "offset");
     let l = this[a], p = this[a + 7];
     (l === void 0 || p === void 0) && Je(a, this.length - 8);
     let T = this[a + 4] + this[a + 5] * 2 ** 8 + this[a + 6] * 2 ** 16 + (p << 24);
@@ -767,7 +767,7 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
       32
     )) + BigInt(l + this[++a] * 2 ** 8 + this[++a] * 2 ** 16 + this[++a] * 2 ** 24);
   }, "readBigInt64LE")), o.prototype.readBigInt64BE = Ne(g(function(a) {
-    a = a >>> 0, De(a, "offset");
+    a = a >>> 0, ke(a, "offset");
     let l = this[a], p = this[a + 7];
     (l === void 0 || p === void 0) && Je(a, this.length - 8);
     let T = (l << 24) + this[++a] * 2 ** 16 + this[++a] * 2 ** 8 + this[++a];
@@ -789,10 +789,10 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
       8
     );
   }, "readDoubleBE");
-  function pe(a, l, p, T, N, k) {
+  function pe(a, l, p, T, N, D) {
     if (!o.isBuffer(a))
       throw new TypeError('"buffer" argument must be a Buffer instance');
-    if (l > N || l < k)
+    if (l > N || l < D)
       throw new RangeError('"value" argument is out of bounds');
     if (p + T > a.length)
       throw new RangeError("Index out of range");
@@ -809,18 +809,18 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
         0
       );
     }
-    let N = 1, k = 0;
-    for (this[l] = a & 255; ++k < p && (N *= 256); )
-      this[l + k] = a / N & 255;
+    let N = 1, D = 0;
+    for (this[l] = a & 255; ++D < p && (N *= 256); )
+      this[l + D] = a / N & 255;
     return l + p;
   }, "writeUIntLE"), o.prototype.writeUintBE = o.prototype.writeUIntBE = g(function(a, l, p, T) {
     if (a = +a, l = l >>> 0, p = p >>> 0, !T) {
       let Q = Math.pow(2, 8 * p) - 1;
       pe(this, a, l, p, Q, 0);
     }
-    let N = p - 1, k = 1;
-    for (this[l + N] = a & 255; --N >= 0 && (k *= 256); )
-      this[l + N] = a / k & 255;
+    let N = p - 1, D = 1;
+    for (this[l + N] = a & 255; --N >= 0 && (D *= 256); )
+      this[l + N] = a / D & 255;
     return l + p;
   }, "writeUIntBE"), o.prototype.writeUint8 = o.prototype.writeUInt8 = g(function(a, l, p) {
     return a = +a, l = l >>> 0, p || pe(this, a, l, 1, 255, 0), this[l] = a & 255, l + 1;
@@ -849,16 +849,16 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
   }, "writeUInt32BE");
   function at(a, l, p, T, N) {
     nr(l, T, N, a, p, 7);
-    let k = Number(l & BigInt(4294967295));
-    a[p++] = k, k = k >> 8, a[p++] = k, k = k >> 8, a[p++] = k, k = k >> 8, a[p++] = k;
+    let D = Number(l & BigInt(4294967295));
+    a[p++] = D, D = D >> 8, a[p++] = D, D = D >> 8, a[p++] = D, D = D >> 8, a[p++] = D;
     let Q = Number(l >> BigInt(32) & BigInt(4294967295));
     return a[p++] = Q, Q = Q >> 8, a[p++] = Q, Q = Q >> 8, a[p++] = Q, Q = Q >> 8, a[p++] = Q, p;
   }
   g(at, "wrtBigUInt64LE");
   function Xt(a, l, p, T, N) {
     nr(l, T, N, a, p, 7);
-    let k = Number(l & BigInt(4294967295));
-    a[p + 7] = k, k = k >> 8, a[p + 6] = k, k = k >> 8, a[p + 5] = k, k = k >> 8, a[p + 4] = k;
+    let D = Number(l & BigInt(4294967295));
+    a[p + 7] = D, D = D >> 8, a[p + 6] = D, D = D >> 8, a[p + 5] = D, D = D >> 8, a[p + 4] = D;
     let Q = Number(l >> BigInt(32) & BigInt(4294967295));
     return a[p + 3] = Q, Q = Q >> 8, a[p + 2] = Q, Q = Q >> 8, a[p + 1] = Q, Q = Q >> 8, a[p] = Q, p + 8;
   }
@@ -873,18 +873,18 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
       let se = Math.pow(2, 8 * p - 1);
       pe(this, a, l, p, se - 1, -se);
     }
-    let N = 0, k = 1, Q = 0;
-    for (this[l] = a & 255; ++N < p && (k *= 256); )
-      a < 0 && Q === 0 && this[l + N - 1] !== 0 && (Q = 1), this[l + N] = (a / k >> 0) - Q & 255;
+    let N = 0, D = 1, Q = 0;
+    for (this[l] = a & 255; ++N < p && (D *= 256); )
+      a < 0 && Q === 0 && this[l + N - 1] !== 0 && (Q = 1), this[l + N] = (a / D >> 0) - Q & 255;
     return l + p;
   }, "writeIntLE"), o.prototype.writeIntBE = g(function(a, l, p, T) {
     if (a = +a, l = l >>> 0, !T) {
       let se = Math.pow(2, 8 * p - 1);
       pe(this, a, l, p, se - 1, -se);
     }
-    let N = p - 1, k = 1, Q = 0;
-    for (this[l + N] = a & 255; --N >= 0 && (k *= 256); )
-      a < 0 && Q === 0 && this[l + N + 1] !== 0 && (Q = 1), this[l + N] = (a / k >> 0) - Q & 255;
+    let N = p - 1, D = 1, Q = 0;
+    for (this[l + N] = a & 255; --N >= 0 && (D *= 256); )
+      a < 0 && Q === 0 && this[l + N + 1] !== 0 && (Q = 1), this[l + N] = (a / D >> 0) - Q & 255;
     return l + p;
   }, "writeIntBE"), o.prototype.writeInt8 = g(function(a, l, p) {
     return a = +a, l = l >>> 0, p || pe(this, a, l, 1, 127, -128), a < 0 && (a = 255 + a + 1), this[l] = a & 255, l + 1;
@@ -917,7 +917,7 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
       return Xt(this, a, l, -BigInt("0x8000000000000000"), BigInt("0x7fffffffffffffff"));
     }, "writeBigInt64BE")
   );
-  function Zt(a, l, p, T, N, k) {
+  function Zt(a, l, p, T, N, D) {
     if (p + T > a.length)
       throw new RangeError("Index out of range");
     if (p < 0)
@@ -972,8 +972,8 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
           "Unknown encoding: " + T
         );
       if (a.length === 1) {
-        let k = a.charCodeAt(0);
-        (T === "utf8" && k < 128 || T === "latin1") && (a = k);
+        let D = a.charCodeAt(0);
+        (T === "utf8" && D < 128 || T === "latin1") && (a = D);
       }
     } else
       typeof a == "number" ? a = a & 255 : typeof a == "boolean" && (a = Number(a));
@@ -987,14 +987,14 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
       for (N = l; N < p; ++N)
         this[N] = a;
     else {
-      let k = o.isBuffer(a) ? a : o.from(
+      let D = o.isBuffer(a) ? a : o.from(
         a,
         T
-      ), Q = k.length;
+      ), Q = D.length;
       if (Q === 0)
         throw new TypeError('The value "' + a + '" is invalid for argument "value"');
       for (N = 0; N < p - l; ++N)
-        this[N + l] = k[N % Q];
+        this[N + l] = D[N % Q];
     }
     return this;
   }, "fill");
@@ -1042,24 +1042,24 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
   }
   g(rr, "addNumericalSeparator");
   function Xr(a, l, p) {
-    De(l, "offset"), (a[l] === void 0 || a[l + p] === void 0) && Je(l, a.length - (p + 1));
+    ke(l, "offset"), (a[l] === void 0 || a[l + p] === void 0) && Je(l, a.length - (p + 1));
   }
   g(Xr, "checkBounds");
-  function nr(a, l, p, T, N, k) {
+  function nr(a, l, p, T, N, D) {
     if (a > p || a < l) {
       let Q = typeof l == "bigint" ? "n" : "", se;
-      throw k > 3 ? l === 0 || l === BigInt(0) ? se = `>= 0${Q} and < 2${Q} ** ${(k + 1) * 8}${Q}` : se = `>= -(2${Q} ** ${(k + 1) * 8 - 1}${Q}) and < 2 ** ${(k + 1) * 8 - 1}${Q}` : se = `>= ${l}${Q} and <= ${p}${Q}`, new Ge.ERR_OUT_OF_RANGE("value", se, a);
+      throw D > 3 ? l === 0 || l === BigInt(0) ? se = `>= 0${Q} and < 2${Q} ** ${(D + 1) * 8}${Q}` : se = `>= -(2${Q} ** ${(D + 1) * 8 - 1}${Q}) and < 2 ** ${(D + 1) * 8 - 1}${Q}` : se = `>= ${l}${Q} and <= ${p}${Q}`, new Ge.ERR_OUT_OF_RANGE("value", se, a);
     }
-    Xr(T, N, k);
+    Xr(T, N, D);
   }
   g(nr, "checkIntBI");
-  function De(a, l) {
+  function ke(a, l) {
     if (typeof a != "number")
       throw new Ge.ERR_INVALID_ARG_TYPE(l, "number", a);
   }
-  g(De, "validateNumber");
+  g(ke, "validateNumber");
   function Je(a, l, p) {
-    throw Math.floor(a) !== a ? (De(a, p), new Ge.ERR_OUT_OF_RANGE(p || "offset", "an integer", a)) : l < 0 ? new Ge.ERR_BUFFER_OUT_OF_BOUNDS() : new Ge.ERR_OUT_OF_RANGE(p || "offset", `>= ${p ? 1 : 0} and <= ${l}`, a);
+    throw Math.floor(a) !== a ? (ke(a, p), new Ge.ERR_OUT_OF_RANGE(p || "offset", "an integer", a)) : l < 0 ? new Ge.ERR_BUFFER_OUT_OF_BOUNDS() : new Ge.ERR_OUT_OF_RANGE(p || "offset", `>= ${p ? 1 : 0} and <= ${l}`, a);
   }
   g(Je, "boundsError");
   var fi = /[^+/0-9A-Za-z-_]/g;
@@ -1073,47 +1073,47 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
   g(Zr, "base64clean");
   function Et(a, l) {
     l = l || 1 / 0;
-    let p, T = a.length, N = null, k = [];
+    let p, T = a.length, N = null, D = [];
     for (let Q = 0; Q < T; ++Q) {
       if (p = a.charCodeAt(Q), p > 55295 && p < 57344) {
         if (!N) {
           if (p > 56319) {
-            (l -= 3) > -1 && k.push(239, 191, 189);
+            (l -= 3) > -1 && D.push(239, 191, 189);
             continue;
           } else if (Q + 1 === T) {
-            (l -= 3) > -1 && k.push(239, 191, 189);
+            (l -= 3) > -1 && D.push(239, 191, 189);
             continue;
           }
           N = p;
           continue;
         }
         if (p < 56320) {
-          (l -= 3) > -1 && k.push(239, 191, 189), N = p;
+          (l -= 3) > -1 && D.push(239, 191, 189), N = p;
           continue;
         }
         p = (N - 55296 << 10 | p - 56320) + 65536;
       } else
-        N && (l -= 3) > -1 && k.push(239, 191, 189);
+        N && (l -= 3) > -1 && D.push(239, 191, 189);
       if (N = null, p < 128) {
         if ((l -= 1) < 0)
           break;
-        k.push(p);
+        D.push(p);
       } else if (p < 2048) {
         if ((l -= 2) < 0)
           break;
-        k.push(p >> 6 | 192, p & 63 | 128);
+        D.push(p >> 6 | 192, p & 63 | 128);
       } else if (p < 65536) {
         if ((l -= 3) < 0)
           break;
-        k.push(p >> 12 | 224, p >> 6 & 63 | 128, p & 63 | 128);
+        D.push(p >> 12 | 224, p >> 6 & 63 | 128, p & 63 | 128);
       } else if (p < 1114112) {
         if ((l -= 4) < 0)
           break;
-        k.push(p >> 18 | 240, p >> 12 & 63 | 128, p >> 6 & 63 | 128, p & 63 | 128);
+        D.push(p >> 18 | 240, p >> 12 & 63 | 128, p >> 6 & 63 | 128, p & 63 | 128);
       } else
         throw new Error("Invalid code point");
     }
-    return k;
+    return D;
   }
   g(Et, "utf8ToBytes");
   function en(a) {
@@ -1127,12 +1127,12 @@ var pi = Object.create, it = Object.defineProperty, gi = Object.getOwnPropertyDe
     "asciiToBytes"
   );
   function tn(a, l) {
-    let p, T, N, k = [];
+    let p, T, N, D = [];
     for (let Q = 0; Q < a.length && !((l -= 2) < 0); ++Q)
       p = a.charCodeAt(
         Q
-      ), T = p >> 8, N = p % 256, k.push(N), k.push(T);
-    return k;
+      ), T = p >> 8, N = p % 256, D.push(N), D.push(T);
+    return D;
   }
   g(tn, "utf16leToBytes");
   function sr(a) {
@@ -2833,12 +2833,12 @@ Ae(Or, { stat: () => Mn });
 function Mn(r, e) {
   e(new Error("No filesystem"));
 }
-var kn = we(() => {
+var Dn = we(() => {
   V(), g(Mn, "stat");
 }), $r = {};
-Ae($r, { default: () => Dn });
-var Dn, Qn = we(() => {
-  V(), Dn = {};
+Ae($r, { default: () => kn });
+var kn, Qn = we(() => {
+  V(), kn = {};
 }), qn = {};
 Ae(qn, { StringDecoder: () => Fn });
 var or, Fn, Oi = we(() => {
@@ -3008,9 +3008,9 @@ var or, Fn, Oi = we(() => {
     }
     return !0;
   };
-}), ki = ee((r, e) => {
+}), Di = ee((r, e) => {
   V(), $n(), fe(Rr);
-  var t = (kn(), fe(Or)), n = Mi();
+  var t = (Dn(), fe(Or)), n = Mi();
   e.exports = function(i, s) {
     var u = n.getFileName();
     t.stat(u, function(o, h) {
@@ -3024,11 +3024,11 @@ var or, Fn, Oi = we(() => {
   }, e.exports.warnTo = n.warnTo;
 }), Un = {};
 Ae(Un, { default: () => jn });
-var jn, Di = we(() => {
+var jn, ki = we(() => {
   V(), jn = {};
 }), Qi = ee((r, e) => {
   V();
-  var t = (_n(), fe(Cn)), n = (kn(), fe(Or));
+  var t = (_n(), fe(Cn)), n = (Dn(), fe(Or));
   function i(s) {
     if (s.charAt(0) === "/") {
       var o = s.split(" ");
@@ -3070,7 +3070,7 @@ var jn, Di = we(() => {
   g(i, "parse"), e.exports = i, i.parse = i;
 }), Mr = ee((r, e) => {
   V();
-  var t = (Di(), fe(Un)), n = Vt(), i = Qi().parse, s = g(function(b, y, v) {
+  var t = (ki(), fe(Un)), n = Vt(), i = Qi().parse, s = g(function(b, y, v) {
     return v === void 0 ? v = Z.env["PG" + b.toUpperCase()] : v === !1 || (v = Z.env[v]), y[b] || v || n[b];
   }, "val"), u = g(function() {
     switch (Z.env.PGSSLMODE) {
@@ -3967,7 +3967,7 @@ var Wi = we(
   V();
   var t = We().EventEmitter;
   Ht(), fe(yt);
-  var n = Wt(), i = Ri(), s = ki(), u = Lr(), o = Mr(), h = Fi(), m = Vt(), d = Kn(), b = class extends t {
+  var n = Wt(), i = Ri(), s = Di(), u = Lr(), o = Mr(), h = Fi(), m = Vt(), d = Kn(), b = class extends t {
     constructor(c) {
       super(), this.connectionParameters = new o(c), this.user = this.connectionParameters.user, this.database = this.connectionParameters.database, this.port = this.connectionParameters.port, this.host = this.connectionParameters.host, Object.defineProperty(
         this,
@@ -4734,7 +4734,7 @@ var Zi = Object.defineProperty, eo = Object.defineProperties, to = Object.getOwn
   return r;
 }, "__spreadValues"), io = g((r, e) => eo(r, to(e)), "__spreadProps"), oo = 1008e3, un = new Uint8Array(
   new Uint16Array([258]).buffer
-)[0] === 2, ao = new TextDecoder(), kr = new TextEncoder(), _t = kr.encode("0123456789abcdef"), Tt = kr.encode("0123456789ABCDEF"), uo = kr.encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"), Yn = uo.slice();
+)[0] === 2, ao = new TextDecoder(), Dr = new TextEncoder(), _t = Dr.encode("0123456789abcdef"), Tt = Dr.encode("0123456789ABCDEF"), uo = Dr.encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"), Yn = uo.slice();
 Yn[62] = 45;
 Yn[63] = 95;
 var ct, xt;
@@ -5100,10 +5100,10 @@ var yo = class extends fo.Pool {
 };
 g(yo, "NeonPool");
 jt();
-var Dr = Ve(Kt());
-Dr.DatabaseError;
-Dr.defaults;
-var ve = Dr.types;
+var kr = Ve(Kt());
+kr.DatabaseError;
+kr.defaults;
+var ve = kr.types;
 /*! Bundled license information:
 
 ieee754/index.js:
@@ -5118,7 +5118,7 @@ buffer/index.js:
    *)
 */
 const L = Symbol.for("drizzle:entityKind");
-function D(r, e) {
+function k(r, e) {
   if (!r || typeof r != "object")
     return !1;
   if (r instanceof e)
@@ -5550,7 +5550,7 @@ class Qr extends X {
   }
   mapToDriverValue(e, t = !1) {
     const n = e.map(
-      (i) => i === null ? null : D(this.baseColumn, Qr) ? this.baseColumn.mapToDriverValue(i, !0) : this.baseColumn.mapToDriverValue(i)
+      (i) => i === null ? null : k(this.baseColumn, Qr) ? this.baseColumn.mapToDriverValue(i, !0) : this.baseColumn.mapToDriverValue(i)
     );
     return t ? n : ps(n);
   }
@@ -5684,9 +5684,9 @@ class z {
       paramStartIndex: m
     } = n;
     return Lo(e.map((d) => {
-      if (D(d, ge))
+      if (k(d, ge))
         return { sql: d.value.join(""), params: [] };
-      if (D(d, vr))
+      if (k(d, vr))
         return { sql: s(d.value), params: [] };
       if (d === void 0)
         return { sql: "", params: [] };
@@ -5696,19 +5696,19 @@ class z {
           b.push(v), y < d.length - 1 && b.push(new ge(", "));
         return b.push(new ge(")")), this.buildQueryFromSourceParams(b, n);
       }
-      if (D(d, z))
+      if (k(d, z))
         return this.buildQueryFromSourceParams(d.queryChunks, {
           ...n,
           inlineParams: h || d.shouldInlineParams
         });
-      if (D(d, j)) {
+      if (k(d, j)) {
         const b = d[j.Symbol.Schema], y = d[j.Symbol.Name];
         return {
           sql: b === void 0 || d[Ot] ? s(y) : s(b) + "." + s(y),
           params: []
         };
       }
-      if (D(d, he)) {
+      if (k(d, he)) {
         const b = i.getColumnCasing(d);
         if (t.invokeSource === "indexes")
           return { sql: s(b), params: [] };
@@ -5718,25 +5718,25 @@ class z {
           params: []
         };
       }
-      if (D(d, Ke)) {
+      if (k(d, Ke)) {
         const b = d[le].schema, y = d[le].name;
         return {
           sql: b === void 0 || d[le].isAlias ? s(y) : s(b) + "." + s(y),
           params: []
         };
       }
-      if (D(d, ke)) {
-        if (D(d.value, st))
+      if (k(d, De)) {
+        if (k(d.value, st))
           return { sql: u(m.value++, d), params: [d], typings: ["none"] };
         const b = d.value === null ? null : d.encoder.mapToDriverValue(d.value);
-        if (D(b, z))
+        if (k(b, z))
           return this.buildQueryFromSourceParams([b], n);
         if (h)
           return { sql: this.mapInlineParam(b, n), params: [] };
         let y = ["none"];
         return o && (y = [o(d.encoder)]), { sql: u(m.value++, b), params: [b], typings: y };
       }
-      return D(d, st) ? { sql: u(m.value++, d), params: [d], typings: ["none"] } : D(d, z.Aliased) && d.fieldAlias !== void 0 ? { sql: s(d.fieldAlias), params: [] } : D(d, Te) ? d._.isWith ? { sql: s(d._.alias), params: [] } : this.buildQueryFromSourceParams([
+      return k(d, st) ? { sql: u(m.value++, d), params: [d], typings: ["none"] } : k(d, z.Aliased) && d.fieldAlias !== void 0 ? { sql: s(d.fieldAlias), params: [] } : k(d, Te) ? d._.isWith ? { sql: s(d._.alias), params: [] } : this.buildQueryFromSourceParams([
         new ge("("),
         d._.sql,
         new ge(") "),
@@ -5805,7 +5805,7 @@ const ys = {
   ...ys,
   ...ws
 });
-class ke {
+class De {
   /**
    * @param value - Parameter value
    * @param encoder - Encoder to convert the value to a driver parameter
@@ -5855,7 +5855,7 @@ function I(r, ...e) {
   }
   r.placeholder = u;
   function o(h, m) {
-    return new ke(h, m);
+    return new De(h, m);
   }
   r.param = o;
 })(I || (I = {}));
@@ -5888,12 +5888,12 @@ class st {
 }
 function cr(r, e) {
   return r.map((t) => {
-    if (D(t, st)) {
+    if (k(t, st)) {
       if (!(t.name in e))
         throw new Error(`No value for placeholder "${t.name}" was provided`);
       return e[t.name];
     }
-    if (D(t, ke) && D(t.value, st)) {
+    if (k(t, De) && k(t.value, st)) {
       if (!(t.value.name in e))
         throw new Error(`No value for placeholder "${t.value.name}" was provided`);
       return t.encoder.mapToDriverValue(e[t.value.name]);
@@ -5972,7 +5972,7 @@ class qr {
       }), s;
     }
     const n = e[t];
-    return D(n, he) ? new Proxy(n, new $t(new Proxy(e, this))) : n;
+    return k(n, he) ? new Proxy(n, new $t(new Proxy(e, this))) : n;
   }
 }
 function hr(r, e) {
@@ -5988,7 +5988,7 @@ function bs(r, e) {
   return new z.Aliased(Mt(r.sql, e), r.fieldAlias);
 }
 function Mt(r, e) {
-  return I.join(r.queryChunks.map((t) => D(t, he) ? Be(t, e) : D(t, z) ? Mt(t, e) : D(t, z.Aliased) ? bs(t, e) : t));
+  return I.join(r.queryChunks.map((t) => k(t, he) ? Be(t, e) : k(t, z) ? Mt(t, e) : k(t, z.Aliased) ? bs(t, e) : t));
 }
 class me {
   static [L] = "SelectionProxyHandler";
@@ -6015,21 +6015,21 @@ class me {
       };
     if (typeof t == "symbol")
       return e[t];
-    const i = (D(e, Te) ? e._.selectedFields : D(e, Ke) ? e[le].selectedFields : e)[t];
-    if (D(i, z.Aliased)) {
+    const i = (k(e, Te) ? e._.selectedFields : k(e, Ke) ? e[le].selectedFields : e)[t];
+    if (k(i, z.Aliased)) {
       if (this.config.sqlAliasedBehavior === "sql" && !i.isSelectionField)
         return i.sql;
       const s = i.clone();
       return s.isSelectionField = !0, s;
     }
-    if (D(i, z)) {
+    if (k(i, z)) {
       if (this.config.sqlBehavior === "sql")
         return i;
       throw new Error(
         `You tried to reference "${t}" field from a subquery, which is a raw SQL field, but it doesn't have an alias declared. Please add an alias to the field using ".as('alias')" method.`
       );
     }
-    return D(i, he) ? this.config.alias ? new Proxy(
+    return k(i, he) ? this.config.alias ? new Proxy(
       i,
       new $t(
         new Proxy(
@@ -6044,14 +6044,14 @@ function Oo(r, e, t) {
   const n = {}, i = r.reduce(
     (s, { path: u, field: o }, h) => {
       let m;
-      D(o, he) ? m = o : D(o, z) ? m = o.decoder : m = o.sql.decoder;
+      k(o, he) ? m = o : k(o, z) ? m = o.decoder : m = o.sql.decoder;
       let d = s;
       for (const [b, y] of u.entries())
         if (b < u.length - 1)
           y in d || (d[y] = {}), d = d[y];
         else {
           const v = e[h], c = d[y] = v === null ? null : m.mapFromDriverValue(v);
-          if (t && D(o, he) && u.length === 2) {
+          if (t && k(o, he) && u.length === 2) {
             const f = u[0];
             f in n ? typeof n[f] == "string" && n[f] !== Re(o.table) && (n[f] = !1) : n[f] = c === null ? Re(o.table) : !1;
           }
@@ -6070,7 +6070,7 @@ function Fe(r, e) {
     if (typeof n != "string")
       return t;
     const s = e ? [...e, n] : [n];
-    return D(i, he) || D(i, z) || D(i, z.Aliased) ? t.push({ path: s, field: i }) : D(i, j) ? t.push(...Fe(i[j.Symbol.Columns], s)) : t.push(...Fe(i, s)), t;
+    return k(i, he) || k(i, z) || k(i, z.Aliased) ? t.push({ path: s, field: i }) : k(i, j) ? t.push(...Fe(i[j.Symbol.Columns], s)) : t.push(...Fe(i, s)), t;
   }, []);
 }
 function Fr(r, e) {
@@ -6083,7 +6083,7 @@ function Fr(r, e) {
   return !0;
 }
 function vs(r, e) {
-  const t = Object.entries(e).filter(([, n]) => n !== void 0).map(([n, i]) => D(i, z) || D(i, he) ? [n, i] : [n, new ke(i, r[j.Symbol.Columns][n])]);
+  const t = Object.entries(e).filter(([, n]) => n !== void 0).map(([n, i]) => k(i, z) || k(i, he) ? [n, i] : [n, new De(i, r[j.Symbol.Columns][n])]);
   if (t.length === 0)
     throw new Error("No values to set");
   return Object.fromEntries(t);
@@ -6101,7 +6101,7 @@ function Mo(r) {
   return r[j.Symbol.Columns];
 }
 function Qe(r) {
-  return D(r, Te) ? r._.alias : D(r, Ke) ? r[le].name : D(r, z) ? void 0 : r[j.Symbol.IsAlias] ? r[j.Symbol.Name] : r[j.Symbol.BaseName];
+  return k(r, Te) ? r._.alias : k(r, Ke) ? r[le].name : k(r, z) ? void 0 : r[j.Symbol.IsAlias] ? r[j.Symbol.Name] : r[j.Symbol.BaseName];
 }
 function de(r, e) {
   return {
@@ -6109,7 +6109,7 @@ function de(r, e) {
     config: typeof r == "object" ? r : e
   };
 }
-function ko(r) {
+function Do(r) {
   if (typeof r != "object" || r === null || r.constructor.name !== "Object")
     return !1;
   if ("logger" in r) {
@@ -6213,7 +6213,7 @@ class pn extends He {
     return this;
   }
 }
-function Do(r) {
+function ko(r) {
   return (r.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? []).map((t) => t.toLowerCase()).join("_");
 }
 function Qo(r) {
@@ -6232,7 +6232,7 @@ class Fo {
   cachedTables = {};
   convert;
   constructor(e) {
-    this.convert = e === "snake_case" ? Do : e === "camelCase" ? Qo : qo;
+    this.convert = e === "snake_case" ? ko : e === "camelCase" ? Qo : qo;
   }
   getColumnCasing(e) {
     if (!e.keyAsName)
@@ -6776,16 +6776,16 @@ class Ma extends re {
   }
   /** @internal */
   build(e) {
-    return new ka(e, this.config);
+    return new Da(e, this.config);
   }
 }
-class ka extends X {
+class Da extends X {
   static [L] = "PgMacaddr8";
   getSQLType() {
     return "macaddr8";
   }
 }
-function Da(r) {
+function ka(r) {
   return new Ma(r ?? "");
 }
 class Qa extends re {
@@ -7369,7 +7369,7 @@ function Mu() {
     jsonb: xa,
     line: Ba,
     macaddr: $a,
-    macaddr8: Da,
+    macaddr8: ka,
     numeric: za,
     point: Ga,
     geometry: tu,
@@ -7405,7 +7405,7 @@ class Pe extends j {
   /** @internal */
   [j.Symbol.ExtraConfigColumns] = {};
 }
-function ku(r, e, t, n, i = r) {
+function Du(r, e, t, n, i = r) {
   const s = new Pe(r, n, i), u = typeof e == "function" ? e(Mu()) : e, o = Object.fromEntries(
     Object.entries(u).map(([d, b]) => {
       const y = b;
@@ -7425,8 +7425,8 @@ function ku(r, e, t, n, i = r) {
     enableRLS: () => (m[Pe.Symbol.EnableRLS] = !0, m)
   });
 }
-const bt = (r, e, t) => ku(r, e, t, void 0);
-class Du {
+const bt = (r, e, t) => Du(r, e, t, void 0);
+class ku {
   static [L] = "PgPrimaryKeyBuilder";
   /** @internal */
   columns;
@@ -7452,10 +7452,10 @@ class Qu {
   }
 }
 function ye(r, e) {
-  return Bo(e) && !ms(r) && !D(r, ke) && !D(r, st) && !D(r, he) && !D(r, j) && !D(r, Ke) ? new ke(r, e) : r;
+  return Bo(e) && !ms(r) && !k(r, De) && !k(r, st) && !k(r, he) && !k(r, j) && !k(r, Ke) ? new De(r, e) : r;
 }
 const je = (r, e) => I`${r} = ${ye(e, r)}`, qu = (r, e) => I`${r} <> ${ye(e, r)}`;
-function kt(...r) {
+function Dt(...r) {
   const e = r.filter(
     (t) => t !== void 0
   );
@@ -7574,7 +7574,7 @@ class Jt extends $s {
 }
 function ol() {
   return {
-    and: kt,
+    and: Dt,
     between: Zu,
     eq: je,
     exists: Yu,
@@ -7606,10 +7606,10 @@ function al() {
   };
 }
 function ul(r, e) {
-  Object.keys(r).length === 1 && "default" in r && !D(r.default, j) && (r = r.default);
+  Object.keys(r).length === 1 && "default" in r && !k(r.default, j) && (r = r.default);
   const t = {}, n = {}, i = {};
   for (const [s, u] of Object.entries(r))
-    if (D(u, j)) {
+    if (k(u, j)) {
       const o = dt(u), h = n[o];
       t[o] = s, i[s] = {
         tsName: s,
@@ -7626,8 +7626,8 @@ function ul(r, e) {
       const m = u[j.Symbol.ExtraConfigBuilder]?.(u[j.Symbol.ExtraConfigColumns]);
       if (m)
         for (const d of Object.values(m))
-          D(d, Du) && i[s].primaryKey.push(...d.columns);
-    } else if (D(u, il)) {
+          k(d, ku) && i[s].primaryKey.push(...d.columns);
+    } else if (k(u, il)) {
       const o = dt(u.table), h = t[o], m = u.config(
         e(u.table)
       );
@@ -7660,7 +7660,7 @@ function cl(r) {
   };
 }
 function hl(r, e, t) {
-  if (D(t, ze) && t.config)
+  if (k(t, ze) && t.config)
     return {
       fields: t.config.fields,
       references: t.config.references
@@ -7689,7 +7689,7 @@ function hl(r, e, t) {
     ) : new Error(
       `There are multiple relations between "${n}" and "${t.sourceTable[j.Symbol.Name]}". Please specify relation name`
     );
-  if (o[0] && D(o[0], ze) && o[0].config)
+  if (o[0] && k(o[0], ze) && o[0].config)
     return {
       fields: o[0].config.references,
       references: o[0].config.fields
@@ -7712,7 +7712,7 @@ function Pr(r, e, t, n, i = (s) => s) {
   ] of n.entries())
     if (o.isJson) {
       const h = e.relations[o.tsKey], m = t[u], d = typeof m == "string" ? JSON.parse(m) : m;
-      s[o.tsKey] = D(h, ze) ? d && Pr(
+      s[o.tsKey] = k(h, ze) ? d && Pr(
         r,
         r[o.relationTableTsKey],
         d,
@@ -7730,7 +7730,7 @@ function Pr(r, e, t, n, i = (s) => s) {
     } else {
       const h = i(t[u]), m = o.field;
       let d;
-      D(m, he) ? d = m : D(m, z) ? d = m.decoder : d = m.sql.decoder, s[o.tsKey] = h === null ? null : d.mapFromDriverValue(h);
+      k(m, he) ? d = m : k(m, z) ? d = m.decoder : d = m.sql.decoder, s[o.tsKey] = h === null ? null : d.mapFromDriverValue(h);
     }
   return s;
 }
@@ -7815,17 +7815,17 @@ class Rt {
   buildSelection(e, { isSingleTable: t = !1 } = {}) {
     const n = e.length, i = e.flatMap(({ field: s }, u) => {
       const o = [];
-      if (D(s, z.Aliased) && s.isSelectionField)
+      if (k(s, z.Aliased) && s.isSelectionField)
         o.push(I.identifier(s.fieldAlias));
-      else if (D(s, z.Aliased) || D(s, z)) {
-        const h = D(s, z.Aliased) ? s.sql : s;
+      else if (k(s, z.Aliased) || k(s, z)) {
+        const h = k(s, z.Aliased) ? s.sql : s;
         t ? o.push(
           new z(
-            h.queryChunks.map((m) => D(m, X) ? I.identifier(this.casing.getColumnCasing(m)) : m)
+            h.queryChunks.map((m) => k(m, X) ? I.identifier(this.casing.getColumnCasing(m)) : m)
           )
-        ) : o.push(h), D(s, z.Aliased) && o.push(I` as ${I.identifier(s.fieldAlias)}`);
+        ) : o.push(h), k(s, z.Aliased) && o.push(I` as ${I.identifier(s.fieldAlias)}`);
       } else
-        D(s, he) && (t ? o.push(I.identifier(this.casing.getColumnCasing(s))) : o.push(s));
+        k(s, he) && (t ? o.push(I.identifier(this.casing.getColumnCasing(s))) : o.push(s));
       return u < n - 1 && o.push(I`, `), o;
     });
     return I.join(i);
@@ -7837,12 +7837,12 @@ class Rt {
     for (const [n, i] of e.entries()) {
       n === 0 && t.push(I` `);
       const s = i.table, u = i.lateral ? I` lateral` : void 0, o = i.on ? I` on ${i.on}` : void 0;
-      if (D(s, Pe)) {
+      if (k(s, Pe)) {
         const h = s[Pe.Symbol.Name], m = s[Pe.Symbol.Schema], d = s[Pe.Symbol.OriginalName], b = h === d ? void 0 : i.alias;
         t.push(
           I`${I.raw(i.joinType)} join${u} ${m ? I`${I.identifier(m)}.` : void 0}${I.identifier(d)}${b && I` ${I.identifier(b)}`}${o}`
         );
-      } else if (D(s, Ke)) {
+      } else if (k(s, Ke)) {
         const h = s[le].name, m = s[le].schema, d = s[le].originalName, b = h === d ? void 0 : i.alias;
         t.push(
           I`${I.raw(i.joinType)} join${u} ${m ? I`${I.identifier(m)}.` : void 0}${I.identifier(d)}${b && I` ${I.identifier(b)}`}${o}`
@@ -7856,7 +7856,7 @@ class Rt {
     return I.join(t);
   }
   buildFromTable(e) {
-    if (D(e, j) && e[j.Symbol.IsAlias]) {
+    if (k(e, j) && e[j.Symbol.IsAlias]) {
       let t = I`${I.identifier(e[j.Symbol.OriginalName])}`;
       return e[j.Symbol.Schema] && (t = I`${I.identifier(e[j.Symbol.Schema])}.${t}`), I`${t} ${I.identifier(e[j.Symbol.Name])}`;
     }
@@ -7880,7 +7880,7 @@ class Rt {
   }) {
     const f = n ?? Fe(t);
     for (const R of f)
-      if (D(R.field, he) && Re(R.field.table) !== (D(u, Te) ? u._.alias : D(u, Ms) ? u[le].name : D(u, z) ? void 0 : Re(u)) && !((q) => o?.some(
+      if (k(R.field, he) && Re(R.field.table) !== (k(u, Te) ? u._.alias : k(u, Ms) ? u[le].name : k(u, z) ? void 0 : Re(u)) && !((q) => o?.some(
         ({ alias: W }) => W === (q[j.Symbol.IsAlias] ? Re(q) : q[j.Symbol.BaseName])
       ))(R.field.table)) {
         const q = Re(R.field.table);
@@ -7927,12 +7927,12 @@ class Rt {
     if (u && u.length > 0) {
       const c = [];
       for (const f of u)
-        if (D(f, X))
+        if (k(f, X))
           c.push(I.identifier(f.name));
-        else if (D(f, z)) {
+        else if (k(f, z)) {
           for (let w = 0; w < f.queryChunks.length; w++) {
             const S = f.queryChunks[w];
-            D(S, X) && (f.queryChunks[w] = I.identifier(S.name));
+            k(S, X) && (f.queryChunks[w] = I.identifier(S.name));
           }
           c.push(I`${f}`);
         } else
@@ -7948,7 +7948,7 @@ class Rt {
     );
     if (u) {
       const S = t;
-      D(S, z) ? h.push(S) : h.push(S.getSQL());
+      k(S, z) ? h.push(S) : h.push(S.getSQL());
     } else {
       const S = t;
       h.push(I.raw("values "));
@@ -7956,12 +7956,12 @@ class Rt {
         const B = [];
         for (const [$, P] of d) {
           const A = _[$];
-          if (A === void 0 || D(A, ke) && A.value === void 0)
+          if (A === void 0 || k(A, De) && A.value === void 0)
             if (P.defaultFn !== void 0) {
-              const x = P.defaultFn(), C = D(x, z) ? x : I.param(x, P);
+              const x = P.defaultFn(), C = k(x, z) ? x : I.param(x, P);
               B.push(C);
             } else if (!P.default && P.onUpdateFn !== void 0) {
-              const x = P.onUpdateFn(), C = D(x, z) ? x : I.param(x, P);
+              const x = P.onUpdateFn(), C = k(x, z) ? x : I.param(x, P);
               B.push(C);
             } else
               B.push(I`default`);
@@ -7979,7 +7979,7 @@ class Rt {
     return I`refresh materialized view${i} ${e}${s}`;
   }
   prepareTyping(e) {
-    return D(e, _s) || D(e, Cs) ? "json" : D(e, Ts) ? "decimal" : D(e, As) ? "time" : D(e, Is) || D(e, Ns) ? "timestamp" : D(e, Ss) || D(e, Ps) ? "date" : D(e, Ls) ? "uuid" : "none";
+    return k(e, _s) || k(e, Cs) ? "json" : k(e, Ts) ? "decimal" : k(e, As) ? "time" : k(e, Is) || k(e, Ns) ? "timestamp" : k(e, Ss) || k(e, Ps) ? "date" : k(e, Ls) ? "uuid" : "none";
   }
   sqlToQuery(e, t) {
     return e.toQuery({
@@ -8528,21 +8528,21 @@ class Rt {
       }
       for (const { tsKey: A, value: x } of E)
         d.push({
-          dbKey: D(x, z.Aliased) ? x.fieldAlias : s.columns[A].name,
+          dbKey: k(x, z.Aliased) ? x.fieldAlias : s.columns[A].name,
           tsKey: A,
-          field: D(x, he) ? Be(x, o) : x,
+          field: k(x, he) ? Be(x, o) : x,
           relationTableTsKey: void 0,
           isJson: !1,
           selection: []
         });
       let P = typeof u.orderBy == "function" ? u.orderBy(S, al()) : u.orderBy ?? [];
-      Array.isArray(P) || (P = [P]), v = P.map((A) => D(A, he) ? Be(A, o) : Mt(A, o)), b = u.limit, y = u.offset;
+      Array.isArray(P) || (P = [P]), v = P.map((A) => k(A, he) ? Be(A, o) : Mt(A, o)), b = u.limit, y = u.offset;
       for (const {
         tsKey: A,
         queryConfig: x,
         relation: C
       } of B) {
-        const O = hl(t, n, C), M = dt(C.referencedTable), F = n[M], U = `${o}_${A}`, R = kt(
+        const O = hl(t, n, C), M = dt(C.referencedTable), F = n[M], U = `${o}_${A}`, R = Dt(
           ...O.fields.map(
             (G, te) => je(
               Be(O.references[te], U),
@@ -8555,7 +8555,7 @@ class Rt {
           tableNamesMap: n,
           table: e[F],
           tableConfig: t[F],
-          queryConfig: D(C, ze) ? x === !0 ? { limit: 1 } : { ...x, limit: 1 } : x,
+          queryConfig: k(C, ze) ? x === !0 ? { limit: 1 } : { ...x, limit: 1 } : x,
           tableAlias: U,
           joinOn: R,
           nestedQueryRelation: C
@@ -8579,14 +8579,14 @@ class Rt {
     if (d.length === 0)
       throw new Uo({ message: `No fields selected for table "${s.tsName}" ("${o}")` });
     let w;
-    if (c = kt(m, c), h) {
+    if (c = Dt(m, c), h) {
       let S = I`json_build_array(${I.join(
         d.map(
-          ({ field: B, tsKey: $, isJson: P }) => P ? I`${I.identifier(`${o}_${$}`)}.${I.identifier("data")}` : D(B, z.Aliased) ? B.sql : B
+          ({ field: B, tsKey: $, isJson: P }) => P ? I`${I.identifier(`${o}_${$}`)}.${I.identifier("data")}` : k(B, z.Aliased) ? B.sql : B
         ),
         I`, `
       )})`;
-      D(h, Jt) && (S = I`coalesce(json_agg(${S}${v.length > 0 ? I` order by ${I.join(v, I`, `)}` : void 0}), '[]'::json)`);
+      k(h, Jt) && (S = I`coalesce(json_agg(${S}${v.length > 0 ? I` order by ${I.join(v, I`, `)}` : void 0}), '[]'::json)`);
       const E = [{
         dbKey: "data",
         tsKey: "data",
@@ -8608,11 +8608,11 @@ class Rt {
         orderBy: v,
         setOperators: []
       }), c = void 0, b = void 0, y = void 0, v = []) : w = hr(i, o), w = this.buildSelectQuery({
-        table: D(w, Pe) ? w : new Te(w, {}, o),
+        table: k(w, Pe) ? w : new Te(w, {}, o),
         fields: {},
         fieldsFlat: E.map(({ field: B }) => ({
           path: [],
-          field: D(B, he) ? Be(B, o) : B
+          field: k(B, he) ? Be(B, o) : B
         })),
         joins: f,
         where: c,
@@ -8627,7 +8627,7 @@ class Rt {
         fields: {},
         fieldsFlat: d.map(({ field: S }) => ({
           path: [],
-          field: D(S, he) ? Be(S, o) : S
+          field: k(S, he) ? Be(S, o) : S
         })),
         joins: f,
         where: c,
@@ -8674,9 +8674,9 @@ class _e {
   from(e) {
     const t = !!this.fields, n = e;
     let i;
-    return this.fields ? i = this.fields : D(n, Te) ? i = Object.fromEntries(
+    return this.fields ? i = this.fields : k(n, Te) ? i = Object.fromEntries(
       Object.keys(n._.selectedFields).map((s) => [s, n[s]])
-    ) : D(n, Ms) ? i = n[le].selectedFields : D(n, z) ? i = {} : i = Mo(n), new ks({
+    ) : k(n, Ms) ? i = n[le].selectedFields : k(n, z) ? i = {} : i = Mo(n), new Ds({
       table: n,
       fields: i,
       isPartialSelect: t,
@@ -8714,8 +8714,8 @@ class pl extends dl {
         throw new Error(`Alias "${u}" is already used in this query`);
       if (!this.isPartialSelect && (Object.keys(this.joinsNotNullableMap).length === 1 && typeof s == "string" && (this.config.fields = {
         [s]: this.config.fields
-      }), typeof u == "string" && !D(n, z))) {
-        const o = D(n, Te) ? n._.selectedFields : D(n, Ke) ? n[le].selectedFields : n[j.Symbol.Columns];
+      }), typeof u == "string" && !k(n, z))) {
+        const o = k(n, Te) ? n._.selectedFields : k(n, Ke) ? n[le].selectedFields : n[j.Symbol.Columns];
         this.config.fields[u] = o;
       }
       if (typeof i == "function" && (i = i(
@@ -9298,7 +9298,7 @@ class pl extends dl {
     return this;
   }
 }
-class ks extends pl {
+class Ds extends pl {
   static [L] = "PgSelect";
   /** @internal */
   _prepare(e) {
@@ -9327,7 +9327,7 @@ class ks extends pl {
   }
   execute = (e) => Ee.startActiveSpan("drizzle.operation", () => this._prepare().execute(e, this.authToken));
 }
-$o(ks, [He]);
+$o(Ds, [He]);
 function ot(r, e) {
   return (t, n, ...i) => {
     const s = [n, ...i].map((u) => ({
@@ -9351,12 +9351,12 @@ const gl = () => ({
   except: vl,
   exceptAll: Sl
 }), ml = ot("union", !1), yl = ot("union", !0), wl = ot("intersect", !1), bl = ot("intersect", !0), vl = ot("except", !1), Sl = ot("except", !0);
-class Ds {
+class ks {
   static [L] = "PgQueryBuilder";
   dialect;
   dialectConfig;
   constructor(e) {
-    this.dialect = D(e, Rt) ? e : void 0, this.dialectConfig = D(e, Rt) ? void 0 : e;
+    this.dialect = k(e, Rt) ? e : void 0, this.dialectConfig = k(e, Rt) ? void 0 : e;
   }
   $with = (e, t) => {
     const n = this;
@@ -9446,7 +9446,7 @@ class yn {
       const i = {}, s = this.table[j.Symbol.Columns];
       for (const u of Object.keys(n)) {
         const o = n[u];
-        i[u] = D(o, z) ? o : new ke(o, s[u]);
+        i[u] = k(o, z) ? o : new De(o, s[u]);
       }
       return i;
     });
@@ -9461,8 +9461,8 @@ class yn {
     ).setToken(this.authToken);
   }
   select(e) {
-    const t = typeof e == "function" ? e(new Ds()) : e;
-    if (!D(t, z) && !Fr(this.table[br], t._.selectedFields))
+    const t = typeof e == "function" ? e(new ks()) : e;
+    if (!k(t, z) && !Fr(this.table[br], t._.selectedFields))
       throw new Error(
         "Insert select error: selected fields are not the same or are in a different order compared to the table definition"
       );
@@ -9655,7 +9655,7 @@ class El extends He {
     return typeof n == "string" && (this.joinsNotNullableMap[n] = !0), this.config.from = t, this;
   }
   getTableLikeFields(e) {
-    return D(e, Pe) ? e[j.Symbol.Columns] : D(e, Te) ? e._.selectedFields : e[le].selectedFields;
+    return k(e, Pe) ? e[j.Symbol.Columns] : k(e, Te) ? e._.selectedFields : e[le].selectedFields;
   }
   createJoin(e) {
     return (t, n) => {
@@ -9663,7 +9663,7 @@ class El extends He {
       if (typeof i == "string" && this.config.joins.some((s) => s.alias === i))
         throw new Error(`Alias "${i}" is already used in this query`);
       if (typeof n == "function") {
-        const s = this.config.from && !D(this.config.from, z) ? this.getTableLikeFields(this.config.from) : void 0;
+        const s = this.config.from && !k(this.config.from, z) ? this.getTableLikeFields(this.config.from) : void 0;
         n = n(
           new Proxy(
             this.config.table[j.Symbol.Columns],
@@ -9744,13 +9744,13 @@ class El extends He {
   returning(e) {
     if (!e && (e = Object.assign({}, this.config.table[j.Symbol.Columns]), this.config.from)) {
       const t = Qe(this.config.from);
-      if (typeof t == "string" && this.config.from && !D(this.config.from, z)) {
+      if (typeof t == "string" && this.config.from && !k(this.config.from, z)) {
         const n = this.getTableLikeFields(this.config.from);
         e[t] = n;
       }
       for (const n of this.config.joins) {
         const i = Qe(n.table);
-        if (typeof i == "string" && !D(n.table, z)) {
+        if (typeof i == "string" && !k(n.table, z)) {
           const s = this.getTableLikeFields(n.table);
           e[i] = s;
         }
@@ -9795,9 +9795,9 @@ class El extends He {
     return this;
   }
 }
-class Dt extends z {
+class kt extends z {
   constructor(e) {
-    super(Dt.buildEmbeddedCount(e.source, e.filters).queryChunks), this.params = e, this.mapWith(Number), this.session = e.session, this.sql = Dt.buildCount(
+    super(kt.buildEmbeddedCount(e.source, e.filters).queryChunks), this.params = e, this.mapWith(Number), this.session = e.session, this.sql = kt.buildCount(
       e.source,
       e.filters
     );
@@ -10007,7 +10007,7 @@ class Tl {
    */
   $with = (e, t) => {
     const n = this;
-    return { as: (s) => (typeof s == "function" && (s = s(new Ds(n.dialect))), new Proxy(
+    return { as: (s) => (typeof s == "function" && (s = s(new ks(n.dialect))), new Proxy(
       new gs(
         s.getSQL(),
         t ?? ("getSelectedFields" in s ? s.getSelectedFields() ?? {} : {}),
@@ -10018,7 +10018,7 @@ class Tl {
     )) };
   };
   $count(e, t) {
-    return new Dt({ source: e, filters: t, session: this.session });
+    return new kt({ source: e, filters: t, session: this.session });
   }
   /**
    * Incorporates a previously defined CTE (using `$with`) into the main query.
@@ -10237,7 +10237,7 @@ class Qs {
   on(...e) {
     return new fr(
       e.map((t) => {
-        if (D(t, z))
+        if (k(t, z))
           return t;
         t = t;
         const n = new ar(t.name, !!t.keyAsName, t.columnType, t.indexConfig);
@@ -10251,7 +10251,7 @@ class Qs {
   onOnly(...e) {
     return new fr(
       e.map((t) => {
-        if (D(t, z))
+        if (k(t, z))
           return t;
         t = t;
         const n = new ar(t.name, !!t.keyAsName, t.columnType, t.indexConfig);
@@ -10276,7 +10276,7 @@ class Qs {
   using(e, ...t) {
     return new fr(
       t.map((n) => {
-        if (D(n, z))
+        if (k(n, z))
           return n;
         n = n;
         const i = new ar(n.name, !!n.keyAsName, n.columnType, n.indexConfig);
@@ -10553,7 +10553,7 @@ function Cr(...r) {
     const e = tt(r[0]);
     return Ye(e, r[1]);
   }
-  if (ko(r[0])) {
+  if (Do(r[0])) {
     const { connection: e, client: t, ...n } = r[0];
     if (t)
       return Ye(t, n);
@@ -10572,7 +10572,7 @@ function Cr(...r) {
   }
   r.mock = e;
 })(Cr || (Cr = {}));
-var kl = Object.defineProperty, H = (r, e) => kl(r, "name", { value: e, configurable: !0 }), rt = class {
+var Dl = Object.defineProperty, H = (r, e) => Dl(r, "name", { value: e, configurable: !0 }), rt = class {
   type = 3;
   name = "";
   prefix = "";
@@ -10587,7 +10587,7 @@ var kl = Object.defineProperty, H = (r, e) => kl(r, "name", { value: e, configur
   }
 };
 H(rt, "Part");
-var Dl = /[$_\p{ID_Start}]/u, Ql = /[$_\u200C\u200D\p{ID_Continue}]/u, _r = ".*";
+var kl = /[$_\p{ID_Start}]/u, Ql = /[$_\u200C\u200D\p{ID_Continue}]/u, _r = ".*";
 function Fs(r, e) {
   return (e ? /^[\x00-\xFF]*$/ : /^[\x00-\x7F]*$/).test(r);
 }
@@ -10624,7 +10624,7 @@ function Ur(r, e = !1) {
       let u = "", o = n + 1;
       for (; o < r.length; ) {
         let h = r.substr(o, 1);
-        if (o === n + 1 && Dl.test(h) || o !== n + 1 && Ql.test(h)) {
+        if (o === n + 1 && kl.test(h) || o !== n + 1 && Ql.test(h)) {
           u += r[o++];
           continue;
         }
@@ -11577,7 +11577,7 @@ async function nc({
   console.info("get daily solution");
   const t = await hi({ db: r });
   return (await r.select().from(ft).where(
-    kt(
+    Dt(
       je(ft.user_id, e.id),
       je(ft.solution_id, t.id)
     )
@@ -11630,7 +11630,7 @@ function gr(r, e) {
   return r === "options" ? new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "https://kripple.github.io/codebreaker/",
+      "Access-Control-Allow-Origin": "https://kripple.github.io",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization"
     }
@@ -11638,7 +11638,7 @@ function gr(r, e) {
     status: 200,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "https://kripple.github.io/codebreaker/"
+      "Access-Control-Allow-Origin": "https://kripple.github.io"
     }
   }) : (r === "data" && e === void 0 && console.error("data is missing"), r !== "error" && console.error(`invalid key '${r}'`), new Response("Internal Server Error", { status: 500 }));
 }
