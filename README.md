@@ -53,10 +53,11 @@ Generating migrations:
 `npx drizzle-kit migrate --config config/drizzle.config.ts`
 
 TODO:
+
 - check queries for optimization opportunities (ex. column indexes, table joins)
 - use `eq` instead of `sql` where possible
 
-*** start with unit & integration tests for all of the api/db code
+\*\*\* start with unit & integration tests for all of the api/db code
 
 ### Local Development
 

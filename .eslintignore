@@ -1,3 +1,4 @@
 node_modules
 docs
 netlify
+src/api/db/migrations

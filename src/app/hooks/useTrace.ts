@@ -36,6 +36,6 @@ export const useTrace = (
     });
 
     propsRef.current = props;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props]);
 };
