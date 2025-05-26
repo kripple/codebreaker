@@ -4,7 +4,7 @@ import type { Game } from '@/types/game';
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.API_URL,
+    baseUrl: import.meta.env.VITE_API_URL,
   }),
   tagTypes: ['Game'],
   endpoints: (build) => ({
