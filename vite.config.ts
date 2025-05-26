@@ -2,10 +2,15 @@ import dns from 'dns';
 import { resolve } from 'path';
 
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { visualizer } from 'rollup-plugin-visualizer';
+import { type PluginOption, defineConfig } from 'vite';
 
 dns.setDefaultResultOrder('verbatim');
 const outDir = 'docs' as const;
+const plugins: PluginOption[] = [react()];
+
+// visualizer must be last
+plugins.push(visualizer({ open: false }));
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -17,7 +22,7 @@ export default defineConfig({
     outDir,
   },
   clearScreen: false,
-  plugins: [react()],
+  plugins,
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
