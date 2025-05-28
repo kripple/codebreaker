@@ -2,6 +2,7 @@ import { fairy } from '@/app/assets/fairy';
 import { fire } from '@/app/assets/fire';
 import { grass } from '@/app/assets/grass';
 import { ice } from '@/app/assets/ice';
+import { info } from '@/app/assets/info';
 import { lightning } from '@/app/assets/lightning';
 import { lock } from '@/app/assets/lock';
 import { rock } from '@/app/assets/rock';
@@ -16,6 +17,7 @@ const icons = {
   lightning,
   grass,
   ice,
+  info,
   water,
   rock,
   lock,
