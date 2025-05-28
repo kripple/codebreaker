@@ -1,6 +1,7 @@
-import { Center, Container, Title } from '@mantine/core';
+import { Center, Container } from '@mantine/core';
 
 import { Game } from '@/app/components/Game';
+import { Header } from '@/app/components/Header';
 import { Profiler } from '@/app/components/Profiler';
 import { AppProviders } from '@/app/providers/AppProviders';
 
@@ -10,15 +11,9 @@ export function App() {
   return (
     <Profiler component="App">
       <AppProviders>
+        <Header />
         <Center>
           <Container m="md">
-            <header>
-              <Center>
-                <Title className="title" mb="md" mt="md" order={1}>
-                  Code:Breaker
-                </Title>
-              </Center>
-            </header>
             <main className="main">
               <Game />
             </main>

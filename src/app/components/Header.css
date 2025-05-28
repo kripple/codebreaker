@@ -1,0 +1,15 @@
+:root {
+  --header-height: 57px;
+  --header-icon-size: 28px;
+}
+
+.header {
+  border-bottom: 1px solid var(--mantine-color-dark-4);
+  height: calc(var(--header-height) + 1px);
+  width: 100%;
+}
+
+.info-button {
+  background-color: transparent;
+  color: var(--mantine-color-text);
+}

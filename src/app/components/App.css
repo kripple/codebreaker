@@ -9,18 +9,16 @@
   --token-outline-size: calc(2em * var(--mantine-scale));
 }
 
+html {
+  overflow-x: hidden; /* prevent horizontall scroll */
+}
+
 body {
   font-family: system-ui, sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
   font-variation-settings: 'wdth' 100;
   font-weight: 400;
-}
-
-.title {
-  font-family: var(--title-font);
-  font-weight: 400;
-  letter-spacing: 2px;
 }
 
 .main {
