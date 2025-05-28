@@ -12,6 +12,7 @@
     "start": "vite",
     "api": "netlify dev",
     "build": "tsc -p tsconfig.app.json && vite build",
+    "postbuild": "rm docs/mockServiceWorker.js",
     "build:api": "rm -rf netlify/edge-functions && tsc -p tsconfig.api.json && tsx vite.api-config.ts",
     "lint": "eslint . && stylelint '**/*.css' && prettier --check .",
     "preview": "vite preview",
@@ -25,7 +26,8 @@
     "optimize": "svgo src/app/assets  --config config/svgo.config.mjs",
     "login": "netlify login",
     "env": "netlify env:import .env",
-    "deploy": "netlify deploy --prod"
+    "deploy": "netlify deploy --prod",
+    "update": "msw init public"
   },
   "dependencies": {
     "@mantine/core": "^8.0.0",
@@ -59,6 +61,7 @@
     "eslint-plugin-react": "7.37.4",
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.19",
+    "msw": "^2.8.5",
     "netlify-cli": "^21.5.0",
     "playwright": "^1.51.1",
     "prettier": "^3.5.3",
