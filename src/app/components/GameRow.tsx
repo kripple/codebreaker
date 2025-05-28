@@ -64,6 +64,7 @@ export function GameRow({
           </Flex>
           <Center p="xs">
             <Button
+              color={locked ? 'red' : undefined}
               disabled={disableButton}
               locked={locked && !gameDataRow}
               type="submit"

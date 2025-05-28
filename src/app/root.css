@@ -16,15 +16,7 @@ body {
   font-weight: 400;
 }
 
-[data-style='button'] {
-  cursor: pointer;
-}
-
-[data-style='button'].disabled {
-  cursor: default;
-}
-
-[data-style='button'].locked {
-  cursor: default;
-  opacity: 0.2;
+svg {
+  height: 100%;
+  width: 100%;
 }

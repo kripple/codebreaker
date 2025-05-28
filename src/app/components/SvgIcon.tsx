@@ -9,7 +9,6 @@ import { rock } from '@/app/assets/rock';
 import { water } from '@/app/assets/water';
 import { x } from '@/app/assets/x';
 import { dev } from '@/utils/env';
-import { validateSvg } from '@/utils/svg-validate';
 
 const icons = {
   fairy,
@@ -24,12 +23,19 @@ const icons = {
   x,
 } as const;
 
-export function SvgIcon({ icon: key }: { icon: keyof typeof icons }) {
+export function SvgIcon({
+  icon: key,
+  color,
+}: {
+  icon: keyof typeof icons;
+  color?: string;
+}) {
   const icon = icons[key];
 
   (async () => {
     if (dev) {
       const svg = await import(`@/app/assets/${key}.svg?raw`);
+      const validateSvg = (await import('@/utils/svg-validate')).validateSvg;
       validateSvg(key, svg.default, icon);
     }
   })();
@@ -37,6 +43,7 @@ export function SvgIcon({ icon: key }: { icon: keyof typeof icons }) {
   return (
     <svg
       className={`${key}-icon`}
+      color={color}
       fill="currentColor"
       viewBox={icon.viewBox}
       xmlns="http://www.w3.org/2000/svg"
