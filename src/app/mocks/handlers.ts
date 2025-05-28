@@ -29,10 +29,10 @@ export const handlers = [
           value: '3366',
           feedback: 'XX--',
         },
-        // {
-        //   value: '3377',
-        //   feedback: 'XXXX',
-        // },
+        {
+          value: '3377',
+          feedback: 'XXXX',
+        },
       ],
     });
   }),
