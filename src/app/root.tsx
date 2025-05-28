@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client';
 
 import { App } from '@/app/components/App';
 
+import '@/app/root.css';
+
 const root = createRoot(document.getElementById('root') as HTMLElement);
 
 async function enableMocking() {

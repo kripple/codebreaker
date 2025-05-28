@@ -18,8 +18,8 @@ export const handlers = [
           feedback: 'XX--',
         },
         {
-          value: '3344',
-          feedback: 'XX--',
+          value: '3434',
+          feedback: 'XO--',
         },
         {
           value: '3355',
@@ -29,10 +29,10 @@ export const handlers = [
           value: '3366',
           feedback: 'XX--',
         },
-        {
-          value: '3377',
-          feedback: 'XXXX',
-        },
+        // {
+        //   value: '3377',
+        //   feedback: 'XXXX',
+        // },
       ],
     });
   }),

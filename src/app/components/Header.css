@@ -11,5 +11,6 @@
 
 .info-button {
   background-color: transparent;
+  border: 0;
   color: var(--mantine-color-text);
 }

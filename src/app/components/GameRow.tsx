@@ -1,5 +1,6 @@
 import { Center, Divider, Flex, Paper } from '@mantine/core';
 
+import { Button } from '@/app/components/Button';
 import { FeedbackGrid } from '@/app/components/FeedbackGrid';
 import { GameRowColumn } from '@/app/components/GameRowColumn';
 import { Profiler } from '@/app/components/Profiler';
@@ -32,8 +33,6 @@ export function GameRow({
 
   // TODO: DRY repeated function
   const dataPath = (columnId: number) => `${rowId}.${columnId}`;
-
-  const rowClassName = active && !locked ? 'active-row row' : 'row';
   const divider = rowId === 0 ? null : <Divider />;
   const selectTokenById = (id: string) =>
     gameTokensLookup.find((token) => token.id.toString() === id);
@@ -42,9 +41,9 @@ export function GameRow({
 
   return (
     <Profiler component="GameRow">
-      <Paper bg={active ? 'dark' : undefined} className={rowClassName}>
+      <Paper bg={active ? 'dark' : undefined}>
         <Flex align="center" justify="space-between">
-          <FeedbackGrid tokens={feedbackTokens} />
+          <FeedbackGrid locked={locked} tokens={feedbackTokens} />
           <Flex gap="2px">
             {row.map((tokenColor, columnId) => (
               <GameRowColumn
@@ -53,6 +52,7 @@ export function GameRow({
                 columnId={columnId}
                 inputId={dataPath(columnId)}
                 key={columnId}
+                locked={locked}
                 setColumnId={setColumnId}
                 token={
                   gameDataRow
@@ -63,16 +63,13 @@ export function GameRow({
             ))}
           </Flex>
           <Center p="xs">
-            <button
-              className="button"
+            <Button
               disabled={disableButton}
-              style={{
-                cursor: disableButton ? 'default' : 'pointer',
-              }}
+              locked={locked && !gameDataRow}
               type="submit"
             >
               Try
-            </button>
+            </Button>
           </Center>
         </Flex>
         {divider}

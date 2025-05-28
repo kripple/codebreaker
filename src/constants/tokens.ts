@@ -2,7 +2,7 @@ import { config } from '@/constants/config';
 import { lookup } from '@/utils/array-lookup';
 import { isString } from '@/utils/type-guards';
 
-export const defaultColor = 'gray' as const;
+export const defaultColor = 'var(--token-default)' as const;
 export const gameRow: string[] = new Array(config.solutionLength).fill(
   defaultColor,
 );

@@ -1,4 +1,4 @@
-import { Box, ColorSwatch, Tooltip } from '@mantine/core';
+import { Box, ColorSwatch } from '@mantine/core';
 
 import { SvgIcon } from '@/app/components/SvgIcon';
 import {
@@ -9,70 +9,50 @@ import {
 
 import '@/app/components/FeedbackToken.css';
 
-export function FeedbackToken({ token: value }: { token?: Token['value'] }) {
+export function FeedbackToken({
+  token: value,
+  locked,
+}: {
+  token?: Token['value'];
+  locked?: boolean;
+}) {
   const key = value ? lookup[value].key : ('empty' as const);
   const size = '12px';
-  // const showRightHalf = {
-  //   clipPath: 'inset(0 50% 0 0)',
-  // };
-  // const showLeftHalf = {
-  //   clipPath: 'inset(0 0 0 50%)',
-  // };
+
+  // const temp = !value && locked ?
 
   const correct = (
-    <Tooltip
-      bd="1px solid var(--mantine-color-dark-4)"
-      color="dark"
-      label="Correct Color Correct Position"
-      multiline
-      style={{ color: 'var(--mantine-color-text)', textAlign: 'center' }}
-      w={137}
-    >
-      <ColorSwatch
-        color="var(--feedback-token-correct)"
-        size={size}
-      ></ColorSwatch>
-    </Tooltip>
+    <ColorSwatch
+      color="var(--feedback-token-correct)"
+      size={size}
+    ></ColorSwatch>
   );
 
   const halfCorrect = (
-    <Tooltip
+    <ColorSwatch
       bd="1px solid var(--mantine-color-dark-4)"
-      color="dark"
-      label="Correct Color Incorrect Position"
-      multiline
-      style={{ color: 'var(--mantine-color-text)', textAlign: 'center' }}
-      w={137}
-    >
-      <ColorSwatch
-        bd="1px solid var(--mantine-color-dark-4)"
-        color="var(--feedback-token-halfCorrect)"
-        size={size}
-      ></ColorSwatch>
-    </Tooltip>
+      color="var(--feedback-token-halfCorrect)"
+      size={size}
+    ></ColorSwatch>
   );
 
   const incorrect = (
-    <Tooltip
-      bd="1px solid var(--mantine-color-dark-4)"
-      color="dark"
-      label="Incorrect Color"
-      multiline
-      style={{ color: 'var(--mantine-color-text)', textAlign: 'center' }}
-      w={137}
+    <ColorSwatch
+      className="outline-overlay"
+      color="var(--feedback-token-incorrect)"
+      size={size}
+      withShadow={false}
     >
-      <ColorSwatch
-        className="outline-overlay"
-        color="var(--feedback-token-incorrect)"
-        size={size}
-        withShadow={false}
-      >
-        <SvgIcon icon="x" />
-      </ColorSwatch>
-    </Tooltip>
+      <SvgIcon icon="x" />
+    </ColorSwatch>
   );
 
-  const empty = <ColorSwatch color={defaultColor} size={size}></ColorSwatch>;
+  const empty = (
+    <ColorSwatch
+      color={locked ? 'var(--token-darker)' : defaultColor}
+      size={size}
+    ></ColorSwatch>
+  );
 
   const options = {
     correct,

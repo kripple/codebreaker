@@ -1,6 +1,7 @@
 import { Box } from '@mantine/core';
 
 import { GameToken } from '@/app/components/GameToken';
+import { Label } from '@/app/components/Label';
 import { Profiler } from '@/app/components/Profiler';
 import { type GameToken as Token, defaultColor } from '@/constants/tokens';
 
@@ -9,6 +10,7 @@ export function GameRowColumn({
   activeColumn,
   columnId,
   inputId,
+  locked,
   token,
   setColumnId,
 }: {
@@ -16,6 +18,7 @@ export function GameRowColumn({
   activeColumn: boolean;
   columnId: number;
   inputId: string;
+  locked?: boolean;
   token?: Token;
   setColumnId: SetState<number>;
 }) {
@@ -31,20 +34,20 @@ export function GameRowColumn({
           style={{ display: 'none' }}
           value={token?.color || defaultColor}
         ></input>
-        <label
+        <Label
           className="token"
+          disabled={!activeRow}
           htmlFor={inputId}
+          locked={locked && !token}
           style={{
-            cursor: activeRow ? 'pointer' : 'default',
             outline:
               activeRow && activeColumn
                 ? '1.5px ridge rgba(255, 255, 255, 0.8)'
                 : undefined,
           }}
-          tabIndex={0}
         >
-          <GameToken token={token} />
-        </label>
+          <GameToken locked={locked} token={token} />
+        </Label>
       </Box>
     </Profiler>
   );

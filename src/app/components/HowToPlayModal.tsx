@@ -1,6 +1,7 @@
 import { Box, Center, Modal } from '@mantine/core';
 import { useState } from 'react';
 
+import { Button } from '@/app/components/Button';
 import { FeedbackToken } from '@/app/components/FeedbackToken';
 import { Profiler } from '@/app/components/Profiler';
 import { SvgIcon } from '@/app/components/SvgIcon';
@@ -13,12 +14,10 @@ export function HowToPlayModal() {
     <Profiler component="HowToPlayModal">
       <Center h="100%" w="100%">
         <Box h="var(--header-icon-size)" w="var(--header-icon-size)">
-          <button
-            className="button info-button"
+          <Button
+            className="info-button"
             onClick={() => setShow(true)}
             style={{
-              border: 'none',
-              cursor: 'pointer',
               height: 'inherit',
               width: 'inherit',
               padding: 0,
@@ -27,7 +26,7 @@ export function HowToPlayModal() {
             <Center h="100%" w="100%">
               <SvgIcon icon="info"></SvgIcon>
             </Center>
-          </button>
+          </Button>
           <Modal
             centered
             onClose={() => setShow(false)}

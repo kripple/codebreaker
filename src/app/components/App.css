@@ -1,24 +1,14 @@
 :root {
-  --title-font: 'Tektur', sans-serif; /* 400-900 */
-  --body-font: 'Space Grotesk', sans-serif; /* 300-700 */
-  --stencil-font: 'Stardos Stencil'; /* 300, 700 */
-}
-
-:root {
   --token-size: calc(1.75rem * var(--mantine-scale));
   --token-outline-size: calc(2em * var(--mantine-scale));
 }
 
-html {
-  overflow-x: hidden; /* prevent horizontall scroll */
-}
+:root {
+  --token-default: rgb(115, 124, 127);
+  --token-darker: rgb(46, 46, 46);
 
-body {
-  font-family: system-ui, sans-serif;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-variation-settings: 'wdth' 100;
-  font-weight: 400;
+  --color-disabled: rgb(64, 64, 64);
+  --color-outline: rgb(0, 136, 255);
 }
 
 .main {

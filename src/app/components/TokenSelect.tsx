@@ -1,6 +1,7 @@
 import { Box, Flex, Paper } from '@mantine/core';
 
 import { GameToken } from '@/app/components/GameToken';
+import { Label } from '@/app/components/Label';
 import { Profiler } from '@/app/components/Profiler';
 import { gameTokens } from '@/constants/tokens';
 
@@ -29,16 +30,9 @@ export function TokenSelect({
                   style={{ display: 'none' }}
                   value={token.color}
                 ></input>
-                <label
-                  className="token"
-                  htmlFor={inputId}
-                  style={{
-                    cursor: locked ? 'default' : 'pointer',
-                  }}
-                  tabIndex={0}
-                >
+                <Label className="token" htmlFor={inputId} locked={locked}>
                   <GameToken token={token} />
-                </label>
+                </Label>
               </Box>
             );
           })}
