@@ -50,7 +50,9 @@ export function Profiler({
         if (phase === 'nested-update') console.warn(message);
       }}
     >
-      <div id={component}>{children}</div>
+      <div id={component} style={{ all: 'inherit' }}>
+        {children}
+      </div>
     </ReactProfiler>
   );
 }
