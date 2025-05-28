@@ -3,7 +3,6 @@ import { useState } from 'react';
 
 import { Button } from '@/app/components/Button';
 import { FeedbackToken } from '@/app/components/FeedbackToken';
-import { Profiler } from '@/app/components/Profiler';
 import { SvgIcon } from '@/app/components/SvgIcon';
 import { config } from '@/constants/config';
 
@@ -11,7 +10,7 @@ export function HowToPlayModal() {
   const [show, setShow] = useState<boolean>(false);
 
   return (
-    <Profiler component="HowToPlayModal">
+    <>
       <Button
         onClick={() => setShow(true)}
         style={{
@@ -24,6 +23,7 @@ export function HowToPlayModal() {
       >
         <SvgIcon icon="info" />
       </Button>
+
       <Modal
         centered
         onClose={() => setShow(false)}
@@ -105,6 +105,6 @@ export function HowToPlayModal() {
           {/* TODO: The next code will be released in <code>00:00:00</code> */}
         </p>
       </Modal>
-    </Profiler>
+    </>
   );
 }
