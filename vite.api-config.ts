@@ -25,7 +25,7 @@ for (const name of edgeFunctions) {
       modulePreload: { polyfill: false },
       outDir,
       ssr: false,
-      target: 'node22',
+      target: 'esnext',
     },
     clearScreen: false,
     esbuild: {

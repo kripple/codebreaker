@@ -1,16 +1,16 @@
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
-import 'urlpattern-polyfill';
-
 import { makeAttempt } from '@/api/handlers/makeAttempt';
+import { getDb } from '@/api/helpers/getDb';
+import { getEnv } from '@/api/helpers/getEnv';
 import { respondWith } from '@/api/helpers/respondWith';
+
+import 'urlpattern-polyfill';
 
 export default async function handler(request: Request) {
   try {
-    if (request.method === 'OPTIONS') return respondWith('options');
-    const sql = neon(Netlify.env.get('DATABASE_URL')!);
-    const db = drizzle({ client: sql });
+    const env = getEnv();
+    if (request.method === 'OPTIONS') return respondWith('options', { env });
 
+    const db = getDb(env);
     const pattern = new URLPattern({ pathname: '/game/:id/try/:code' });
     const result = pattern.exec(request.url);
     const id = result?.pathname.groups?.id;
@@ -18,9 +18,10 @@ export default async function handler(request: Request) {
     if (!id || !code) throw Error('missing required params');
 
     const data = await makeAttempt({ db, id, attempt: code });
-    return respondWith('data', data);
+    return respondWith('data', { env, data });
   } catch (error) {
     console.error('Unexpected error in /game/:id/try/:code', error);
+
     return respondWith('error');
   }
 }

@@ -1,12 +1,11 @@
 import { desc, eq } from 'drizzle-orm';
-import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
 import { User } from '@/api/db/schema/users';
 
 export async function createNewUser({
   db,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
 }): Promise<User> {
   const users = await db.insert(User).values({}).returning();
   const user = users.pop();
@@ -20,7 +19,7 @@ export async function getUser({
   db,
   uuid,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   uuid: string;
 }): Promise<User | undefined> {
   const users = await db

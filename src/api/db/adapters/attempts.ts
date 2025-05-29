@@ -1,12 +1,11 @@
 import { asc, eq } from 'drizzle-orm';
-import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
 import type { AdhocGame } from '@/api/db/schema/adhoc_games';
 import { Attempt } from '@/api/db/schema/attempts';
 import type { DailyGame } from '@/api/db/schema/daily_games';
 
 type Props<T extends DailyGame | AdhocGame> = {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   game: T;
   attempt: string;
   feedback: string;
@@ -42,18 +41,18 @@ export async function createNewAttempt({
 }
 
 export function getAttempts(props: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   game: DailyGame;
 }): Promise<Attempt[]>;
 export function getAttempts(props: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   game: AdhocGame;
 }): Promise<Attempt[]>;
 export async function getAttempts({
   db,
   game,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   game: DailyGame | AdhocGame;
 }): Promise<Attempt[]> {
   console.info('get attempts');

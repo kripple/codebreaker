@@ -1,5 +1,4 @@
 import { eq, sql } from 'drizzle-orm';
-import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
 import { Solution } from '@/api/db/schema/solutions';
 import { makeSecretCode } from '@/api/helpers/codemaker';
@@ -7,7 +6,7 @@ import { makeSecretCode } from '@/api/helpers/codemaker';
 async function createNewSolution({
   db,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
 }): Promise<Solution> {
   console.info('create new solution');
   const value = makeSecretCode();
@@ -27,7 +26,7 @@ async function createNewSolution({
 export async function getSolution({
   db,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
 }): Promise<Solution | undefined> {
   console.info('get daily solution');
   const solutions = await db
@@ -42,7 +41,7 @@ export async function getSolutionById({
   db,
   id,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   id: number;
 }): Promise<Solution | undefined> {
   console.info(`get solution by id '${id}'`);
@@ -54,7 +53,7 @@ export async function getSolutionById({
 export async function getOrCreateSolution({
   db,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
 }): Promise<Solution> {
   const currentSolution = await getSolution({ db });
   if (currentSolution) console.info(`get solution '${currentSolution.id}'`);

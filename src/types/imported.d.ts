@@ -12,3 +12,5 @@ declare type ClickEvent = import('@/types/react').ReactMouseEvent<
 >;
 
 declare type SetState<T> = import('@/types/react').SetState<T>;
+
+declare type AppDatabase = import('@/types/database').AppDatabase;

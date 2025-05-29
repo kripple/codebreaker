@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm';
-import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
 import { AdhocGame } from '@/api/db/schema/adhoc_games';
 import type { User } from '@/api/db/schema/users';
@@ -9,7 +8,7 @@ export async function createNewAdhocGame({
   db,
   user,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   user: User;
 }): Promise<AdhocGame> {
   console.info(`create new adhoc game for user '${user.id}'`);
@@ -30,7 +29,7 @@ export async function getAdhocGameById({
   db,
   id,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   id: number;
 }): Promise<AdhocGame> {
   const games = await db.select().from(AdhocGame).where(eq(AdhocGame.id, id));

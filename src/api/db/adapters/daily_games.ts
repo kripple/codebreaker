@@ -1,5 +1,4 @@
 import { and, eq } from 'drizzle-orm';
-import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 
 import { getOrCreateSolution } from '@/api/db/adapters/solutions';
 import { DailyGame } from '@/api/db/schema/daily_games';
@@ -9,7 +8,7 @@ async function createNewDailyGame({
   db,
   user,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   user: User;
 }): Promise<DailyGame> {
   console.info('create new daily solution');
@@ -33,7 +32,7 @@ async function getDailyGame({
   db,
   user,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   user: User;
 }): Promise<DailyGame | undefined> {
   console.info('get daily solution');
@@ -55,7 +54,7 @@ export async function getDailyGameById({
   db,
   id,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   id: number;
 }): Promise<DailyGame | undefined> {
   console.info('get daily solution by id');
@@ -68,7 +67,7 @@ export async function getOrCreateDailyGame({
   db,
   user,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   user: User;
 }): Promise<DailyGame> {
   console.info('get or create daily game');
