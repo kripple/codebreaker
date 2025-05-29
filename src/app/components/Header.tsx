@@ -1,7 +1,9 @@
 import { Flex, Group } from '@mantine/core';
 
-import { HowToPlayModal } from '@/app/components/HowToPlayModal';
+import { Label } from '@/app/components/Label';
 import { Profiler } from '@/app/components/Profiler';
+import { SvgIcon } from '@/app/components/SvgIcon';
+import { modalInputId } from '@/constants/ids';
 
 import '@/app/components/Header.css';
 
@@ -23,7 +25,18 @@ export function Header() {
           {title}
         </Flex>
         <Flex h="inherit" justify="flex-end" p="md">
-          <HowToPlayModal />
+          <Label
+            htmlFor={modalInputId}
+            style={{
+              aspectRatio: 1,
+              background: 'none',
+              border: 0,
+              height: '100%',
+              padding: '3px',
+            }}
+          >
+            <SvgIcon icon="info" />
+          </Label>
         </Flex>
       </Group>
     </Profiler>

@@ -1,0 +1,13 @@
+.modal-provider .modal {
+  display: none;
+}
+
+#modal-toggle:checked ~ .modal-provider .modal {
+  display: flex;
+}
+
+.modal {
+  display: absolute;
+  position: fixed;
+  top: 0;
+}
