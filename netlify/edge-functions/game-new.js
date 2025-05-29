@@ -1,15 +1,5490 @@
-var vs = Object.create, Ge = Object.defineProperty, Ss = Object.getOwnPropertyDescriptor, Ps = Object.getOwnPropertyNames, Es = Object.getPrototypeOf, _s = Object.prototype.hasOwnProperty, Cs = (n, e, t) => e in n ? Ge(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t, g = (n, e) => Ge(n, "name", { value: e, configurable: !0 }), ye = (n, e) => () => (n && (e = n(n = 0)), e), X = (n, e) => () => (e || n((e = { exports: {} }).exports, e), e.exports), Te = (n, e) => {
+const I = Symbol.for("drizzle:entityKind");
+function Q(n, e) {
+  if (!n || typeof n != "object")
+    return !1;
+  if (n instanceof e)
+    return !0;
+  if (!Object.prototype.hasOwnProperty.call(e, I))
+    throw new Error(
+      `Class "${e.name ?? "<unknown>"}" doesn't look like a Drizzle entity. If this is incorrect and the class is provided by Drizzle, please report this as a bug.`
+    );
+  let t = Object.getPrototypeOf(n).constructor;
+  if (t)
+    for (; t; ) {
+      if (I in t && t[I] === e[I])
+        return !0;
+      t = Object.getPrototypeOf(t);
+    }
+  return !1;
+}
+class ce {
+  constructor(e, t) {
+    this.table = e, this.config = t, this.name = t.name, this.keyAsName = t.keyAsName, this.notNull = t.notNull, this.default = t.default, this.defaultFn = t.defaultFn, this.onUpdateFn = t.onUpdateFn, this.hasDefault = t.hasDefault, this.primary = t.primaryKey, this.isUnique = t.isUnique, this.uniqueName = t.uniqueName, this.uniqueType = t.uniqueType, this.dataType = t.dataType, this.columnType = t.columnType, this.generated = t.generated, this.generatedIdentity = t.generatedIdentity;
+  }
+  static [I] = "Column";
+  name;
+  keyAsName;
+  primary;
+  notNull;
+  default;
+  defaultFn;
+  onUpdateFn;
+  hasDefault;
+  isUnique;
+  uniqueName;
+  uniqueType;
+  dataType;
+  columnType;
+  enumValues = void 0;
+  generated = void 0;
+  generatedIdentity = void 0;
+  config;
+  mapFromDriverValue(e) {
+    return e;
+  }
+  mapToDriverValue(e) {
+    return e;
+  }
+  // ** @internal */
+  shouldDisableInsert() {
+    return this.config.generated !== void 0 && this.config.generated.type !== "byDefault";
+  }
+}
+class Ss {
+  static [I] = "ColumnBuilder";
+  config;
+  constructor(e, t, r) {
+    this.config = {
+      name: e,
+      keyAsName: e === "",
+      notNull: !1,
+      default: void 0,
+      hasDefault: !1,
+      primaryKey: !1,
+      isUnique: !1,
+      uniqueName: void 0,
+      uniqueType: void 0,
+      dataType: t,
+      columnType: r,
+      generated: void 0
+    };
+  }
+  /**
+   * Changes the data type of the column. Commonly used with `json` columns. Also, useful for branded types.
+   *
+   * @example
+   * ```ts
+   * const users = pgTable('users', {
+   * 	id: integer('id').$type<UserId>().primaryKey(),
+   * 	details: json('details').$type<UserDetails>().notNull(),
+   * });
+   * ```
+   */
+  $type() {
+    return this;
+  }
+  /**
+   * Adds a `not null` clause to the column definition.
+   *
+   * Affects the `select` model of the table - columns *without* `not null` will be nullable on select.
+   */
+  notNull() {
+    return this.config.notNull = !0, this;
+  }
+  /**
+   * Adds a `default <value>` clause to the column definition.
+   *
+   * Affects the `insert` model of the table - columns *with* `default` are optional on insert.
+   *
+   * If you need to set a dynamic default value, use {@link $defaultFn} instead.
+   */
+  default(e) {
+    return this.config.default = e, this.config.hasDefault = !0, this;
+  }
+  /**
+   * Adds a dynamic default value to the column.
+   * The function will be called when the row is inserted, and the returned value will be used as the column value.
+   *
+   * **Note:** This value does not affect the `drizzle-kit` behavior, it is only used at runtime in `drizzle-orm`.
+   */
+  $defaultFn(e) {
+    return this.config.defaultFn = e, this.config.hasDefault = !0, this;
+  }
+  /**
+   * Alias for {@link $defaultFn}.
+   */
+  $default = this.$defaultFn;
+  /**
+   * Adds a dynamic update value to the column.
+   * The function will be called when the row is updated, and the returned value will be used as the column value if none is provided.
+   * If no `default` (or `$defaultFn`) value is provided, the function will be called when the row is inserted as well, and the returned value will be used as the column value.
+   *
+   * **Note:** This value does not affect the `drizzle-kit` behavior, it is only used at runtime in `drizzle-orm`.
+   */
+  $onUpdateFn(e) {
+    return this.config.onUpdateFn = e, this.config.hasDefault = !0, this;
+  }
+  /**
+   * Alias for {@link $onUpdateFn}.
+   */
+  $onUpdate = this.$onUpdateFn;
+  /**
+   * Adds a `primary key` clause to the column definition. This implicitly makes the column `not null`.
+   *
+   * In SQLite, `integer primary key` implicitly makes the column auto-incrementing.
+   */
+  primaryKey() {
+    return this.config.primaryKey = !0, this.config.notNull = !0, this;
+  }
+  /** @internal Sets the name of the column to the key within the table definition if a name was not given. */
+  setName(e) {
+    this.config.name === "" && (this.config.name = e);
+  }
+}
+const Ie = Symbol.for("drizzle:Name");
+class Ps {
+  static [I] = "PgForeignKeyBuilder";
+  /** @internal */
+  reference;
+  /** @internal */
+  _onUpdate = "no action";
+  /** @internal */
+  _onDelete = "no action";
+  constructor(e, t) {
+    this.reference = () => {
+      const { name: r, columns: i, foreignColumns: s } = e();
+      return { name: r, columns: i, foreignTable: s[0].table, foreignColumns: s };
+    }, t && (this._onUpdate = t.onUpdate, this._onDelete = t.onDelete);
+  }
+  onUpdate(e) {
+    return this._onUpdate = e === void 0 ? "no action" : e, this;
+  }
+  onDelete(e) {
+    return this._onDelete = e === void 0 ? "no action" : e, this;
+  }
+  /** @internal */
+  build(e) {
+    return new Es(e, this);
+  }
+}
+class Es {
+  constructor(e, t) {
+    this.table = e, this.reference = t.reference, this.onUpdate = t._onUpdate, this.onDelete = t._onDelete;
+  }
+  static [I] = "PgForeignKey";
+  reference;
+  onUpdate;
+  onDelete;
+  getName() {
+    const { name: e, columns: t, foreignColumns: r } = this.reference(), i = t.map((a) => a.name), s = r.map((a) => a.name), u = [
+      this.table[Ie],
+      ...i,
+      r[0].table[Ie],
+      ...s
+    ];
+    return e ?? `${u.join("_")}_fk`;
+  }
+}
+function _s(n, ...e) {
+  return n(...e);
+}
+function Cs(n, e) {
+  return `${n[Ie]}_${e.join("_")}_unique`;
+}
+function Or(n, e, t) {
+  for (let r = e; r < n.length; r++) {
+    const i = n[r];
+    if (i === "\\") {
+      r++;
+      continue;
+    }
+    if (i === '"')
+      return [n.slice(e, r).replace(/\\/g, ""), r + 1];
+    if (!t && (i === "," || i === "}"))
+      return [n.slice(e, r).replace(/\\/g, ""), r];
+  }
+  return [n.slice(e).replace(/\\/g, ""), n.length];
+}
+function Jr(n, e = 0) {
+  const t = [];
+  let r = e, i = !1;
+  for (; r < n.length; ) {
+    const s = n[r];
+    if (s === ",") {
+      (i || r === e) && t.push(""), i = !0, r++;
+      continue;
+    }
+    if (i = !1, s === "\\") {
+      r += 2;
+      continue;
+    }
+    if (s === '"') {
+      const [d, y] = Or(n, r + 1, !0);
+      t.push(d), r = y;
+      continue;
+    }
+    if (s === "}")
+      return [t, r + 1];
+    if (s === "{") {
+      const [d, y] = Jr(n, r + 1);
+      t.push(d), r = y;
+      continue;
+    }
+    const [u, a] = Or(n, r, !1);
+    t.push(u), r = a;
+  }
+  return [t, r];
+}
+function Ts(n) {
+  const [e] = Jr(n, 1);
+  return e;
+}
+function Yr(n) {
+  return `{${n.map((e) => Array.isArray(e) ? Yr(e) : typeof e == "string" ? `"${e.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"` : `${e}`).join(",")}}`;
+}
+class te extends Ss {
+  foreignKeyConfigs = [];
+  static [I] = "PgColumnBuilder";
+  array(e) {
+    return new xs(this.config.name, this, e);
+  }
+  references(e, t = {}) {
+    return this.foreignKeyConfigs.push({ ref: e, actions: t }), this;
+  }
+  unique(e, t) {
+    return this.config.isUnique = !0, this.config.uniqueName = e, this.config.uniqueType = t?.nulls, this;
+  }
+  generatedAlwaysAs(e) {
+    return this.config.generated = {
+      as: e,
+      type: "always",
+      mode: "stored"
+    }, this;
+  }
+  /** @internal */
+  buildForeignKeys(e, t) {
+    return this.foreignKeyConfigs.map(({ ref: r, actions: i }) => _s(
+      (s, u) => {
+        const a = new Ps(() => {
+          const d = s();
+          return { columns: [e], foreignColumns: [d] };
+        });
+        return u.onUpdate && a.onUpdate(u.onUpdate), u.onDelete && a.onDelete(u.onDelete), a.build(t);
+      },
+      r,
+      i
+    ));
+  }
+  /** @internal */
+  buildExtraConfigColumn(e) {
+    return new As(e, this.config);
+  }
+}
+class Y extends ce {
+  constructor(e, t) {
+    t.uniqueName || (t.uniqueName = Cs(e, [t.name])), super(e, t), this.table = e;
+  }
+  static [I] = "PgColumn";
+}
+class As extends Y {
+  static [I] = "ExtraConfigColumn";
+  getSQLType() {
+    return this.getSQLType();
+  }
+  indexConfig = {
+    order: this.config.order ?? "asc",
+    nulls: this.config.nulls ?? "last",
+    opClass: this.config.opClass
+  };
+  defaultConfig = {
+    order: "asc",
+    nulls: "last",
+    opClass: void 0
+  };
+  asc() {
+    return this.indexConfig.order = "asc", this;
+  }
+  desc() {
+    return this.indexConfig.order = "desc", this;
+  }
+  nullsFirst() {
+    return this.indexConfig.nulls = "first", this;
+  }
+  nullsLast() {
+    return this.indexConfig.nulls = "last", this;
+  }
+  /**
+   * ### PostgreSQL documentation quote
+   *
+   * > An operator class with optional parameters can be specified for each column of an index.
+   * The operator class identifies the operators to be used by the index for that column.
+   * For example, a B-tree index on four-byte integers would use the int4_ops class;
+   * this operator class includes comparison functions for four-byte integers.
+   * In practice the default operator class for the column's data type is usually sufficient.
+   * The main point of having operator classes is that for some data types, there could be more than one meaningful ordering.
+   * For example, we might want to sort a complex-number data type either by absolute value or by real part.
+   * We could do this by defining two operator classes for the data type and then selecting the proper class when creating an index.
+   * More information about operator classes check:
+   *
+   * ### Useful links
+   * https://www.postgresql.org/docs/current/sql-createindex.html
+   *
+   * https://www.postgresql.org/docs/current/indexes-opclass.html
+   *
+   * https://www.postgresql.org/docs/current/xindex.html
+   *
+   * ### Additional types
+   * If you have the `pg_vector` extension installed in your database, you can use the
+   * `vector_l2_ops`, `vector_ip_ops`, `vector_cosine_ops`, `vector_l1_ops`, `bit_hamming_ops`, `bit_jaccard_ops`, `halfvec_l2_ops`, `sparsevec_l2_ops` options, which are predefined types.
+   *
+   * **You can always specify any string you want in the operator class, in case Drizzle doesn't have it natively in its types**
+   *
+   * @param opClass
+   * @returns
+   */
+  op(e) {
+    return this.indexConfig.opClass = e, this;
+  }
+}
+class Ht {
+  static [I] = "IndexedColumn";
+  constructor(e, t, r, i) {
+    this.name = e, this.keyAsName = t, this.type = r, this.indexConfig = i;
+  }
+  name;
+  keyAsName;
+  type;
+  indexConfig;
+}
+class xs extends te {
+  static [I] = "PgArrayBuilder";
+  constructor(e, t, r) {
+    super(e, "array", "PgArray"), this.config.baseBuilder = t, this.config.size = r;
+  }
+  /** @internal */
+  build(e) {
+    const t = this.config.baseBuilder.build(e);
+    return new pr(
+      e,
+      this.config,
+      t
+    );
+  }
+}
+class pr extends Y {
+  constructor(e, t, r, i) {
+    super(e, t), this.baseColumn = r, this.range = i, this.size = t.size;
+  }
+  size;
+  static [I] = "PgArray";
+  getSQLType() {
+    return `${this.baseColumn.getSQLType()}[${typeof this.size == "number" ? this.size : ""}]`;
+  }
+  mapFromDriverValue(e) {
+    return typeof e == "string" && (e = Ts(e)), e.map((t) => this.baseColumn.mapFromDriverValue(t));
+  }
+  mapToDriverValue(e, t = !1) {
+    const r = e.map(
+      (i) => i === null ? null : Q(this.baseColumn, pr) ? this.baseColumn.mapToDriverValue(i, !0) : this.baseColumn.mapToDriverValue(i)
+    );
+    return t ? r : Yr(r);
+  }
+}
+const Rr = Symbol.for("drizzle:isPgEnum");
+function Bs(n) {
+  return !!n && typeof n == "function" && Rr in n && n[Rr] === !0;
+}
+class _e {
+  static [I] = "Subquery";
+  constructor(e, t, r, i = !1) {
+    this._ = {
+      brand: "Subquery",
+      sql: e,
+      selectedFields: t,
+      alias: r,
+      isWith: i
+    };
+  }
+  // getSQL(): SQL<unknown> {
+  // 	return new SQL([this]);
+  // }
+}
+class Zr extends _e {
+  static [I] = "WithSubquery";
+}
+const Se = {
+  startActiveSpan(n, e) {
+    return e();
+  }
+}, ue = Symbol.for("drizzle:ViewBaseConfig"), vt = Symbol.for("drizzle:Schema"), sr = Symbol.for("drizzle:Columns"), Mr = Symbol.for("drizzle:ExtraConfigColumns"), Gt = Symbol.for("drizzle:OriginalName"), Jt = Symbol.for("drizzle:BaseName"), _t = Symbol.for("drizzle:IsAlias"), Dr = Symbol.for("drizzle:ExtraConfigBuilder"), Ns = Symbol.for("drizzle:IsDrizzleTable");
+class U {
+  static [I] = "Table";
+  /** @internal */
+  static Symbol = {
+    Name: Ie,
+    Schema: vt,
+    OriginalName: Gt,
+    Columns: sr,
+    ExtraConfigColumns: Mr,
+    BaseName: Jt,
+    IsAlias: _t,
+    ExtraConfigBuilder: Dr
+  };
+  /**
+   * @internal
+   * Can be changed if the table is aliased.
+   */
+  [Ie];
+  /**
+   * @internal
+   * Used to store the original name of the table, before any aliasing.
+   */
+  [Gt];
+  /** @internal */
+  [vt];
+  /** @internal */
+  [sr];
+  /** @internal */
+  [Mr];
+  /**
+   *  @internal
+   * Used to store the table name before the transformation via the `tableCreator` functions.
+   */
+  [Jt];
+  /** @internal */
+  [_t] = !1;
+  /** @internal */
+  [Ns] = !0;
+  /** @internal */
+  [Dr] = void 0;
+  constructor(e, t, r) {
+    this[Ie] = this[Gt] = e, this[vt] = t, this[Jt] = r;
+  }
+}
+function Ne(n) {
+  return n[Ie];
+}
+function nt(n) {
+  return `${n[vt] ?? "public"}.${n[Ie]}`;
+}
+function Xr(n) {
+  return n != null && typeof n.getSQL == "function";
+}
+function Is(n) {
+  const e = { sql: "", params: [] };
+  for (const t of n)
+    e.sql += t.sql, e.params.push(...t.params), t.typings?.length && (e.typings || (e.typings = []), e.typings.push(...t.typings));
+  return e;
+}
+class pe {
+  static [I] = "StringChunk";
+  value;
+  constructor(e) {
+    this.value = Array.isArray(e) ? e : [e];
+  }
+  getSQL() {
+    return new z([this]);
+  }
+}
+class z {
+  constructor(e) {
+    this.queryChunks = e;
+  }
+  static [I] = "SQL";
+  /** @internal */
+  decoder = en;
+  shouldInlineParams = !1;
+  append(e) {
+    return this.queryChunks.push(...e.queryChunks), this;
+  }
+  toQuery(e) {
+    return Se.startActiveSpan("drizzle.buildSQL", (t) => {
+      const r = this.buildQueryFromSourceParams(this.queryChunks, e);
+      return t?.setAttributes({
+        "drizzle.query.text": r.sql,
+        "drizzle.query.params": JSON.stringify(r.params)
+      }), r;
+    });
+  }
+  buildQueryFromSourceParams(e, t) {
+    const r = Object.assign({}, t, {
+      inlineParams: t.inlineParams || this.shouldInlineParams,
+      paramStartIndex: t.paramStartIndex || { value: 0 }
+    }), {
+      casing: i,
+      escapeName: s,
+      escapeParam: u,
+      prepareTyping: a,
+      inlineParams: d,
+      paramStartIndex: y
+    } = r;
+    return Is(e.map((f) => {
+      if (Q(f, pe))
+        return { sql: f.value.join(""), params: [] };
+      if (Q(f, ir))
+        return { sql: s(f.value), params: [] };
+      if (f === void 0)
+        return { sql: "", params: [] };
+      if (Array.isArray(f)) {
+        const b = [new pe("(")];
+        for (const [m, v] of f.entries())
+          b.push(v), m < f.length - 1 && b.push(new pe(", "));
+        return b.push(new pe(")")), this.buildQueryFromSourceParams(b, r);
+      }
+      if (Q(f, z))
+        return this.buildQueryFromSourceParams(f.queryChunks, {
+          ...r,
+          inlineParams: d || f.shouldInlineParams
+        });
+      if (Q(f, U)) {
+        const b = f[U.Symbol.Schema], m = f[U.Symbol.Name];
+        return {
+          sql: b === void 0 || f[_t] ? s(m) : s(b) + "." + s(m),
+          params: []
+        };
+      }
+      if (Q(f, ce)) {
+        const b = i.getColumnCasing(f);
+        if (t.invokeSource === "indexes")
+          return { sql: s(b), params: [] };
+        const m = f.table[U.Symbol.Schema];
+        return {
+          sql: f.table[_t] || m === void 0 ? s(f.table[U.Symbol.Name]) + "." + s(b) : s(m) + "." + s(f.table[U.Symbol.Name]) + "." + s(b),
+          params: []
+        };
+      }
+      if (Q(f, Qe)) {
+        const b = f[ue].schema, m = f[ue].name;
+        return {
+          sql: b === void 0 || f[ue].isAlias ? s(m) : s(b) + "." + s(m),
+          params: []
+        };
+      }
+      if (Q(f, Le)) {
+        if (Q(f.value, Ke))
+          return { sql: u(y.value++, f), params: [f], typings: ["none"] };
+        const b = f.value === null ? null : f.encoder.mapToDriverValue(f.value);
+        if (Q(b, z))
+          return this.buildQueryFromSourceParams([b], r);
+        if (d)
+          return { sql: this.mapInlineParam(b, r), params: [] };
+        let m = ["none"];
+        return a && (m = [a(f.encoder)]), { sql: u(y.value++, b), params: [b], typings: m };
+      }
+      return Q(f, Ke) ? { sql: u(y.value++, f), params: [f], typings: ["none"] } : Q(f, z.Aliased) && f.fieldAlias !== void 0 ? { sql: s(f.fieldAlias), params: [] } : Q(f, _e) ? f._.isWith ? { sql: s(f._.alias), params: [] } : this.buildQueryFromSourceParams([
+        new pe("("),
+        f._.sql,
+        new pe(") "),
+        new ir(f._.alias)
+      ], r) : Bs(f) ? f.schema ? { sql: s(f.schema) + "." + s(f.enumName), params: [] } : { sql: s(f.enumName), params: [] } : Xr(f) ? f.shouldOmitSQLParens?.() ? this.buildQueryFromSourceParams([f.getSQL()], r) : this.buildQueryFromSourceParams([
+        new pe("("),
+        f.getSQL(),
+        new pe(")")
+      ], r) : d ? { sql: this.mapInlineParam(f, r), params: [] } : { sql: u(y.value++, f), params: [f], typings: ["none"] };
+    }));
+  }
+  mapInlineParam(e, { escapeString: t }) {
+    if (e === null)
+      return "null";
+    if (typeof e == "number" || typeof e == "boolean")
+      return e.toString();
+    if (typeof e == "string")
+      return t(e);
+    if (typeof e == "object") {
+      const r = e.toString();
+      return t(r === "[object Object]" ? JSON.stringify(e) : r);
+    }
+    throw new Error("Unexpected param value: " + e);
+  }
+  getSQL() {
+    return this;
+  }
+  as(e) {
+    return e === void 0 ? this : new z.Aliased(this, e);
+  }
+  mapWith(e) {
+    return this.decoder = typeof e == "function" ? { mapFromDriverValue: e } : e, this;
+  }
+  inlineParams() {
+    return this.shouldInlineParams = !0, this;
+  }
+  /**
+   * This method is used to conditionally include a part of the query.
+   *
+   * @param condition - Condition to check
+   * @returns itself if the condition is `true`, otherwise `undefined`
+   */
+  if(e) {
+    return e ? this : void 0;
+  }
+}
+class ir {
+  constructor(e) {
+    this.value = e;
+  }
+  static [I] = "Name";
+  brand;
+  getSQL() {
+    return new z([this]);
+  }
+}
+function Ls(n) {
+  return typeof n == "object" && n !== null && "mapToDriverValue" in n && typeof n.mapToDriverValue == "function";
+}
+const en = {
+  mapFromDriverValue: (n) => n
+}, tn = {
+  mapToDriverValue: (n) => n
+};
+({
+  ...en,
+  ...tn
+});
+class Le {
+  /**
+   * @param value - Parameter value
+   * @param encoder - Encoder to convert the value to a driver parameter
+   */
+  constructor(e, t = tn) {
+    this.value = e, this.encoder = t;
+  }
+  static [I] = "Param";
+  brand;
+  getSQL() {
+    return new z([this]);
+  }
+}
+function A(n, ...e) {
+  const t = [];
+  (e.length > 0 || n.length > 0 && n[0] !== "") && t.push(new pe(n[0]));
+  for (const [r, i] of e.entries())
+    t.push(i, new pe(n[r + 1]));
+  return new z(t);
+}
+((n) => {
+  function e() {
+    return new z([]);
+  }
+  n.empty = e;
+  function t(d) {
+    return new z(d);
+  }
+  n.fromList = t;
+  function r(d) {
+    return new z([new pe(d)]);
+  }
+  n.raw = r;
+  function i(d, y) {
+    const f = [];
+    for (const [b, m] of d.entries())
+      b > 0 && y !== void 0 && f.push(y), f.push(m);
+    return new z(f);
+  }
+  n.join = i;
+  function s(d) {
+    return new ir(d);
+  }
+  n.identifier = s;
+  function u(d) {
+    return new Ke(d);
+  }
+  n.placeholder = u;
+  function a(d, y) {
+    return new Le(d, y);
+  }
+  n.param = a;
+})(A || (A = {}));
+((n) => {
+  class e {
+    constructor(r, i) {
+      this.sql = r, this.fieldAlias = i;
+    }
+    static [I] = "SQL.Aliased";
+    /** @internal */
+    isSelectionField = !1;
+    getSQL() {
+      return this.sql;
+    }
+    /** @internal */
+    clone() {
+      return new e(this.sql, this.fieldAlias);
+    }
+  }
+  n.Aliased = e;
+})(z || (z = {}));
+class Ke {
+  constructor(e) {
+    this.name = e;
+  }
+  static [I] = "Placeholder";
+  getSQL() {
+    return new z([this]);
+  }
+}
+function Yt(n, e) {
+  return n.map((t) => {
+    if (Q(t, Ke)) {
+      if (!(t.name in e))
+        throw new Error(`No value for placeholder "${t.name}" was provided`);
+      return e[t.name];
+    }
+    if (Q(t, Le) && Q(t.value, Ke)) {
+      if (!(t.value.name in e))
+        throw new Error(`No value for placeholder "${t.value.name}" was provided`);
+      return t.encoder.mapToDriverValue(e[t.value.name]);
+    }
+    return t;
+  });
+}
+const Os = Symbol.for("drizzle:IsDrizzleView");
+class Qe {
+  static [I] = "View";
+  /** @internal */
+  [ue];
+  /** @internal */
+  [Os] = !0;
+  constructor({ name: e, schema: t, selectedFields: r, query: i }) {
+    this[ue] = {
+      name: e,
+      originalName: e,
+      schema: t,
+      selectedFields: r,
+      query: i,
+      isExisting: !i,
+      isAlias: !1
+    };
+  }
+  getSQL() {
+    return new z([this]);
+  }
+}
+ce.prototype.getSQL = function() {
+  return new z([this]);
+};
+U.prototype.getSQL = function() {
+  return new z([this]);
+};
+_e.prototype.getSQL = function() {
+  return new z([this]);
+};
+class Ct {
+  constructor(e) {
+    this.table = e;
+  }
+  static [I] = "ColumnAliasProxyHandler";
+  get(e, t) {
+    return t === "table" ? this.table : e[t];
+  }
+}
+class gr {
+  constructor(e, t) {
+    this.alias = e, this.replaceOriginalName = t;
+  }
+  static [I] = "TableAliasProxyHandler";
+  get(e, t) {
+    if (t === U.Symbol.IsAlias)
+      return !0;
+    if (t === U.Symbol.Name)
+      return this.alias;
+    if (this.replaceOriginalName && t === U.Symbol.OriginalName)
+      return this.alias;
+    if (t === ue)
+      return {
+        ...e[ue],
+        name: this.alias,
+        isAlias: !0
+      };
+    if (t === U.Symbol.Columns) {
+      const i = e[U.Symbol.Columns];
+      if (!i)
+        return i;
+      const s = {};
+      return Object.keys(i).map((u) => {
+        s[u] = new Proxy(
+          i[u],
+          new Ct(new Proxy(e, this))
+        );
+      }), s;
+    }
+    const r = e[t];
+    return Q(r, ce) ? new Proxy(r, new Ct(new Proxy(e, this))) : r;
+  }
+}
+function Zt(n, e) {
+  return new Proxy(n, new gr(e, !1));
+}
+function Be(n, e) {
+  return new Proxy(
+    n,
+    new Ct(new Proxy(n.table, new gr(e, !1)))
+  );
+}
+function rn(n, e) {
+  return new z.Aliased(Tt(n.sql, e), n.fieldAlias);
+}
+function Tt(n, e) {
+  return A.join(n.queryChunks.map((t) => Q(t, ce) ? Be(t, e) : Q(t, z) ? Tt(t, e) : Q(t, z.Aliased) ? rn(t, e) : t));
+}
+class Rs extends Error {
+  static [I] = "DrizzleError";
+  constructor({ message: e, cause: t }) {
+    super(e), this.name = "DrizzleError", this.cause = t;
+  }
+}
+class Ms {
+  static [I] = "ConsoleLogWriter";
+  write(e) {
+    console.log(e);
+  }
+}
+class Ds {
+  static [I] = "DefaultLogger";
+  writer;
+  constructor(e) {
+    this.writer = e?.writer ?? new Ms();
+  }
+  logQuery(e, t) {
+    const r = t.map((s) => {
+      try {
+        return JSON.stringify(s);
+      } catch {
+        return String(s);
+      }
+    }), i = r.length ? ` -- params: [${r.join(", ")}]` : "";
+    this.writer.write(`Query: ${e}${i}`);
+  }
+}
+class $s {
+  static [I] = "NoopLogger";
+  logQuery() {
+  }
+}
+class ke {
+  static [I] = "QueryPromise";
+  [Symbol.toStringTag] = "QueryPromise";
+  catch(e) {
+    return this.then(void 0, e);
+  }
+  finally(e) {
+    return this.then(
+      (t) => (e?.(), t),
+      (t) => {
+        throw e?.(), t;
+      }
+    );
+  }
+  then(e, t) {
+    return this.execute().then(e, t);
+  }
+}
+function Qs(n, e, t) {
+  const r = {}, i = n.reduce(
+    (s, { path: u, field: a }, d) => {
+      let y;
+      Q(a, ce) ? y = a : Q(a, z) ? y = a.decoder : y = a.sql.decoder;
+      let f = s;
+      for (const [b, m] of u.entries())
+        if (b < u.length - 1)
+          m in f || (f[m] = {}), f = f[m];
+        else {
+          const v = e[d], c = f[m] = v === null ? null : y.mapFromDriverValue(v);
+          if (t && Q(a, ce) && u.length === 2) {
+            const h = u[0];
+            h in r ? typeof r[h] == "string" && r[h] !== Ne(a.table) && (r[h] = !1) : r[h] = c === null ? Ne(a.table) : !1;
+          }
+        }
+      return s;
+    },
+    {}
+  );
+  if (t && Object.keys(r).length > 0)
+    for (const [s, u] of Object.entries(r))
+      typeof u == "string" && !t[u] && (i[s] = null);
+  return i;
+}
+function Me(n, e) {
+  return Object.entries(n).reduce((t, [r, i]) => {
+    if (typeof r != "string")
+      return t;
+    const s = e ? [...e, r] : [r];
+    return Q(i, ce) || Q(i, z) || Q(i, z.Aliased) ? t.push({ path: s, field: i }) : Q(i, U) ? t.push(...Me(i[U.Symbol.Columns], s)) : t.push(...Me(i, s)), t;
+  }, []);
+}
+function mr(n, e) {
+  const t = Object.keys(n), r = Object.keys(e);
+  if (t.length !== r.length)
+    return !1;
+  for (const [i, s] of t.entries())
+    if (s !== r[i])
+      return !1;
+  return !0;
+}
+function nn(n, e) {
+  const t = Object.entries(e).filter(([, r]) => r !== void 0).map(([r, i]) => Q(i, z) || Q(i, ce) ? [r, i] : [r, new Le(i, n[U.Symbol.Columns][r])]);
+  if (t.length === 0)
+    throw new Error("No values to set");
+  return Object.fromEntries(t);
+}
+function ks(n, e) {
+  for (const t of e)
+    for (const r of Object.getOwnPropertyNames(t.prototype))
+      r !== "constructor" && Object.defineProperty(
+        n.prototype,
+        r,
+        Object.getOwnPropertyDescriptor(t.prototype, r) || /* @__PURE__ */ Object.create(null)
+      );
+}
+function qs(n) {
+  return n[U.Symbol.Columns];
+}
+function Re(n) {
+  return Q(n, _e) ? n._.alias : Q(n, Qe) ? n[ue].name : Q(n, z) ? void 0 : n[U.Symbol.IsAlias] ? n[U.Symbol.Name] : n[U.Symbol.BaseName];
+}
+function fe(n, e) {
+  return {
+    name: typeof n == "string" && n.length > 0 ? n : "",
+    config: typeof n == "object" ? n : e
+  };
+}
+function Fs(n) {
+  if (typeof n != "object" || n === null || n.constructor.name !== "Object")
+    return !1;
+  if ("logger" in n) {
+    const e = typeof n.logger;
+    return !(e !== "boolean" && (e !== "object" || typeof n.logger.logQuery != "function") && e !== "undefined");
+  }
+  if ("schema" in n) {
+    const e = typeof n.schema;
+    return !(e !== "object" && e !== "undefined");
+  }
+  if ("casing" in n) {
+    const e = typeof n.casing;
+    return !(e !== "string" && e !== "undefined");
+  }
+  if ("mode" in n)
+    return !(n.mode !== "default" || n.mode !== "planetscale" || n.mode !== void 0);
+  if ("connection" in n) {
+    const e = typeof n.connection;
+    return !(e !== "string" && e !== "object" && e !== "undefined");
+  }
+  if ("client" in n) {
+    const e = typeof n.client;
+    return !(e !== "object" && e !== "function" && e !== "undefined");
+  }
+  return Object.keys(n).length === 0;
+}
+class It extends te {
+  static [I] = "PgIntColumnBaseBuilder";
+  generatedAlwaysAsIdentity(e) {
+    if (e) {
+      const { name: t, ...r } = e;
+      this.config.generatedIdentity = {
+        type: "always",
+        sequenceName: t,
+        sequenceOptions: r
+      };
+    } else
+      this.config.generatedIdentity = {
+        type: "always"
+      };
+    return this.config.hasDefault = !0, this.config.notNull = !0, this;
+  }
+  generatedByDefaultAsIdentity(e) {
+    if (e) {
+      const { name: t, ...r } = e;
+      this.config.generatedIdentity = {
+        type: "byDefault",
+        sequenceName: t,
+        sequenceOptions: r
+      };
+    } else
+      this.config.generatedIdentity = {
+        type: "byDefault"
+      };
+    return this.config.hasDefault = !0, this.config.notNull = !0, this;
+  }
+}
+class js extends It {
+  static [I] = "PgBigInt53Builder";
+  constructor(e) {
+    super(e, "number", "PgBigInt53");
+  }
+  /** @internal */
+  build(e) {
+    return new Us(e, this.config);
+  }
+}
+class Us extends Y {
+  static [I] = "PgBigInt53";
+  getSQLType() {
+    return "bigint";
+  }
+  mapFromDriverValue(e) {
+    return typeof e == "number" ? e : Number(e);
+  }
+}
+class zs extends It {
+  static [I] = "PgBigInt64Builder";
+  constructor(e) {
+    super(e, "bigint", "PgBigInt64");
+  }
+  /** @internal */
+  build(e) {
+    return new Vs(
+      e,
+      this.config
+    );
+  }
+}
+class Vs extends Y {
+  static [I] = "PgBigInt64";
+  getSQLType() {
+    return "bigint";
+  }
+  // eslint-disable-next-line unicorn/prefer-native-coercion-functions
+  mapFromDriverValue(e) {
+    return BigInt(e);
+  }
+}
+function Ws(n, e) {
+  const { name: t, config: r } = fe(n, e);
+  return r.mode === "number" ? new js(t) : new zs(t);
+}
+class Ks extends te {
+  static [I] = "PgBigSerial53Builder";
+  constructor(e) {
+    super(e, "number", "PgBigSerial53"), this.config.hasDefault = !0, this.config.notNull = !0;
+  }
+  /** @internal */
+  build(e) {
+    return new Hs(
+      e,
+      this.config
+    );
+  }
+}
+class Hs extends Y {
+  static [I] = "PgBigSerial53";
+  getSQLType() {
+    return "bigserial";
+  }
+  mapFromDriverValue(e) {
+    return typeof e == "number" ? e : Number(e);
+  }
+}
+class Gs extends te {
+  static [I] = "PgBigSerial64Builder";
+  constructor(e) {
+    super(e, "bigint", "PgBigSerial64"), this.config.hasDefault = !0;
+  }
+  /** @internal */
+  build(e) {
+    return new Js(
+      e,
+      this.config
+    );
+  }
+}
+class Js extends Y {
+  static [I] = "PgBigSerial64";
+  getSQLType() {
+    return "bigserial";
+  }
+  // eslint-disable-next-line unicorn/prefer-native-coercion-functions
+  mapFromDriverValue(e) {
+    return BigInt(e);
+  }
+}
+function Ys(n, e) {
+  const { name: t, config: r } = fe(n, e);
+  return r.mode === "number" ? new Ks(t) : new Gs(t);
+}
+class Zs extends te {
+  static [I] = "PgBooleanBuilder";
+  constructor(e) {
+    super(e, "boolean", "PgBoolean");
+  }
+  /** @internal */
+  build(e) {
+    return new Xs(e, this.config);
+  }
+}
+class Xs extends Y {
+  static [I] = "PgBoolean";
+  getSQLType() {
+    return "boolean";
+  }
+}
+function ei(n) {
+  return new Zs(n ?? "");
+}
+class ti extends te {
+  static [I] = "PgCharBuilder";
+  constructor(e, t) {
+    super(e, "string", "PgChar"), this.config.length = t.length, this.config.enumValues = t.enum;
+  }
+  /** @internal */
+  build(e) {
+    return new ri(
+      e,
+      this.config
+    );
+  }
+}
+class ri extends Y {
+  static [I] = "PgChar";
+  length = this.config.length;
+  enumValues = this.config.enumValues;
+  getSQLType() {
+    return this.length === void 0 ? "char" : `char(${this.length})`;
+  }
+}
+function ni(n, e = {}) {
+  const { name: t, config: r } = fe(n, e);
+  return new ti(t, r);
+}
+class si extends te {
+  static [I] = "PgCidrBuilder";
+  constructor(e) {
+    super(e, "string", "PgCidr");
+  }
+  /** @internal */
+  build(e) {
+    return new ii(e, this.config);
+  }
+}
+class ii extends Y {
+  static [I] = "PgCidr";
+  getSQLType() {
+    return "cidr";
+  }
+}
+function oi(n) {
+  return new si(n ?? "");
+}
+class ai extends te {
+  static [I] = "PgCustomColumnBuilder";
+  constructor(e, t, r) {
+    super(e, "custom", "PgCustomColumn"), this.config.fieldConfig = t, this.config.customTypeParams = r;
+  }
+  /** @internal */
+  build(e) {
+    return new ui(
+      e,
+      this.config
+    );
+  }
+}
+class ui extends Y {
+  static [I] = "PgCustomColumn";
+  sqlName;
+  mapTo;
+  mapFrom;
+  constructor(e, t) {
+    super(e, t), this.sqlName = t.customTypeParams.dataType(t.fieldConfig), this.mapTo = t.customTypeParams.toDriver, this.mapFrom = t.customTypeParams.fromDriver;
+  }
+  getSQLType() {
+    return this.sqlName;
+  }
+  mapFromDriverValue(e) {
+    return typeof this.mapFrom == "function" ? this.mapFrom(e) : e;
+  }
+  mapToDriverValue(e) {
+    return typeof this.mapTo == "function" ? this.mapTo(e) : e;
+  }
+}
+function li(n) {
+  return (e, t) => {
+    const { name: r, config: i } = fe(e, t);
+    return new ai(r, i, n);
+  };
+}
+class at extends te {
+  static [I] = "PgDateColumnBaseBuilder";
+  defaultNow() {
+    return this.default(A`now()`);
+  }
+}
+class ci extends at {
+  static [I] = "PgDateBuilder";
+  constructor(e) {
+    super(e, "date", "PgDate");
+  }
+  /** @internal */
+  build(e) {
+    return new sn(e, this.config);
+  }
+}
+class sn extends Y {
+  static [I] = "PgDate";
+  getSQLType() {
+    return "date";
+  }
+  mapFromDriverValue(e) {
+    return new Date(e);
+  }
+  mapToDriverValue(e) {
+    return e.toISOString();
+  }
+}
+class hi extends at {
+  static [I] = "PgDateStringBuilder";
+  constructor(e) {
+    super(e, "string", "PgDateString");
+  }
+  /** @internal */
+  build(e) {
+    return new on(
+      e,
+      this.config
+    );
+  }
+}
+class on extends Y {
+  static [I] = "PgDateString";
+  getSQLType() {
+    return "date";
+  }
+}
+function an(n, e) {
+  const { name: t, config: r } = fe(n, e);
+  return r?.mode === "date" ? new ci(t) : new hi(t);
+}
+class fi extends te {
+  static [I] = "PgDoublePrecisionBuilder";
+  constructor(e) {
+    super(e, "number", "PgDoublePrecision");
+  }
+  /** @internal */
+  build(e) {
+    return new di(
+      e,
+      this.config
+    );
+  }
+}
+class di extends Y {
+  static [I] = "PgDoublePrecision";
+  getSQLType() {
+    return "double precision";
+  }
+  mapFromDriverValue(e) {
+    return typeof e == "string" ? Number.parseFloat(e) : e;
+  }
+}
+function pi(n) {
+  return new fi(n ?? "");
+}
+class gi extends te {
+  static [I] = "PgInetBuilder";
+  constructor(e) {
+    super(e, "string", "PgInet");
+  }
+  /** @internal */
+  build(e) {
+    return new mi(e, this.config);
+  }
+}
+class mi extends Y {
+  static [I] = "PgInet";
+  getSQLType() {
+    return "inet";
+  }
+}
+function yi(n) {
+  return new gi(n ?? "");
+}
+class wi extends It {
+  static [I] = "PgIntegerBuilder";
+  constructor(e) {
+    super(e, "number", "PgInteger");
+  }
+  /** @internal */
+  build(e) {
+    return new bi(e, this.config);
+  }
+}
+class bi extends Y {
+  static [I] = "PgInteger";
+  getSQLType() {
+    return "integer";
+  }
+  mapFromDriverValue(e) {
+    return typeof e == "string" ? Number.parseInt(e) : e;
+  }
+}
+function De(n) {
+  return new wi(n ?? "");
+}
+class vi extends te {
+  static [I] = "PgIntervalBuilder";
+  constructor(e, t) {
+    super(e, "string", "PgInterval"), this.config.intervalConfig = t;
+  }
+  /** @internal */
+  build(e) {
+    return new Si(e, this.config);
+  }
+}
+class Si extends Y {
+  static [I] = "PgInterval";
+  fields = this.config.intervalConfig.fields;
+  precision = this.config.intervalConfig.precision;
+  getSQLType() {
+    const e = this.fields ? ` ${this.fields}` : "", t = this.precision ? `(${this.precision})` : "";
+    return `interval${e}${t}`;
+  }
+}
+function Pi(n, e = {}) {
+  const { name: t, config: r } = fe(n, e);
+  return new vi(t, r);
+}
+class Ei extends te {
+  static [I] = "PgJsonBuilder";
+  constructor(e) {
+    super(e, "json", "PgJson");
+  }
+  /** @internal */
+  build(e) {
+    return new un(e, this.config);
+  }
+}
+class un extends Y {
+  static [I] = "PgJson";
+  constructor(e, t) {
+    super(e, t);
+  }
+  getSQLType() {
+    return "json";
+  }
+  mapToDriverValue(e) {
+    return JSON.stringify(e);
+  }
+  mapFromDriverValue(e) {
+    if (typeof e == "string")
+      try {
+        return JSON.parse(e);
+      } catch {
+        return e;
+      }
+    return e;
+  }
+}
+function _i(n) {
+  return new Ei(n ?? "");
+}
+class Ci extends te {
+  static [I] = "PgJsonbBuilder";
+  constructor(e) {
+    super(e, "json", "PgJsonb");
+  }
+  /** @internal */
+  build(e) {
+    return new ln(e, this.config);
+  }
+}
+class ln extends Y {
+  static [I] = "PgJsonb";
+  constructor(e, t) {
+    super(e, t);
+  }
+  getSQLType() {
+    return "jsonb";
+  }
+  mapToDriverValue(e) {
+    return JSON.stringify(e);
+  }
+  mapFromDriverValue(e) {
+    if (typeof e == "string")
+      try {
+        return JSON.parse(e);
+      } catch {
+        return e;
+      }
+    return e;
+  }
+}
+function Ti(n) {
+  return new Ci(n ?? "");
+}
+class Ai extends te {
+  static [I] = "PgLineBuilder";
+  constructor(e) {
+    super(e, "array", "PgLine");
+  }
+  /** @internal */
+  build(e) {
+    return new xi(
+      e,
+      this.config
+    );
+  }
+}
+class xi extends Y {
+  static [I] = "PgLine";
+  getSQLType() {
+    return "line";
+  }
+  mapFromDriverValue(e) {
+    const [t, r, i] = e.slice(1, -1).split(",");
+    return [Number.parseFloat(t), Number.parseFloat(r), Number.parseFloat(i)];
+  }
+  mapToDriverValue(e) {
+    return `{${e[0]},${e[1]},${e[2]}}`;
+  }
+}
+class Bi extends te {
+  static [I] = "PgLineABCBuilder";
+  constructor(e) {
+    super(e, "json", "PgLineABC");
+  }
+  /** @internal */
+  build(e) {
+    return new Ni(
+      e,
+      this.config
+    );
+  }
+}
+class Ni extends Y {
+  static [I] = "PgLineABC";
+  getSQLType() {
+    return "line";
+  }
+  mapFromDriverValue(e) {
+    const [t, r, i] = e.slice(1, -1).split(",");
+    return { a: Number.parseFloat(t), b: Number.parseFloat(r), c: Number.parseFloat(i) };
+  }
+  mapToDriverValue(e) {
+    return `{${e.a},${e.b},${e.c}}`;
+  }
+}
+function Ii(n, e) {
+  const { name: t, config: r } = fe(n, e);
+  return !r?.mode || r.mode === "tuple" ? new Ai(t) : new Bi(t);
+}
+class Li extends te {
+  static [I] = "PgMacaddrBuilder";
+  constructor(e) {
+    super(e, "string", "PgMacaddr");
+  }
+  /** @internal */
+  build(e) {
+    return new Oi(e, this.config);
+  }
+}
+class Oi extends Y {
+  static [I] = "PgMacaddr";
+  getSQLType() {
+    return "macaddr";
+  }
+}
+function Ri(n) {
+  return new Li(n ?? "");
+}
+class Mi extends te {
+  static [I] = "PgMacaddr8Builder";
+  constructor(e) {
+    super(e, "string", "PgMacaddr8");
+  }
+  /** @internal */
+  build(e) {
+    return new Di(e, this.config);
+  }
+}
+class Di extends Y {
+  static [I] = "PgMacaddr8";
+  getSQLType() {
+    return "macaddr8";
+  }
+}
+function $i(n) {
+  return new Mi(n ?? "");
+}
+class Qi extends te {
+  static [I] = "PgNumericBuilder";
+  constructor(e, t, r) {
+    super(e, "string", "PgNumeric"), this.config.precision = t, this.config.scale = r;
+  }
+  /** @internal */
+  build(e) {
+    return new cn(e, this.config);
+  }
+}
+class cn extends Y {
+  static [I] = "PgNumeric";
+  precision;
+  scale;
+  constructor(e, t) {
+    super(e, t), this.precision = t.precision, this.scale = t.scale;
+  }
+  mapFromDriverValue(e) {
+    return typeof e == "string" ? e : String(e);
+  }
+  getSQLType() {
+    return this.precision !== void 0 && this.scale !== void 0 ? `numeric(${this.precision}, ${this.scale})` : this.precision === void 0 ? "numeric" : `numeric(${this.precision})`;
+  }
+}
+class ki extends te {
+  static [I] = "PgNumericNumberBuilder";
+  constructor(e, t, r) {
+    super(e, "number", "PgNumericNumber"), this.config.precision = t, this.config.scale = r;
+  }
+  /** @internal */
+  build(e) {
+    return new qi(
+      e,
+      this.config
+    );
+  }
+}
+class qi extends Y {
+  static [I] = "PgNumericNumber";
+  precision;
+  scale;
+  constructor(e, t) {
+    super(e, t), this.precision = t.precision, this.scale = t.scale;
+  }
+  mapFromDriverValue(e) {
+    return typeof e == "number" ? e : Number(e);
+  }
+  mapToDriverValue = String;
+  getSQLType() {
+    return this.precision !== void 0 && this.scale !== void 0 ? `numeric(${this.precision}, ${this.scale})` : this.precision === void 0 ? "numeric" : `numeric(${this.precision})`;
+  }
+}
+class Fi extends te {
+  static [I] = "PgNumericBigIntBuilder";
+  constructor(e, t, r) {
+    super(e, "bigint", "PgNumericBigInt"), this.config.precision = t, this.config.scale = r;
+  }
+  /** @internal */
+  build(e) {
+    return new ji(
+      e,
+      this.config
+    );
+  }
+}
+class ji extends Y {
+  static [I] = "PgNumericBigInt";
+  precision;
+  scale;
+  constructor(e, t) {
+    super(e, t), this.precision = t.precision, this.scale = t.scale;
+  }
+  mapFromDriverValue = BigInt;
+  mapToDriverValue = String;
+  getSQLType() {
+    return this.precision !== void 0 && this.scale !== void 0 ? `numeric(${this.precision}, ${this.scale})` : this.precision === void 0 ? "numeric" : `numeric(${this.precision})`;
+  }
+}
+function Ui(n, e) {
+  const { name: t, config: r } = fe(n, e), i = r?.mode;
+  return i === "number" ? new ki(t, r?.precision, r?.scale) : i === "bigint" ? new Fi(t, r?.precision, r?.scale) : new Qi(t, r?.precision, r?.scale);
+}
+class zi extends te {
+  static [I] = "PgPointTupleBuilder";
+  constructor(e) {
+    super(e, "array", "PgPointTuple");
+  }
+  /** @internal */
+  build(e) {
+    return new Vi(
+      e,
+      this.config
+    );
+  }
+}
+class Vi extends Y {
+  static [I] = "PgPointTuple";
+  getSQLType() {
+    return "point";
+  }
+  mapFromDriverValue(e) {
+    if (typeof e == "string") {
+      const [t, r] = e.slice(1, -1).split(",");
+      return [Number.parseFloat(t), Number.parseFloat(r)];
+    }
+    return [e.x, e.y];
+  }
+  mapToDriverValue(e) {
+    return `(${e[0]},${e[1]})`;
+  }
+}
+class Wi extends te {
+  static [I] = "PgPointObjectBuilder";
+  constructor(e) {
+    super(e, "json", "PgPointObject");
+  }
+  /** @internal */
+  build(e) {
+    return new Ki(
+      e,
+      this.config
+    );
+  }
+}
+class Ki extends Y {
+  static [I] = "PgPointObject";
+  getSQLType() {
+    return "point";
+  }
+  mapFromDriverValue(e) {
+    if (typeof e == "string") {
+      const [t, r] = e.slice(1, -1).split(",");
+      return { x: Number.parseFloat(t), y: Number.parseFloat(r) };
+    }
+    return e;
+  }
+  mapToDriverValue(e) {
+    return `(${e.x},${e.y})`;
+  }
+}
+function Hi(n, e) {
+  const { name: t, config: r } = fe(n, e);
+  return !r?.mode || r.mode === "tuple" ? new zi(t) : new Wi(t);
+}
+function Gi(n) {
+  const e = [];
+  for (let t = 0; t < n.length; t += 2)
+    e.push(Number.parseInt(n.slice(t, t + 2), 16));
+  return new Uint8Array(e);
+}
+function $r(n, e) {
+  const t = new ArrayBuffer(8), r = new DataView(t);
+  for (let i = 0; i < 8; i++)
+    r.setUint8(i, n[e + i]);
+  return r.getFloat64(0, !0);
+}
+function hn(n) {
+  const e = Gi(n);
+  let t = 0;
+  const r = e[t];
+  t += 1;
+  const i = new DataView(e.buffer), s = i.getUint32(t, r === 1);
+  if (t += 4, s & 536870912 && (i.getUint32(t, r === 1), t += 4), (s & 65535) === 1) {
+    const u = $r(e, t);
+    t += 8;
+    const a = $r(e, t);
+    return t += 8, [u, a];
+  }
+  throw new Error("Unsupported geometry type");
+}
+class Ji extends te {
+  static [I] = "PgGeometryBuilder";
+  constructor(e) {
+    super(e, "array", "PgGeometry");
+  }
+  /** @internal */
+  build(e) {
+    return new Yi(
+      e,
+      this.config
+    );
+  }
+}
+class Yi extends Y {
+  static [I] = "PgGeometry";
+  getSQLType() {
+    return "geometry(point)";
+  }
+  mapFromDriverValue(e) {
+    return hn(e);
+  }
+  mapToDriverValue(e) {
+    return `point(${e[0]} ${e[1]})`;
+  }
+}
+class Zi extends te {
+  static [I] = "PgGeometryObjectBuilder";
+  constructor(e) {
+    super(e, "json", "PgGeometryObject");
+  }
+  /** @internal */
+  build(e) {
+    return new Xi(
+      e,
+      this.config
+    );
+  }
+}
+class Xi extends Y {
+  static [I] = "PgGeometryObject";
+  getSQLType() {
+    return "geometry(point)";
+  }
+  mapFromDriverValue(e) {
+    const t = hn(e);
+    return { x: t[0], y: t[1] };
+  }
+  mapToDriverValue(e) {
+    return `point(${e.x} ${e.y})`;
+  }
+}
+function eo(n, e) {
+  const { name: t, config: r } = fe(n, e);
+  return !r?.mode || r.mode === "tuple" ? new Ji(t) : new Zi(t);
+}
+class to extends te {
+  static [I] = "PgRealBuilder";
+  constructor(e, t) {
+    super(e, "number", "PgReal"), this.config.length = t;
+  }
+  /** @internal */
+  build(e) {
+    return new ro(e, this.config);
+  }
+}
+class ro extends Y {
+  static [I] = "PgReal";
+  constructor(e, t) {
+    super(e, t);
+  }
+  getSQLType() {
+    return "real";
+  }
+  mapFromDriverValue = (e) => typeof e == "string" ? Number.parseFloat(e) : e;
+}
+function no(n) {
+  return new to(n ?? "");
+}
+class so extends te {
+  static [I] = "PgSerialBuilder";
+  constructor(e) {
+    super(e, "number", "PgSerial"), this.config.hasDefault = !0, this.config.notNull = !0;
+  }
+  /** @internal */
+  build(e) {
+    return new io(e, this.config);
+  }
+}
+class io extends Y {
+  static [I] = "PgSerial";
+  getSQLType() {
+    return "serial";
+  }
+}
+function oo(n) {
+  return new so(n ?? "");
+}
+class ao extends It {
+  static [I] = "PgSmallIntBuilder";
+  constructor(e) {
+    super(e, "number", "PgSmallInt");
+  }
+  /** @internal */
+  build(e) {
+    return new uo(e, this.config);
+  }
+}
+class uo extends Y {
+  static [I] = "PgSmallInt";
+  getSQLType() {
+    return "smallint";
+  }
+  mapFromDriverValue = (e) => typeof e == "string" ? Number(e) : e;
+}
+function lo(n) {
+  return new ao(n ?? "");
+}
+class co extends te {
+  static [I] = "PgSmallSerialBuilder";
+  constructor(e) {
+    super(e, "number", "PgSmallSerial"), this.config.hasDefault = !0, this.config.notNull = !0;
+  }
+  /** @internal */
+  build(e) {
+    return new ho(
+      e,
+      this.config
+    );
+  }
+}
+class ho extends Y {
+  static [I] = "PgSmallSerial";
+  getSQLType() {
+    return "smallserial";
+  }
+}
+function fo(n) {
+  return new co(n ?? "");
+}
+class po extends te {
+  static [I] = "PgTextBuilder";
+  constructor(e, t) {
+    super(e, "string", "PgText"), this.config.enumValues = t.enum;
+  }
+  /** @internal */
+  build(e) {
+    return new go(e, this.config);
+  }
+}
+class go extends Y {
+  static [I] = "PgText";
+  enumValues = this.config.enumValues;
+  getSQLType() {
+    return "text";
+  }
+}
+function mo(n, e = {}) {
+  const { name: t, config: r } = fe(n, e);
+  return new po(t, r);
+}
+class yo extends at {
+  constructor(e, t, r) {
+    super(e, "string", "PgTime"), this.withTimezone = t, this.precision = r, this.config.withTimezone = t, this.config.precision = r;
+  }
+  static [I] = "PgTimeBuilder";
+  /** @internal */
+  build(e) {
+    return new fn(e, this.config);
+  }
+}
+class fn extends Y {
+  static [I] = "PgTime";
+  withTimezone;
+  precision;
+  constructor(e, t) {
+    super(e, t), this.withTimezone = t.withTimezone, this.precision = t.precision;
+  }
+  getSQLType() {
+    return `time${this.precision === void 0 ? "" : `(${this.precision})`}${this.withTimezone ? " with time zone" : ""}`;
+  }
+}
+function wo(n, e = {}) {
+  const { name: t, config: r } = fe(n, e);
+  return new yo(t, r.withTimezone ?? !1, r.precision);
+}
+class bo extends at {
+  static [I] = "PgTimestampBuilder";
+  constructor(e, t, r) {
+    super(e, "date", "PgTimestamp"), this.config.withTimezone = t, this.config.precision = r;
+  }
+  /** @internal */
+  build(e) {
+    return new dn(e, this.config);
+  }
+}
+class dn extends Y {
+  static [I] = "PgTimestamp";
+  withTimezone;
+  precision;
+  constructor(e, t) {
+    super(e, t), this.withTimezone = t.withTimezone, this.precision = t.precision;
+  }
+  getSQLType() {
+    return `timestamp${this.precision === void 0 ? "" : ` (${this.precision})`}${this.withTimezone ? " with time zone" : ""}`;
+  }
+  mapFromDriverValue = (e) => new Date(this.withTimezone ? e : e + "+0000");
+  mapToDriverValue = (e) => e.toISOString();
+}
+class vo extends at {
+  static [I] = "PgTimestampStringBuilder";
+  constructor(e, t, r) {
+    super(e, "string", "PgTimestampString"), this.config.withTimezone = t, this.config.precision = r;
+  }
+  /** @internal */
+  build(e) {
+    return new pn(
+      e,
+      this.config
+    );
+  }
+}
+class pn extends Y {
+  static [I] = "PgTimestampString";
+  withTimezone;
+  precision;
+  constructor(e, t) {
+    super(e, t), this.withTimezone = t.withTimezone, this.precision = t.precision;
+  }
+  getSQLType() {
+    return `timestamp${this.precision === void 0 ? "" : `(${this.precision})`}${this.withTimezone ? " with time zone" : ""}`;
+  }
+}
+function St(n, e = {}) {
+  const { name: t, config: r } = fe(n, e);
+  return r?.mode === "string" ? new vo(t, r.withTimezone ?? !1, r.precision) : new bo(t, r?.withTimezone ?? !1, r?.precision);
+}
+class So extends te {
+  static [I] = "PgUUIDBuilder";
+  constructor(e) {
+    super(e, "string", "PgUUID");
+  }
+  /**
+   * Adds `default gen_random_uuid()` to the column definition.
+   */
+  defaultRandom() {
+    return this.default(A`gen_random_uuid()`);
+  }
+  /** @internal */
+  build(e) {
+    return new gn(e, this.config);
+  }
+}
+class gn extends Y {
+  static [I] = "PgUUID";
+  getSQLType() {
+    return "uuid";
+  }
+}
+function mn(n) {
+  return new So(n ?? "");
+}
+class Po extends te {
+  static [I] = "PgVarcharBuilder";
+  constructor(e, t) {
+    super(e, "string", "PgVarchar"), this.config.length = t.length, this.config.enumValues = t.enum;
+  }
+  /** @internal */
+  build(e) {
+    return new Eo(
+      e,
+      this.config
+    );
+  }
+}
+class Eo extends Y {
+  static [I] = "PgVarchar";
+  length = this.config.length;
+  enumValues = this.config.enumValues;
+  getSQLType() {
+    return this.length === void 0 ? "varchar" : `varchar(${this.length})`;
+  }
+}
+function st(n, e = {}) {
+  const { name: t, config: r } = fe(n, e);
+  return new Po(t, r);
+}
+class _o extends te {
+  static [I] = "PgBinaryVectorBuilder";
+  constructor(e, t) {
+    super(e, "string", "PgBinaryVector"), this.config.dimensions = t.dimensions;
+  }
+  /** @internal */
+  build(e) {
+    return new Co(
+      e,
+      this.config
+    );
+  }
+}
+class Co extends Y {
+  static [I] = "PgBinaryVector";
+  dimensions = this.config.dimensions;
+  getSQLType() {
+    return `bit(${this.dimensions})`;
+  }
+}
+function To(n, e) {
+  const { name: t, config: r } = fe(n, e);
+  return new _o(t, r);
+}
+class Ao extends te {
+  static [I] = "PgHalfVectorBuilder";
+  constructor(e, t) {
+    super(e, "array", "PgHalfVector"), this.config.dimensions = t.dimensions;
+  }
+  /** @internal */
+  build(e) {
+    return new xo(
+      e,
+      this.config
+    );
+  }
+}
+class xo extends Y {
+  static [I] = "PgHalfVector";
+  dimensions = this.config.dimensions;
+  getSQLType() {
+    return `halfvec(${this.dimensions})`;
+  }
+  mapToDriverValue(e) {
+    return JSON.stringify(e);
+  }
+  mapFromDriverValue(e) {
+    return e.slice(1, -1).split(",").map((t) => Number.parseFloat(t));
+  }
+}
+function Bo(n, e) {
+  const { name: t, config: r } = fe(n, e);
+  return new Ao(t, r);
+}
+class No extends te {
+  static [I] = "PgSparseVectorBuilder";
+  constructor(e, t) {
+    super(e, "string", "PgSparseVector"), this.config.dimensions = t.dimensions;
+  }
+  /** @internal */
+  build(e) {
+    return new Io(
+      e,
+      this.config
+    );
+  }
+}
+class Io extends Y {
+  static [I] = "PgSparseVector";
+  dimensions = this.config.dimensions;
+  getSQLType() {
+    return `sparsevec(${this.dimensions})`;
+  }
+}
+function Lo(n, e) {
+  const { name: t, config: r } = fe(n, e);
+  return new No(t, r);
+}
+class Oo extends te {
+  static [I] = "PgVectorBuilder";
+  constructor(e, t) {
+    super(e, "array", "PgVector"), this.config.dimensions = t.dimensions;
+  }
+  /** @internal */
+  build(e) {
+    return new Ro(
+      e,
+      this.config
+    );
+  }
+}
+class Ro extends Y {
+  static [I] = "PgVector";
+  dimensions = this.config.dimensions;
+  getSQLType() {
+    return `vector(${this.dimensions})`;
+  }
+  mapToDriverValue(e) {
+    return JSON.stringify(e);
+  }
+  mapFromDriverValue(e) {
+    return e.slice(1, -1).split(",").map((t) => Number.parseFloat(t));
+  }
+}
+function Mo(n, e) {
+  const { name: t, config: r } = fe(n, e);
+  return new Oo(t, r);
+}
+function Do() {
+  return {
+    bigint: Ws,
+    bigserial: Ys,
+    boolean: ei,
+    char: ni,
+    cidr: oi,
+    customType: li,
+    date: an,
+    doublePrecision: pi,
+    inet: yi,
+    integer: De,
+    interval: Pi,
+    json: _i,
+    jsonb: Ti,
+    line: Ii,
+    macaddr: Ri,
+    macaddr8: $i,
+    numeric: Ui,
+    point: Hi,
+    geometry: eo,
+    real: no,
+    serial: oo,
+    smallint: lo,
+    smallserial: fo,
+    text: mo,
+    time: wo,
+    timestamp: St,
+    uuid: mn,
+    varchar: st,
+    bit: To,
+    halfvec: Bo,
+    sparsevec: Lo,
+    vector: Mo
+  };
+}
+const or = Symbol.for("drizzle:PgInlineForeignKeys"), Qr = Symbol.for("drizzle:EnableRLS");
+class ve extends U {
+  static [I] = "PgTable";
+  /** @internal */
+  static Symbol = Object.assign({}, U.Symbol, {
+    InlineForeignKeys: or,
+    EnableRLS: Qr
+  });
+  /**@internal */
+  [or] = [];
+  /** @internal */
+  [Qr] = !1;
+  /** @internal */
+  [U.Symbol.ExtraConfigBuilder] = void 0;
+  /** @internal */
+  [U.Symbol.ExtraConfigColumns] = {};
+}
+function $o(n, e, t, r, i = n) {
+  const s = new ve(n, r, i), u = typeof e == "function" ? e(Do()) : e, a = Object.fromEntries(
+    Object.entries(u).map(([f, b]) => {
+      const m = b;
+      m.setName(f);
+      const v = m.build(s);
+      return s[or].push(...m.buildForeignKeys(v, s)), [f, v];
+    })
+  ), d = Object.fromEntries(
+    Object.entries(u).map(([f, b]) => {
+      const m = b;
+      m.setName(f);
+      const v = m.buildExtraConfigColumn(s);
+      return [f, v];
+    })
+  ), y = Object.assign(s, a);
+  return y[U.Symbol.Columns] = a, y[U.Symbol.ExtraConfigColumns] = d, t && (y[ve.Symbol.ExtraConfigBuilder] = t), Object.assign(y, {
+    enableRLS: () => (y[ve.Symbol.EnableRLS] = !0, y)
+  });
+}
+const ut = (n, e, t) => $o(n, e, t, void 0);
+class Qo {
+  static [I] = "PgPrimaryKeyBuilder";
+  /** @internal */
+  columns;
+  /** @internal */
+  name;
+  constructor(e, t) {
+    this.columns = e, this.name = t;
+  }
+  /** @internal */
+  build(e) {
+    return new ko(e, this.columns, this.name);
+  }
+}
+class ko {
+  constructor(e, t, r) {
+    this.table = e, this.columns = t, this.name = r;
+  }
+  static [I] = "PgPrimaryKey";
+  columns;
+  name;
+  getName() {
+    return this.name ?? `${this.table[ve.Symbol.Name]}_${this.columns.map((e) => e.name).join("_")}_pk`;
+  }
+}
+function me(n, e) {
+  return Ls(e) && !Xr(n) && !Q(n, Le) && !Q(n, Ke) && !Q(n, ce) && !Q(n, U) && !Q(n, Qe) ? new Le(n, e) : n;
+}
+const He = (n, e) => A`${n} = ${me(e, n)}`, qo = (n, e) => A`${n} <> ${me(e, n)}`;
+function At(...n) {
+  const e = n.filter(
+    (t) => t !== void 0
+  );
+  if (e.length !== 0)
+    return e.length === 1 ? new z(e) : new z([
+      new pe("("),
+      A.join(e, new pe(" and ")),
+      new pe(")")
+    ]);
+}
+function Fo(...n) {
+  const e = n.filter(
+    (t) => t !== void 0
+  );
+  if (e.length !== 0)
+    return e.length === 1 ? new z(e) : new z([
+      new pe("("),
+      A.join(e, new pe(" or ")),
+      new pe(")")
+    ]);
+}
+function jo(n) {
+  return A`not ${n}`;
+}
+const Uo = (n, e) => A`${n} > ${me(e, n)}`, zo = (n, e) => A`${n} >= ${me(e, n)}`, Vo = (n, e) => A`${n} < ${me(e, n)}`, Wo = (n, e) => A`${n} <= ${me(e, n)}`;
+function Ko(n, e) {
+  return Array.isArray(e) ? e.length === 0 ? A`false` : A`${n} in ${e.map((t) => me(t, n))}` : A`${n} in ${me(e, n)}`;
+}
+function Ho(n, e) {
+  return Array.isArray(e) ? e.length === 0 ? A`true` : A`${n} not in ${e.map((t) => me(t, n))}` : A`${n} not in ${me(e, n)}`;
+}
+function Go(n) {
+  return A`${n} is null`;
+}
+function Jo(n) {
+  return A`${n} is not null`;
+}
+function Yo(n) {
+  return A`exists ${n}`;
+}
+function Zo(n) {
+  return A`not exists ${n}`;
+}
+function Xo(n, e, t) {
+  return A`${n} between ${me(e, n)} and ${me(
+    t,
+    n
+  )}`;
+}
+function ea(n, e, t) {
+  return A`${n} not between ${me(
+    e,
+    n
+  )} and ${me(t, n)}`;
+}
+function ta(n, e) {
+  return A`${n} like ${e}`;
+}
+function ra(n, e) {
+  return A`${n} not like ${e}`;
+}
+function na(n, e) {
+  return A`${n} ilike ${e}`;
+}
+function sa(n, e) {
+  return A`${n} not ilike ${e}`;
+}
+function yn(n) {
+  return A`${n} asc`;
+}
+function ia(n) {
+  return A`${n} desc`;
+}
+class wn {
+  constructor(e, t, r) {
+    this.sourceTable = e, this.referencedTable = t, this.relationName = r, this.referencedTableName = t[U.Symbol.Name];
+  }
+  static [I] = "Relation";
+  referencedTableName;
+  fieldName;
+}
+class oa {
+  constructor(e, t) {
+    this.table = e, this.config = t;
+  }
+  static [I] = "Relations";
+}
+class $e extends wn {
+  constructor(e, t, r, i) {
+    super(e, t, r?.relationName), this.config = r, this.isNullable = i;
+  }
+  static [I] = "One";
+  withFieldName(e) {
+    const t = new $e(
+      this.sourceTable,
+      this.referencedTable,
+      this.config,
+      this.isNullable
+    );
+    return t.fieldName = e, t;
+  }
+}
+class Lt extends wn {
+  constructor(e, t, r) {
+    super(e, t, r?.relationName), this.config = r;
+  }
+  static [I] = "Many";
+  withFieldName(e) {
+    const t = new Lt(
+      this.sourceTable,
+      this.referencedTable,
+      this.config
+    );
+    return t.fieldName = e, t;
+  }
+}
+function aa() {
+  return {
+    and: At,
+    between: Xo,
+    eq: He,
+    exists: Yo,
+    gt: Uo,
+    gte: zo,
+    ilike: na,
+    inArray: Ko,
+    isNull: Go,
+    isNotNull: Jo,
+    like: ta,
+    lt: Vo,
+    lte: Wo,
+    ne: qo,
+    not: jo,
+    notBetween: ea,
+    notExists: Zo,
+    notLike: ra,
+    notIlike: sa,
+    notInArray: Ho,
+    or: Fo,
+    sql: A
+  };
+}
+function ua() {
+  return {
+    sql: A,
+    asc: yn,
+    desc: ia
+  };
+}
+function la(n, e) {
+  Object.keys(n).length === 1 && "default" in n && !Q(n.default, U) && (n = n.default);
+  const t = {}, r = {}, i = {};
+  for (const [s, u] of Object.entries(n))
+    if (Q(u, U)) {
+      const a = nt(u), d = r[a];
+      t[a] = s, i[s] = {
+        tsName: s,
+        dbName: u[U.Symbol.Name],
+        schema: u[U.Symbol.Schema],
+        columns: u[U.Symbol.Columns],
+        relations: d?.relations ?? {},
+        primaryKey: d?.primaryKey ?? []
+      };
+      for (const f of Object.values(
+        u[U.Symbol.Columns]
+      ))
+        f.primary && i[s].primaryKey.push(f);
+      const y = u[U.Symbol.ExtraConfigBuilder]?.(u[U.Symbol.ExtraConfigColumns]);
+      if (y)
+        for (const f of Object.values(y))
+          Q(f, Qo) && i[s].primaryKey.push(...f.columns);
+    } else if (Q(u, oa)) {
+      const a = nt(u.table), d = t[a], y = u.config(
+        e(u.table)
+      );
+      let f;
+      for (const [b, m] of Object.entries(y))
+        if (d) {
+          const v = i[d];
+          v.relations[b] = m;
+        } else
+          a in r || (r[a] = {
+            relations: {},
+            primaryKey: f
+          }), r[a].relations[b] = m;
+    }
+  return { tables: i, tableNamesMap: t };
+}
+function ca(n) {
+  return function(t, r) {
+    return new $e(
+      n,
+      t,
+      r,
+      r?.fields.reduce((i, s) => i && s.notNull, !0) ?? !1
+    );
+  };
+}
+function ha(n) {
+  return function(t, r) {
+    return new Lt(n, t, r);
+  };
+}
+function fa(n, e, t) {
+  if (Q(t, $e) && t.config)
+    return {
+      fields: t.config.fields,
+      references: t.config.references
+    };
+  const r = e[nt(t.referencedTable)];
+  if (!r)
+    throw new Error(
+      `Table "${t.referencedTable[U.Symbol.Name]}" not found in schema`
+    );
+  const i = n[r];
+  if (!i)
+    throw new Error(`Table "${r}" not found in schema`);
+  const s = t.sourceTable, u = e[nt(s)];
+  if (!u)
+    throw new Error(
+      `Table "${s[U.Symbol.Name]}" not found in schema`
+    );
+  const a = [];
+  for (const d of Object.values(
+    i.relations
+  ))
+    (t.relationName && t !== d && d.relationName === t.relationName || !t.relationName && d.referencedTable === t.sourceTable) && a.push(d);
+  if (a.length > 1)
+    throw t.relationName ? new Error(
+      `There are multiple relations with name "${t.relationName}" in table "${r}"`
+    ) : new Error(
+      `There are multiple relations between "${r}" and "${t.sourceTable[U.Symbol.Name]}". Please specify relation name`
+    );
+  if (a[0] && Q(a[0], $e) && a[0].config)
+    return {
+      fields: a[0].config.references,
+      references: a[0].config.fields
+    };
+  throw new Error(
+    `There is not enough information to infer relation "${u}.${t.fieldName}"`
+  );
+}
+function da(n) {
+  return {
+    one: ca(n),
+    many: ha(n)
+  };
+}
+function ar(n, e, t, r, i = (s) => s) {
+  const s = {};
+  for (const [
+    u,
+    a
+  ] of r.entries())
+    if (a.isJson) {
+      const d = e.relations[a.tsKey], y = t[u], f = typeof y == "string" ? JSON.parse(y) : y;
+      s[a.tsKey] = Q(d, $e) ? f && ar(
+        n,
+        n[a.relationTableTsKey],
+        f,
+        a.selection,
+        i
+      ) : f.map(
+        (b) => ar(
+          n,
+          n[a.relationTableTsKey],
+          b,
+          a.selection,
+          i
+        )
+      );
+    } else {
+      const d = i(t[u]), y = a.field;
+      let f;
+      Q(y, ce) ? f = y : Q(y, z) ? f = y.decoder : f = y.sql.decoder, s[a.tsKey] = d === null ? null : f.mapFromDriverValue(d);
+    }
+  return s;
+}
+class pa {
+  constructor(e, t) {
+    this.name = e, this.value = t;
+  }
+  static [I] = "PgCheckBuilder";
+  brand;
+  /** @internal */
+  build(e) {
+    return new ga(e, this);
+  }
+}
+class ga {
+  constructor(e, t) {
+    this.table = e, this.name = t.name, this.value = t.value;
+  }
+  static [I] = "PgCheck";
+  name;
+  value;
+}
+function ma(n, e) {
+  return new pa(n, e);
+}
+class ge {
+  static [I] = "SelectionProxyHandler";
+  config;
+  constructor(e) {
+    this.config = { ...e };
+  }
+  get(e, t) {
+    if (t === "_")
+      return {
+        ...e._,
+        selectedFields: new Proxy(
+          e._.selectedFields,
+          this
+        )
+      };
+    if (t === ue)
+      return {
+        ...e[ue],
+        selectedFields: new Proxy(
+          e[ue].selectedFields,
+          this
+        )
+      };
+    if (typeof t == "symbol")
+      return e[t];
+    const i = (Q(e, _e) ? e._.selectedFields : Q(e, Qe) ? e[ue].selectedFields : e)[t];
+    if (Q(i, z.Aliased)) {
+      if (this.config.sqlAliasedBehavior === "sql" && !i.isSelectionField)
+        return i.sql;
+      const s = i.clone();
+      return s.isSelectionField = !0, s;
+    }
+    if (Q(i, z)) {
+      if (this.config.sqlBehavior === "sql")
+        return i;
+      throw new Error(
+        `You tried to reference "${t}" field from a subquery, which is a raw SQL field, but it doesn't have an alias declared. Please add an alias to the field using ".as('alias')" method.`
+      );
+    }
+    return Q(i, ce) ? this.config.alias ? new Proxy(
+      i,
+      new Ct(
+        new Proxy(
+          i.table,
+          new gr(this.config.alias, this.config.replaceOriginalName ?? !1)
+        )
+      )
+    ) : i : typeof i != "object" || i === null ? i : new Proxy(i, new ge(this.config));
+  }
+}
+class kr extends ke {
+  constructor(e, t, r, i) {
+    super(), this.session = t, this.dialect = r, this.config = { table: e, withList: i };
+  }
+  static [I] = "PgDelete";
+  config;
+  /**
+   * Adds a `where` clause to the query.
+   *
+   * Calling this method will delete only those rows that fulfill a specified condition.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/delete}
+   *
+   * @param where the `where` clause.
+   *
+   * @example
+   * You can use conditional operators and `sql function` to filter the rows to be deleted.
+   *
+   * ```ts
+   * // Delete all cars with green color
+   * await db.delete(cars).where(eq(cars.color, 'green'));
+   * // or
+   * await db.delete(cars).where(sql`${cars.color} = 'green'`)
+   * ```
+   *
+   * You can logically combine conditional operators with `and()` and `or()` operators:
+   *
+   * ```ts
+   * // Delete all BMW cars with a green color
+   * await db.delete(cars).where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
+   *
+   * // Delete all cars with the green or blue color
+   * await db.delete(cars).where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
+   * ```
+   */
+  where(e) {
+    return this.config.where = e, this;
+  }
+  returning(e = this.config.table[U.Symbol.Columns]) {
+    return this.config.returningFields = e, this.config.returning = Me(e), this;
+  }
+  /** @internal */
+  getSQL() {
+    return this.dialect.buildDeleteQuery(this.config);
+  }
+  toSQL() {
+    const { typings: e, ...t } = this.dialect.sqlToQuery(this.getSQL());
+    return t;
+  }
+  /** @internal */
+  _prepare(e) {
+    return Se.startActiveSpan("drizzle.prepareQuery", () => this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, e, !0));
+  }
+  prepare(e) {
+    return this._prepare(e);
+  }
+  authToken;
+  /** @internal */
+  setToken(e) {
+    return this.authToken = e, this;
+  }
+  execute = (e) => Se.startActiveSpan("drizzle.operation", () => this._prepare().execute(e, this.authToken));
+  /** @internal */
+  getSelectedFields() {
+    return this.config.returningFields ? new Proxy(
+      this.config.returningFields,
+      new ge({
+        alias: Ne(this.config.table),
+        sqlAliasedBehavior: "alias",
+        sqlBehavior: "error"
+      })
+    ) : void 0;
+  }
+  $dynamic() {
+    return this;
+  }
+}
+function ya(n) {
+  return (n.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? []).map((t) => t.toLowerCase()).join("_");
+}
+function wa(n) {
+  return (n.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? []).reduce((t, r, i) => {
+    const s = i === 0 ? r.toLowerCase() : `${r[0].toUpperCase()}${r.slice(1)}`;
+    return t + s;
+  }, "");
+}
+function ba(n) {
+  return n;
+}
+class va {
+  static [I] = "CasingCache";
+  /** @internal */
+  cache = {};
+  cachedTables = {};
+  convert;
+  constructor(e) {
+    this.convert = e === "snake_case" ? ya : e === "camelCase" ? wa : ba;
+  }
+  getColumnCasing(e) {
+    if (!e.keyAsName)
+      return e.name;
+    const t = e.table[U.Symbol.Schema] ?? "public", r = e.table[U.Symbol.OriginalName], i = `${t}.${r}.${e.name}`;
+    return this.cache[i] || this.cacheTable(e.table), this.cache[i];
+  }
+  cacheTable(e) {
+    const t = e[U.Symbol.Schema] ?? "public", r = e[U.Symbol.OriginalName], i = `${t}.${r}`;
+    if (!this.cachedTables[i]) {
+      for (const s of Object.values(e[U.Symbol.Columns])) {
+        const u = `${i}.${s.name}`;
+        this.cache[u] = this.convert(s.name);
+      }
+      this.cachedTables[i] = !0;
+    }
+  }
+  clearCache() {
+    this.cache = {}, this.cachedTables = {};
+  }
+}
+class bn extends Qe {
+  static [I] = "PgViewBase";
+}
+class Pt {
+  static [I] = "PgDialect";
+  /** @internal */
+  casing;
+  constructor(e) {
+    this.casing = new va(e?.casing);
+  }
+  async migrate(e, t, r) {
+    const i = typeof r == "string" ? "__drizzle_migrations" : r.migrationsTable ?? "__drizzle_migrations", s = typeof r == "string" ? "drizzle" : r.migrationsSchema ?? "drizzle", u = A`
+			CREATE TABLE IF NOT EXISTS ${A.identifier(s)}.${A.identifier(i)} (
+				id SERIAL PRIMARY KEY,
+				hash text NOT NULL,
+				created_at bigint
+			)
+		`;
+    await t.execute(A`CREATE SCHEMA IF NOT EXISTS ${A.identifier(s)}`), await t.execute(u);
+    const d = (await t.all(
+      A`select id, hash, created_at from ${A.identifier(s)}.${A.identifier(i)} order by created_at desc limit 1`
+    ))[0];
+    await t.transaction(async (y) => {
+      for await (const f of e)
+        if (!d || Number(d.created_at) < f.folderMillis) {
+          for (const b of f.sql)
+            await y.execute(A.raw(b));
+          await y.execute(
+            A`insert into ${A.identifier(s)}.${A.identifier(i)} ("hash", "created_at") values(${f.hash}, ${f.folderMillis})`
+          );
+        }
+    });
+  }
+  escapeName(e) {
+    return `"${e}"`;
+  }
+  escapeParam(e) {
+    return `$${e + 1}`;
+  }
+  escapeString(e) {
+    return `'${e.replace(/'/g, "''")}'`;
+  }
+  buildWithCTE(e) {
+    if (!e?.length)
+      return;
+    const t = [A`with `];
+    for (const [r, i] of e.entries())
+      t.push(A`${A.identifier(i._.alias)} as (${i._.sql})`), r < e.length - 1 && t.push(A`, `);
+    return t.push(A` `), A.join(t);
+  }
+  buildDeleteQuery({ table: e, where: t, returning: r, withList: i }) {
+    const s = this.buildWithCTE(i), u = r ? A` returning ${this.buildSelection(r, { isSingleTable: !0 })}` : void 0, a = t ? A` where ${t}` : void 0;
+    return A`${s}delete from ${e}${a}${u}`;
+  }
+  buildUpdateSet(e, t) {
+    const r = e[U.Symbol.Columns], i = Object.keys(r).filter(
+      (u) => t[u] !== void 0 || r[u]?.onUpdateFn !== void 0
+    ), s = i.length;
+    return A.join(i.flatMap((u, a) => {
+      const d = r[u], y = t[u] ?? A.param(d.onUpdateFn(), d), f = A`${A.identifier(this.casing.getColumnCasing(d))} = ${y}`;
+      return a < s - 1 ? [f, A.raw(", ")] : [f];
+    }));
+  }
+  buildUpdateQuery({ table: e, set: t, where: r, returning: i, withList: s, from: u, joins: a }) {
+    const d = this.buildWithCTE(s), y = e[ve.Symbol.Name], f = e[ve.Symbol.Schema], b = e[ve.Symbol.OriginalName], m = y === b ? void 0 : y, v = A`${f ? A`${A.identifier(f)}.` : void 0}${A.identifier(b)}${m && A` ${A.identifier(m)}`}`, c = this.buildUpdateSet(e, t), h = u && A.join([A.raw(" from "), this.buildFromTable(u)]), w = this.buildJoins(a), S = i ? A` returning ${this.buildSelection(i, { isSingleTable: !u })}` : void 0, _ = r ? A` where ${r}` : void 0;
+    return A`${d}update ${v} set ${c}${h}${w}${_}${S}`;
+  }
+  /**
+   * Builds selection SQL with provided fields/expressions
+   *
+   * Examples:
+   *
+   * `select <selection> from`
+   *
+   * `insert ... returning <selection>`
+   *
+   * If `isSingleTable` is true, then columns won't be prefixed with table name
+   */
+  buildSelection(e, { isSingleTable: t = !1 } = {}) {
+    const r = e.length, i = e.flatMap(({ field: s }, u) => {
+      const a = [];
+      if (Q(s, z.Aliased) && s.isSelectionField)
+        a.push(A.identifier(s.fieldAlias));
+      else if (Q(s, z.Aliased) || Q(s, z)) {
+        const d = Q(s, z.Aliased) ? s.sql : s;
+        t ? a.push(
+          new z(
+            d.queryChunks.map((y) => Q(y, Y) ? A.identifier(this.casing.getColumnCasing(y)) : y)
+          )
+        ) : a.push(d), Q(s, z.Aliased) && a.push(A` as ${A.identifier(s.fieldAlias)}`);
+      } else
+        Q(s, ce) && (t ? a.push(A.identifier(this.casing.getColumnCasing(s))) : a.push(s));
+      return u < r - 1 && a.push(A`, `), a;
+    });
+    return A.join(i);
+  }
+  buildJoins(e) {
+    if (!e || e.length === 0)
+      return;
+    const t = [];
+    for (const [r, i] of e.entries()) {
+      r === 0 && t.push(A` `);
+      const s = i.table, u = i.lateral ? A` lateral` : void 0, a = i.on ? A` on ${i.on}` : void 0;
+      if (Q(s, ve)) {
+        const d = s[ve.Symbol.Name], y = s[ve.Symbol.Schema], f = s[ve.Symbol.OriginalName], b = d === f ? void 0 : i.alias;
+        t.push(
+          A`${A.raw(i.joinType)} join${u} ${y ? A`${A.identifier(y)}.` : void 0}${A.identifier(f)}${b && A` ${A.identifier(b)}`}${a}`
+        );
+      } else if (Q(s, Qe)) {
+        const d = s[ue].name, y = s[ue].schema, f = s[ue].originalName, b = d === f ? void 0 : i.alias;
+        t.push(
+          A`${A.raw(i.joinType)} join${u} ${y ? A`${A.identifier(y)}.` : void 0}${A.identifier(f)}${b && A` ${A.identifier(b)}`}${a}`
+        );
+      } else
+        t.push(
+          A`${A.raw(i.joinType)} join${u} ${s}${a}`
+        );
+      r < e.length - 1 && t.push(A` `);
+    }
+    return A.join(t);
+  }
+  buildFromTable(e) {
+    if (Q(e, U) && e[U.Symbol.IsAlias]) {
+      let t = A`${A.identifier(e[U.Symbol.OriginalName])}`;
+      return e[U.Symbol.Schema] && (t = A`${A.identifier(e[U.Symbol.Schema])}.${t}`), A`${t} ${A.identifier(e[U.Symbol.Name])}`;
+    }
+    return e;
+  }
+  buildSelectQuery({
+    withList: e,
+    fields: t,
+    fieldsFlat: r,
+    where: i,
+    having: s,
+    table: u,
+    joins: a,
+    orderBy: d,
+    groupBy: y,
+    limit: f,
+    offset: b,
+    lockingClause: m,
+    distinct: v,
+    setOperators: c
+  }) {
+    const h = r ?? Me(t);
+    for (const O of h)
+      if (Q(O.field, ce) && Ne(O.field.table) !== (Q(u, _e) ? u._.alias : Q(u, bn) ? u[ue].name : Q(u, z) ? void 0 : Ne(u)) && !((q) => a?.some(
+        ({ alias: W }) => W === (q[U.Symbol.IsAlias] ? Ne(q) : q[U.Symbol.BaseName])
+      ))(O.field.table)) {
+        const q = Ne(O.field.table);
+        throw new Error(
+          `Your "${O.path.join("->")}" field references a column "${q}"."${O.field.name}", but the table "${q}" is not part of the query! Did you forget to join it?`
+        );
+      }
+    const w = !a || a.length === 0, S = this.buildWithCTE(e);
+    let _;
+    v && (_ = v === !0 ? A` distinct` : A` distinct on (${A.join(v.on, A`, `)})`);
+    const T = this.buildSelection(h, { isSingleTable: w }), L = this.buildFromTable(u), M = this.buildJoins(a), P = i ? A` where ${i}` : void 0, B = s ? A` having ${s}` : void 0;
+    let x;
+    d && d.length > 0 && (x = A` order by ${A.join(d, A`, `)}`);
+    let E;
+    y && y.length > 0 && (E = A` group by ${A.join(y, A`, `)}`);
+    const D = typeof f == "object" || typeof f == "number" && f >= 0 ? A` limit ${f}` : void 0, R = b ? A` offset ${b}` : void 0, F = A.empty();
+    if (m) {
+      const O = A` for ${A.raw(m.strength)}`;
+      m.config.of && O.append(
+        A` of ${A.join(
+          Array.isArray(m.config.of) ? m.config.of : [m.config.of],
+          A`, `
+        )}`
+      ), m.config.noWait ? O.append(A` nowait`) : m.config.skipLocked && O.append(A` skip locked`), F.append(O);
+    }
+    const j = A`${S}select${_} ${T} from ${L}${M}${P}${E}${B}${x}${D}${R}${F}`;
+    return c.length > 0 ? this.buildSetOperations(j, c) : j;
+  }
+  buildSetOperations(e, t) {
+    const [r, ...i] = t;
+    if (!r)
+      throw new Error("Cannot pass undefined values to any set operator");
+    return i.length === 0 ? this.buildSetOperationQuery({ leftSelect: e, setOperator: r }) : this.buildSetOperations(
+      this.buildSetOperationQuery({ leftSelect: e, setOperator: r }),
+      i
+    );
+  }
+  buildSetOperationQuery({
+    leftSelect: e,
+    setOperator: { type: t, isAll: r, rightSelect: i, limit: s, orderBy: u, offset: a }
+  }) {
+    const d = A`(${e.getSQL()}) `, y = A`(${i.getSQL()})`;
+    let f;
+    if (u && u.length > 0) {
+      const c = [];
+      for (const h of u)
+        if (Q(h, Y))
+          c.push(A.identifier(h.name));
+        else if (Q(h, z)) {
+          for (let w = 0; w < h.queryChunks.length; w++) {
+            const S = h.queryChunks[w];
+            Q(S, Y) && (h.queryChunks[w] = A.identifier(S.name));
+          }
+          c.push(A`${h}`);
+        } else
+          c.push(A`${h}`);
+      f = A` order by ${A.join(c, A`, `)} `;
+    }
+    const b = typeof s == "object" || typeof s == "number" && s >= 0 ? A` limit ${s}` : void 0, m = A.raw(`${t} ${r ? "all " : ""}`), v = a ? A` offset ${a}` : void 0;
+    return A`${d}${m}${y}${f}${b}${v}`;
+  }
+  buildInsertQuery({ table: e, values: t, onConflict: r, returning: i, withList: s, select: u, overridingSystemValue_: a }) {
+    const d = [], y = e[U.Symbol.Columns], f = Object.entries(y).filter(([S, _]) => !_.shouldDisableInsert()), b = f.map(
+      ([, S]) => A.identifier(this.casing.getColumnCasing(S))
+    );
+    if (u) {
+      const S = t;
+      Q(S, z) ? d.push(S) : d.push(S.getSQL());
+    } else {
+      const S = t;
+      d.push(A.raw("values "));
+      for (const [_, T] of S.entries()) {
+        const L = [];
+        for (const [M, P] of f) {
+          const B = T[M];
+          if (B === void 0 || Q(B, Le) && B.value === void 0)
+            if (P.defaultFn !== void 0) {
+              const x = P.defaultFn(), E = Q(x, z) ? x : A.param(x, P);
+              L.push(E);
+            } else if (!P.default && P.onUpdateFn !== void 0) {
+              const x = P.onUpdateFn(), E = Q(x, z) ? x : A.param(x, P);
+              L.push(E);
+            } else
+              L.push(A`default`);
+          else
+            L.push(B);
+        }
+        d.push(L), _ < S.length - 1 && d.push(A`, `);
+      }
+    }
+    const m = this.buildWithCTE(s), v = A.join(d), c = i ? A` returning ${this.buildSelection(i, { isSingleTable: !0 })}` : void 0, h = r ? A` on conflict ${r}` : void 0, w = a === !0 ? A`overriding system value ` : void 0;
+    return A`${m}insert into ${e} ${b} ${w}${v}${h}${c}`;
+  }
+  buildRefreshMaterializedViewQuery({ view: e, concurrently: t, withNoData: r }) {
+    const i = t ? A` concurrently` : void 0, s = r ? A` with no data` : void 0;
+    return A`refresh materialized view${i} ${e}${s}`;
+  }
+  prepareTyping(e) {
+    return Q(e, ln) || Q(e, un) ? "json" : Q(e, cn) ? "decimal" : Q(e, fn) ? "time" : Q(e, dn) || Q(e, pn) ? "timestamp" : Q(e, sn) || Q(e, on) ? "date" : Q(e, gn) ? "uuid" : "none";
+  }
+  sqlToQuery(e, t) {
+    return e.toQuery({
+      casing: this.casing,
+      escapeName: this.escapeName,
+      escapeParam: this.escapeParam,
+      escapeString: this.escapeString,
+      prepareTyping: this.prepareTyping,
+      invokeSource: t
+    });
+  }
+  // buildRelationalQueryWithPK({
+  // 	fullSchema,
+  // 	schema,
+  // 	tableNamesMap,
+  // 	table,
+  // 	tableConfig,
+  // 	queryConfig: config,
+  // 	tableAlias,
+  // 	isRoot = false,
+  // 	joinOn,
+  // }: {
+  // 	fullSchema: Record<string, unknown>;
+  // 	schema: TablesRelationalConfig;
+  // 	tableNamesMap: Record<string, string>;
+  // 	table: PgTable;
+  // 	tableConfig: TableRelationalConfig;
+  // 	queryConfig: true | DBQueryConfig<'many', true>;
+  // 	tableAlias: string;
+  // 	isRoot?: boolean;
+  // 	joinOn?: SQL;
+  // }): BuildRelationalQueryResult<PgTable, PgColumn> {
+  // 	// For { "<relation>": true }, return a table with selection of all columns
+  // 	if (config === true) {
+  // 		const selectionEntries = Object.entries(tableConfig.columns);
+  // 		const selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = selectionEntries.map((
+  // 			[key, value],
+  // 		) => ({
+  // 			dbKey: value.name,
+  // 			tsKey: key,
+  // 			field: value as PgColumn,
+  // 			relationTableTsKey: undefined,
+  // 			isJson: false,
+  // 			selection: [],
+  // 		}));
+  // 		return {
+  // 			tableTsKey: tableConfig.tsName,
+  // 			sql: table,
+  // 			selection,
+  // 		};
+  // 	}
+  // 	// let selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = [];
+  // 	// let selectionForBuild = selection;
+  // 	const aliasedColumns = Object.fromEntries(
+  // 		Object.entries(tableConfig.columns).map(([key, value]) => [key, aliasedTableColumn(value, tableAlias)]),
+  // 	);
+  // 	const aliasedRelations = Object.fromEntries(
+  // 		Object.entries(tableConfig.relations).map(([key, value]) => [key, aliasedRelation(value, tableAlias)]),
+  // 	);
+  // 	const aliasedFields = Object.assign({}, aliasedColumns, aliasedRelations);
+  // 	let where, hasUserDefinedWhere;
+  // 	if (config.where) {
+  // 		const whereSql = typeof config.where === 'function' ? config.where(aliasedFields, operators) : config.where;
+  // 		where = whereSql && mapColumnsInSQLToAlias(whereSql, tableAlias);
+  // 		hasUserDefinedWhere = !!where;
+  // 	}
+  // 	where = and(joinOn, where);
+  // 	// const fieldsSelection: { tsKey: string; value: PgColumn | SQL.Aliased; isExtra?: boolean }[] = [];
+  // 	let joins: Join[] = [];
+  // 	let selectedColumns: string[] = [];
+  // 	// Figure out which columns to select
+  // 	if (config.columns) {
+  // 		let isIncludeMode = false;
+  // 		for (const [field, value] of Object.entries(config.columns)) {
+  // 			if (value === undefined) {
+  // 				continue;
+  // 			}
+  // 			if (field in tableConfig.columns) {
+  // 				if (!isIncludeMode && value === true) {
+  // 					isIncludeMode = true;
+  // 				}
+  // 				selectedColumns.push(field);
+  // 			}
+  // 		}
+  // 		if (selectedColumns.length > 0) {
+  // 			selectedColumns = isIncludeMode
+  // 				? selectedColumns.filter((c) => config.columns?.[c] === true)
+  // 				: Object.keys(tableConfig.columns).filter((key) => !selectedColumns.includes(key));
+  // 		}
+  // 	} else {
+  // 		// Select all columns if selection is not specified
+  // 		selectedColumns = Object.keys(tableConfig.columns);
+  // 	}
+  // 	// for (const field of selectedColumns) {
+  // 	// 	const column = tableConfig.columns[field]! as PgColumn;
+  // 	// 	fieldsSelection.push({ tsKey: field, value: column });
+  // 	// }
+  // 	let initiallySelectedRelations: {
+  // 		tsKey: string;
+  // 		queryConfig: true | DBQueryConfig<'many', false>;
+  // 		relation: Relation;
+  // 	}[] = [];
+  // 	// let selectedRelations: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = [];
+  // 	// Figure out which relations to select
+  // 	if (config.with) {
+  // 		initiallySelectedRelations = Object.entries(config.with)
+  // 			.filter((entry): entry is [typeof entry[0], NonNullable<typeof entry[1]>] => !!entry[1])
+  // 			.map(([tsKey, queryConfig]) => ({ tsKey, queryConfig, relation: tableConfig.relations[tsKey]! }));
+  // 	}
+  // 	const manyRelations = initiallySelectedRelations.filter((r) =>
+  // 		is(r.relation, Many)
+  // 		&& (schema[tableNamesMap[r.relation.referencedTable[Table.Symbol.Name]]!]?.primaryKey.length ?? 0) > 0
+  // 	);
+  // 	// If this is the last Many relation (or there are no Many relations), we are on the innermost subquery level
+  // 	const isInnermostQuery = manyRelations.length < 2;
+  // 	const selectedExtras: {
+  // 		tsKey: string;
+  // 		value: SQL.Aliased;
+  // 	}[] = [];
+  // 	// Figure out which extras to select
+  // 	if (isInnermostQuery && config.extras) {
+  // 		const extras = typeof config.extras === 'function'
+  // 			? config.extras(aliasedFields, { sql })
+  // 			: config.extras;
+  // 		for (const [tsKey, value] of Object.entries(extras)) {
+  // 			selectedExtras.push({
+  // 				tsKey,
+  // 				value: mapColumnsInAliasedSQLToAlias(value, tableAlias),
+  // 			});
+  // 		}
+  // 	}
+  // 	// Transform `fieldsSelection` into `selection`
+  // 	// `fieldsSelection` shouldn't be used after this point
+  // 	// for (const { tsKey, value, isExtra } of fieldsSelection) {
+  // 	// 	selection.push({
+  // 	// 		dbKey: is(value, SQL.Aliased) ? value.fieldAlias : tableConfig.columns[tsKey]!.name,
+  // 	// 		tsKey,
+  // 	// 		field: is(value, Column) ? aliasedTableColumn(value, tableAlias) : value,
+  // 	// 		relationTableTsKey: undefined,
+  // 	// 		isJson: false,
+  // 	// 		isExtra,
+  // 	// 		selection: [],
+  // 	// 	});
+  // 	// }
+  // 	let orderByOrig = typeof config.orderBy === 'function'
+  // 		? config.orderBy(aliasedFields, orderByOperators)
+  // 		: config.orderBy ?? [];
+  // 	if (!Array.isArray(orderByOrig)) {
+  // 		orderByOrig = [orderByOrig];
+  // 	}
+  // 	const orderBy = orderByOrig.map((orderByValue) => {
+  // 		if (is(orderByValue, Column)) {
+  // 			return aliasedTableColumn(orderByValue, tableAlias) as PgColumn;
+  // 		}
+  // 		return mapColumnsInSQLToAlias(orderByValue, tableAlias);
+  // 	});
+  // 	const limit = isInnermostQuery ? config.limit : undefined;
+  // 	const offset = isInnermostQuery ? config.offset : undefined;
+  // 	// For non-root queries without additional config except columns, return a table with selection
+  // 	if (
+  // 		!isRoot
+  // 		&& initiallySelectedRelations.length === 0
+  // 		&& selectedExtras.length === 0
+  // 		&& !where
+  // 		&& orderBy.length === 0
+  // 		&& limit === undefined
+  // 		&& offset === undefined
+  // 	) {
+  // 		return {
+  // 			tableTsKey: tableConfig.tsName,
+  // 			sql: table,
+  // 			selection: selectedColumns.map((key) => ({
+  // 				dbKey: tableConfig.columns[key]!.name,
+  // 				tsKey: key,
+  // 				field: tableConfig.columns[key] as PgColumn,
+  // 				relationTableTsKey: undefined,
+  // 				isJson: false,
+  // 				selection: [],
+  // 			})),
+  // 		};
+  // 	}
+  // 	const selectedRelationsWithoutPK:
+  // 	// Process all relations without primary keys, because they need to be joined differently and will all be on the same query level
+  // 	for (
+  // 		const {
+  // 			tsKey: selectedRelationTsKey,
+  // 			queryConfig: selectedRelationConfigValue,
+  // 			relation,
+  // 		} of initiallySelectedRelations
+  // 	) {
+  // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
+  // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
+  // 		const relationTableTsName = tableNamesMap[relationTableName]!;
+  // 		const relationTable = schema[relationTableTsName]!;
+  // 		if (relationTable.primaryKey.length > 0) {
+  // 			continue;
+  // 		}
+  // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
+  // 		const joinOn = and(
+  // 			...normalizedRelation.fields.map((field, i) =>
+  // 				eq(
+  // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
+  // 					aliasedTableColumn(field, tableAlias),
+  // 				)
+  // 			),
+  // 		);
+  // 		const builtRelation = this.buildRelationalQueryWithoutPK({
+  // 			fullSchema,
+  // 			schema,
+  // 			tableNamesMap,
+  // 			table: fullSchema[relationTableTsName] as PgTable,
+  // 			tableConfig: schema[relationTableTsName]!,
+  // 			queryConfig: selectedRelationConfigValue,
+  // 			tableAlias: relationTableAlias,
+  // 			joinOn,
+  // 			nestedQueryRelation: relation,
+  // 		});
+  // 		const field = sql`${sql.identifier(relationTableAlias)}.${sql.identifier('data')}`.as(selectedRelationTsKey);
+  // 		joins.push({
+  // 			on: sql`true`,
+  // 			table: new Subquery(builtRelation.sql as SQL, {}, relationTableAlias),
+  // 			alias: relationTableAlias,
+  // 			joinType: 'left',
+  // 			lateral: true,
+  // 		});
+  // 		selectedRelations.push({
+  // 			dbKey: selectedRelationTsKey,
+  // 			tsKey: selectedRelationTsKey,
+  // 			field,
+  // 			relationTableTsKey: relationTableTsName,
+  // 			isJson: true,
+  // 			selection: builtRelation.selection,
+  // 		});
+  // 	}
+  // 	const oneRelations = initiallySelectedRelations.filter((r): r is typeof r & { relation: One } =>
+  // 		is(r.relation, One)
+  // 	);
+  // 	// Process all One relations with PKs, because they can all be joined on the same level
+  // 	for (
+  // 		const {
+  // 			tsKey: selectedRelationTsKey,
+  // 			queryConfig: selectedRelationConfigValue,
+  // 			relation,
+  // 		} of oneRelations
+  // 	) {
+  // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
+  // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
+  // 		const relationTableTsName = tableNamesMap[relationTableName]!;
+  // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
+  // 		const relationTable = schema[relationTableTsName]!;
+  // 		if (relationTable.primaryKey.length === 0) {
+  // 			continue;
+  // 		}
+  // 		const joinOn = and(
+  // 			...normalizedRelation.fields.map((field, i) =>
+  // 				eq(
+  // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
+  // 					aliasedTableColumn(field, tableAlias),
+  // 				)
+  // 			),
+  // 		);
+  // 		const builtRelation = this.buildRelationalQueryWithPK({
+  // 			fullSchema,
+  // 			schema,
+  // 			tableNamesMap,
+  // 			table: fullSchema[relationTableTsName] as PgTable,
+  // 			tableConfig: schema[relationTableTsName]!,
+  // 			queryConfig: selectedRelationConfigValue,
+  // 			tableAlias: relationTableAlias,
+  // 			joinOn,
+  // 		});
+  // 		const field = sql`case when ${sql.identifier(relationTableAlias)} is null then null else json_build_array(${
+  // 			sql.join(
+  // 				builtRelation.selection.map(({ field }) =>
+  // 					is(field, SQL.Aliased)
+  // 						? sql`${sql.identifier(relationTableAlias)}.${sql.identifier(field.fieldAlias)}`
+  // 						: is(field, Column)
+  // 						? aliasedTableColumn(field, relationTableAlias)
+  // 						: field
+  // 				),
+  // 				sql`, `,
+  // 			)
+  // 		}) end`.as(selectedRelationTsKey);
+  // 		const isLateralJoin = is(builtRelation.sql, SQL);
+  // 		joins.push({
+  // 			on: isLateralJoin ? sql`true` : joinOn,
+  // 			table: is(builtRelation.sql, SQL)
+  // 				? new Subquery(builtRelation.sql, {}, relationTableAlias)
+  // 				: aliasedTable(builtRelation.sql, relationTableAlias),
+  // 			alias: relationTableAlias,
+  // 			joinType: 'left',
+  // 			lateral: is(builtRelation.sql, SQL),
+  // 		});
+  // 		selectedRelations.push({
+  // 			dbKey: selectedRelationTsKey,
+  // 			tsKey: selectedRelationTsKey,
+  // 			field,
+  // 			relationTableTsKey: relationTableTsName,
+  // 			isJson: true,
+  // 			selection: builtRelation.selection,
+  // 		});
+  // 	}
+  // 	let distinct: PgSelectConfig['distinct'];
+  // 	let tableFrom: PgTable | Subquery = table;
+  // 	// Process first Many relation - each one requires a nested subquery
+  // 	const manyRelation = manyRelations[0];
+  // 	if (manyRelation) {
+  // 		const {
+  // 			tsKey: selectedRelationTsKey,
+  // 			queryConfig: selectedRelationQueryConfig,
+  // 			relation,
+  // 		} = manyRelation;
+  // 		distinct = {
+  // 			on: tableConfig.primaryKey.map((c) => aliasedTableColumn(c as PgColumn, tableAlias)),
+  // 		};
+  // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
+  // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
+  // 		const relationTableTsName = tableNamesMap[relationTableName]!;
+  // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
+  // 		const joinOn = and(
+  // 			...normalizedRelation.fields.map((field, i) =>
+  // 				eq(
+  // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
+  // 					aliasedTableColumn(field, tableAlias),
+  // 				)
+  // 			),
+  // 		);
+  // 		const builtRelationJoin = this.buildRelationalQueryWithPK({
+  // 			fullSchema,
+  // 			schema,
+  // 			tableNamesMap,
+  // 			table: fullSchema[relationTableTsName] as PgTable,
+  // 			tableConfig: schema[relationTableTsName]!,
+  // 			queryConfig: selectedRelationQueryConfig,
+  // 			tableAlias: relationTableAlias,
+  // 			joinOn,
+  // 		});
+  // 		const builtRelationSelectionField = sql`case when ${
+  // 			sql.identifier(relationTableAlias)
+  // 		} is null then '[]' else json_agg(json_build_array(${
+  // 			sql.join(
+  // 				builtRelationJoin.selection.map(({ field }) =>
+  // 					is(field, SQL.Aliased)
+  // 						? sql`${sql.identifier(relationTableAlias)}.${sql.identifier(field.fieldAlias)}`
+  // 						: is(field, Column)
+  // 						? aliasedTableColumn(field, relationTableAlias)
+  // 						: field
+  // 				),
+  // 				sql`, `,
+  // 			)
+  // 		})) over (partition by ${sql.join(distinct.on, sql`, `)}) end`.as(selectedRelationTsKey);
+  // 		const isLateralJoin = is(builtRelationJoin.sql, SQL);
+  // 		joins.push({
+  // 			on: isLateralJoin ? sql`true` : joinOn,
+  // 			table: isLateralJoin
+  // 				? new Subquery(builtRelationJoin.sql as SQL, {}, relationTableAlias)
+  // 				: aliasedTable(builtRelationJoin.sql as PgTable, relationTableAlias),
+  // 			alias: relationTableAlias,
+  // 			joinType: 'left',
+  // 			lateral: isLateralJoin,
+  // 		});
+  // 		// Build the "from" subquery with the remaining Many relations
+  // 		const builtTableFrom = this.buildRelationalQueryWithPK({
+  // 			fullSchema,
+  // 			schema,
+  // 			tableNamesMap,
+  // 			table,
+  // 			tableConfig,
+  // 			queryConfig: {
+  // 				...config,
+  // 				where: undefined,
+  // 				orderBy: undefined,
+  // 				limit: undefined,
+  // 				offset: undefined,
+  // 				with: manyRelations.slice(1).reduce<NonNullable<typeof config['with']>>(
+  // 					(result, { tsKey, queryConfig: configValue }) => {
+  // 						result[tsKey] = configValue;
+  // 						return result;
+  // 					},
+  // 					{},
+  // 				),
+  // 			},
+  // 			tableAlias,
+  // 		});
+  // 		selectedRelations.push({
+  // 			dbKey: selectedRelationTsKey,
+  // 			tsKey: selectedRelationTsKey,
+  // 			field: builtRelationSelectionField,
+  // 			relationTableTsKey: relationTableTsName,
+  // 			isJson: true,
+  // 			selection: builtRelationJoin.selection,
+  // 		});
+  // 		// selection = builtTableFrom.selection.map((item) =>
+  // 		// 	is(item.field, SQL.Aliased)
+  // 		// 		? { ...item, field: sql`${sql.identifier(tableAlias)}.${sql.identifier(item.field.fieldAlias)}` }
+  // 		// 		: item
+  // 		// );
+  // 		// selectionForBuild = [{
+  // 		// 	dbKey: '*',
+  // 		// 	tsKey: '*',
+  // 		// 	field: sql`${sql.identifier(tableAlias)}.*`,
+  // 		// 	selection: [],
+  // 		// 	isJson: false,
+  // 		// 	relationTableTsKey: undefined,
+  // 		// }];
+  // 		// const newSelectionItem: (typeof selection)[number] = {
+  // 		// 	dbKey: selectedRelationTsKey,
+  // 		// 	tsKey: selectedRelationTsKey,
+  // 		// 	field,
+  // 		// 	relationTableTsKey: relationTableTsName,
+  // 		// 	isJson: true,
+  // 		// 	selection: builtRelationJoin.selection,
+  // 		// };
+  // 		// selection.push(newSelectionItem);
+  // 		// selectionForBuild.push(newSelectionItem);
+  // 		tableFrom = is(builtTableFrom.sql, PgTable)
+  // 			? builtTableFrom.sql
+  // 			: new Subquery(builtTableFrom.sql, {}, tableAlias);
+  // 	}
+  // 	if (selectedColumns.length === 0 && selectedRelations.length === 0 && selectedExtras.length === 0) {
+  // 		throw new DrizzleError(`No fields selected for table "${tableConfig.tsName}" ("${tableAlias}")`);
+  // 	}
+  // 	let selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'];
+  // 	function prepareSelectedColumns() {
+  // 		return selectedColumns.map((key) => ({
+  // 			dbKey: tableConfig.columns[key]!.name,
+  // 			tsKey: key,
+  // 			field: tableConfig.columns[key] as PgColumn,
+  // 			relationTableTsKey: undefined,
+  // 			isJson: false,
+  // 			selection: [],
+  // 		}));
+  // 	}
+  // 	function prepareSelectedExtras() {
+  // 		return selectedExtras.map((item) => ({
+  // 			dbKey: item.value.fieldAlias,
+  // 			tsKey: item.tsKey,
+  // 			field: item.value,
+  // 			relationTableTsKey: undefined,
+  // 			isJson: false,
+  // 			selection: [],
+  // 		}));
+  // 	}
+  // 	if (isRoot) {
+  // 		selection = [
+  // 			...prepareSelectedColumns(),
+  // 			...prepareSelectedExtras(),
+  // 		];
+  // 	}
+  // 	if (hasUserDefinedWhere || orderBy.length > 0) {
+  // 		tableFrom = new Subquery(
+  // 			this.buildSelectQuery({
+  // 				table: is(tableFrom, PgTable) ? aliasedTable(tableFrom, tableAlias) : tableFrom,
+  // 				fields: {},
+  // 				fieldsFlat: selectionForBuild.map(({ field }) => ({
+  // 					path: [],
+  // 					field: is(field, Column) ? aliasedTableColumn(field, tableAlias) : field,
+  // 				})),
+  // 				joins,
+  // 				distinct,
+  // 			}),
+  // 			{},
+  // 			tableAlias,
+  // 		);
+  // 		selectionForBuild = selection.map((item) =>
+  // 			is(item.field, SQL.Aliased)
+  // 				? { ...item, field: sql`${sql.identifier(tableAlias)}.${sql.identifier(item.field.fieldAlias)}` }
+  // 				: item
+  // 		);
+  // 		joins = [];
+  // 		distinct = undefined;
+  // 	}
+  // 	const result = this.buildSelectQuery({
+  // 		table: is(tableFrom, PgTable) ? aliasedTable(tableFrom, tableAlias) : tableFrom,
+  // 		fields: {},
+  // 		fieldsFlat: selectionForBuild.map(({ field }) => ({
+  // 			path: [],
+  // 			field: is(field, Column) ? aliasedTableColumn(field, tableAlias) : field,
+  // 		})),
+  // 		where,
+  // 		limit,
+  // 		offset,
+  // 		joins,
+  // 		orderBy,
+  // 		distinct,
+  // 	});
+  // 	return {
+  // 		tableTsKey: tableConfig.tsName,
+  // 		sql: result,
+  // 		selection,
+  // 	};
+  // }
+  buildRelationalQueryWithoutPK({
+    fullSchema: e,
+    schema: t,
+    tableNamesMap: r,
+    table: i,
+    tableConfig: s,
+    queryConfig: u,
+    tableAlias: a,
+    nestedQueryRelation: d,
+    joinOn: y
+  }) {
+    let f = [], b, m, v = [], c;
+    const h = [];
+    if (u === !0)
+      f = Object.entries(s.columns).map(([_, T]) => ({
+        dbKey: T.name,
+        tsKey: _,
+        field: Be(T, a),
+        relationTableTsKey: void 0,
+        isJson: !1,
+        selection: []
+      }));
+    else {
+      const S = Object.fromEntries(
+        Object.entries(s.columns).map(([B, x]) => [B, Be(x, a)])
+      );
+      if (u.where) {
+        const B = typeof u.where == "function" ? u.where(S, aa()) : u.where;
+        c = B && Tt(B, a);
+      }
+      const _ = [];
+      let T = [];
+      if (u.columns) {
+        let B = !1;
+        for (const [x, E] of Object.entries(u.columns))
+          E !== void 0 && x in s.columns && (!B && E === !0 && (B = !0), T.push(x));
+        T.length > 0 && (T = B ? T.filter((x) => u.columns?.[x] === !0) : Object.keys(s.columns).filter((x) => !T.includes(x)));
+      } else
+        T = Object.keys(s.columns);
+      for (const B of T) {
+        const x = s.columns[B];
+        _.push({ tsKey: B, value: x });
+      }
+      let L = [];
+      u.with && (L = Object.entries(u.with).filter((B) => !!B[1]).map(([B, x]) => ({ tsKey: B, queryConfig: x, relation: s.relations[B] })));
+      let M;
+      if (u.extras) {
+        M = typeof u.extras == "function" ? u.extras(S, { sql: A }) : u.extras;
+        for (const [B, x] of Object.entries(M))
+          _.push({
+            tsKey: B,
+            value: rn(x, a)
+          });
+      }
+      for (const { tsKey: B, value: x } of _)
+        f.push({
+          dbKey: Q(x, z.Aliased) ? x.fieldAlias : s.columns[B].name,
+          tsKey: B,
+          field: Q(x, ce) ? Be(x, a) : x,
+          relationTableTsKey: void 0,
+          isJson: !1,
+          selection: []
+        });
+      let P = typeof u.orderBy == "function" ? u.orderBy(S, ua()) : u.orderBy ?? [];
+      Array.isArray(P) || (P = [P]), v = P.map((B) => Q(B, ce) ? Be(B, a) : Tt(B, a)), b = u.limit, m = u.offset;
+      for (const {
+        tsKey: B,
+        queryConfig: x,
+        relation: E
+      } of L) {
+        const D = fa(t, r, E), R = nt(E.referencedTable), F = r[R], j = `${a}_${B}`, O = At(
+          ...D.fields.map(
+            (H, ee) => He(
+              Be(D.references[ee], j),
+              Be(H, a)
+            )
+          )
+        ), q = this.buildRelationalQueryWithoutPK({
+          fullSchema: e,
+          schema: t,
+          tableNamesMap: r,
+          table: e[F],
+          tableConfig: t[F],
+          queryConfig: Q(E, $e) ? x === !0 ? { limit: 1 } : { ...x, limit: 1 } : x,
+          tableAlias: j,
+          joinOn: O,
+          nestedQueryRelation: E
+        }), W = A`${A.identifier(j)}.${A.identifier("data")}`.as(B);
+        h.push({
+          on: A`true`,
+          table: new _e(q.sql, {}, j),
+          alias: j,
+          joinType: "left",
+          lateral: !0
+        }), f.push({
+          dbKey: B,
+          tsKey: B,
+          field: W,
+          relationTableTsKey: F,
+          isJson: !0,
+          selection: q.selection
+        });
+      }
+    }
+    if (f.length === 0)
+      throw new Rs({ message: `No fields selected for table "${s.tsName}" ("${a}")` });
+    let w;
+    if (c = At(y, c), d) {
+      let S = A`json_build_array(${A.join(
+        f.map(
+          ({ field: L, tsKey: M, isJson: P }) => P ? A`${A.identifier(`${a}_${M}`)}.${A.identifier("data")}` : Q(L, z.Aliased) ? L.sql : L
+        ),
+        A`, `
+      )})`;
+      Q(d, Lt) && (S = A`coalesce(json_agg(${S}${v.length > 0 ? A` order by ${A.join(v, A`, `)}` : void 0}), '[]'::json)`);
+      const _ = [{
+        dbKey: "data",
+        tsKey: "data",
+        field: S.as("data"),
+        isJson: !0,
+        relationTableTsKey: s.tsName,
+        selection: f
+      }];
+      b !== void 0 || m !== void 0 || v.length > 0 ? (w = this.buildSelectQuery({
+        table: Zt(i, a),
+        fields: {},
+        fieldsFlat: [{
+          path: [],
+          field: A.raw("*")
+        }],
+        where: c,
+        limit: b,
+        offset: m,
+        orderBy: v,
+        setOperators: []
+      }), c = void 0, b = void 0, m = void 0, v = []) : w = Zt(i, a), w = this.buildSelectQuery({
+        table: Q(w, ve) ? w : new _e(w, {}, a),
+        fields: {},
+        fieldsFlat: _.map(({ field: L }) => ({
+          path: [],
+          field: Q(L, ce) ? Be(L, a) : L
+        })),
+        joins: h,
+        where: c,
+        limit: b,
+        offset: m,
+        orderBy: v,
+        setOperators: []
+      });
+    } else
+      w = this.buildSelectQuery({
+        table: Zt(i, a),
+        fields: {},
+        fieldsFlat: f.map(({ field: S }) => ({
+          path: [],
+          field: Q(S, ce) ? Be(S, a) : S
+        })),
+        joins: h,
+        where: c,
+        limit: b,
+        offset: m,
+        orderBy: v,
+        setOperators: []
+      });
+    return {
+      tableTsKey: s.tsName,
+      sql: w,
+      selection: f
+    };
+  }
+}
+class Sa {
+  static [I] = "TypedQueryBuilder";
+  /** @internal */
+  getSelectedFields() {
+    return this._.selectedFields;
+  }
+}
+class Ee {
+  static [I] = "PgSelectBuilder";
+  fields;
+  session;
+  dialect;
+  withList = [];
+  distinct;
+  constructor(e) {
+    this.fields = e.fields, this.session = e.session, this.dialect = e.dialect, e.withList && (this.withList = e.withList), this.distinct = e.distinct;
+  }
+  authToken;
+  /** @internal */
+  setToken(e) {
+    return this.authToken = e, this;
+  }
+  /**
+   * Specify the table, subquery, or other target that you're
+   * building a select query against.
+   *
+   * {@link https://www.postgresql.org/docs/current/sql-select.html#SQL-FROM | Postgres from documentation}
+   */
+  from(e) {
+    const t = !!this.fields, r = e;
+    let i;
+    return this.fields ? i = this.fields : Q(r, _e) ? i = Object.fromEntries(
+      Object.keys(r._.selectedFields).map((s) => [s, r[s]])
+    ) : Q(r, bn) ? i = r[ue].selectedFields : Q(r, z) ? i = {} : i = qs(r), new vn({
+      table: r,
+      fields: i,
+      isPartialSelect: t,
+      session: this.session,
+      dialect: this.dialect,
+      withList: this.withList,
+      distinct: this.distinct
+    }).setToken(this.authToken);
+  }
+}
+class Pa extends Sa {
+  static [I] = "PgSelectQueryBuilder";
+  _;
+  config;
+  joinsNotNullableMap;
+  tableName;
+  isPartialSelect;
+  session;
+  dialect;
+  constructor({ table: e, fields: t, isPartialSelect: r, session: i, dialect: s, withList: u, distinct: a }) {
+    super(), this.config = {
+      withList: u,
+      table: e,
+      fields: { ...t },
+      distinct: a,
+      setOperators: []
+    }, this.isPartialSelect = r, this.session = i, this.dialect = s, this._ = {
+      selectedFields: t
+    }, this.tableName = Re(e), this.joinsNotNullableMap = typeof this.tableName == "string" ? { [this.tableName]: !0 } : {};
+  }
+  createJoin(e, t) {
+    return (r, i) => {
+      const s = this.tableName, u = Re(r);
+      if (typeof u == "string" && this.config.joins?.some((a) => a.alias === u))
+        throw new Error(`Alias "${u}" is already used in this query`);
+      if (!this.isPartialSelect && (Object.keys(this.joinsNotNullableMap).length === 1 && typeof s == "string" && (this.config.fields = {
+        [s]: this.config.fields
+      }), typeof u == "string" && !Q(r, z))) {
+        const a = Q(r, _e) ? r._.selectedFields : Q(r, Qe) ? r[ue].selectedFields : r[U.Symbol.Columns];
+        this.config.fields[u] = a;
+      }
+      if (typeof i == "function" && (i = i(
+        new Proxy(
+          this.config.fields,
+          new ge({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
+        )
+      )), this.config.joins || (this.config.joins = []), this.config.joins.push({ on: i, table: r, joinType: e, alias: u, lateral: t }), typeof u == "string")
+        switch (e) {
+          case "left": {
+            this.joinsNotNullableMap[u] = !1;
+            break;
+          }
+          case "right": {
+            this.joinsNotNullableMap = Object.fromEntries(
+              Object.entries(this.joinsNotNullableMap).map(([a]) => [a, !1])
+            ), this.joinsNotNullableMap[u] = !0;
+            break;
+          }
+          case "cross":
+          case "inner": {
+            this.joinsNotNullableMap[u] = !0;
+            break;
+          }
+          case "full": {
+            this.joinsNotNullableMap = Object.fromEntries(
+              Object.entries(this.joinsNotNullableMap).map(([a]) => [a, !1])
+            ), this.joinsNotNullableMap[u] = !1;
+            break;
+          }
+        }
+      return this;
+    };
+  }
+  /**
+   * Executes a `left join` operation by adding another table to the current query.
+   *
+   * Calling this method associates each row of the table with the corresponding row from the joined table, if a match is found. If no matching row exists, it sets all columns of the joined table to null.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/joins#left-join}
+   *
+   * @param table the table to join.
+   * @param on the `on` clause.
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all users and their pets
+   * const usersWithPets: { user: User; pets: Pet | null; }[] = await db.select()
+   *   .from(users)
+   *   .leftJoin(pets, eq(users.id, pets.ownerId))
+   *
+   * // Select userId and petId
+   * const usersIdsAndPetIds: { userId: number; petId: number | null; }[] = await db.select({
+   *   userId: users.id,
+   *   petId: pets.id,
+   * })
+   *   .from(users)
+   *   .leftJoin(pets, eq(users.id, pets.ownerId))
+   * ```
+   */
+  leftJoin = this.createJoin("left", !1);
+  /**
+   * Executes a `left join lateral` operation by adding subquery to the current query.
+   *
+   * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
+   *
+   * Calling this method associates each row of the table with the corresponding row from the joined table, if a match is found. If no matching row exists, it sets all columns of the joined table to null.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/joins#left-join-lateral}
+   *
+   * @param table the subquery to join.
+   * @param on the `on` clause.
+   */
+  leftJoinLateral = this.createJoin("left", !0);
+  /**
+   * Executes a `right join` operation by adding another table to the current query.
+   *
+   * Calling this method associates each row of the joined table with the corresponding row from the main table, if a match is found. If no matching row exists, it sets all columns of the main table to null.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/joins#right-join}
+   *
+   * @param table the table to join.
+   * @param on the `on` clause.
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all users and their pets
+   * const usersWithPets: { user: User | null; pets: Pet; }[] = await db.select()
+   *   .from(users)
+   *   .rightJoin(pets, eq(users.id, pets.ownerId))
+   *
+   * // Select userId and petId
+   * const usersIdsAndPetIds: { userId: number | null; petId: number; }[] = await db.select({
+   *   userId: users.id,
+   *   petId: pets.id,
+   * })
+   *   .from(users)
+   *   .rightJoin(pets, eq(users.id, pets.ownerId))
+   * ```
+   */
+  rightJoin = this.createJoin("right", !1);
+  /**
+   * Executes an `inner join` operation, creating a new table by combining rows from two tables that have matching values.
+   *
+   * Calling this method retrieves rows that have corresponding entries in both joined tables. Rows without matching entries in either table are excluded, resulting in a table that includes only matching pairs.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/joins#inner-join}
+   *
+   * @param table the table to join.
+   * @param on the `on` clause.
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all users and their pets
+   * const usersWithPets: { user: User; pets: Pet; }[] = await db.select()
+   *   .from(users)
+   *   .innerJoin(pets, eq(users.id, pets.ownerId))
+   *
+   * // Select userId and petId
+   * const usersIdsAndPetIds: { userId: number; petId: number; }[] = await db.select({
+   *   userId: users.id,
+   *   petId: pets.id,
+   * })
+   *   .from(users)
+   *   .innerJoin(pets, eq(users.id, pets.ownerId))
+   * ```
+   */
+  innerJoin = this.createJoin("inner", !1);
+  /**
+   * Executes an `inner join lateral` operation, creating a new table by combining rows from two queries that have matching values.
+   *
+   * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
+   *
+   * Calling this method retrieves rows that have corresponding entries in both joined tables. Rows without matching entries in either table are excluded, resulting in a table that includes only matching pairs.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/joins#inner-join-lateral}
+   *
+   * @param table the subquery to join.
+   * @param on the `on` clause.
+   */
+  innerJoinLateral = this.createJoin("inner", !0);
+  /**
+   * Executes a `full join` operation by combining rows from two tables into a new table.
+   *
+   * Calling this method retrieves all rows from both main and joined tables, merging rows with matching values and filling in `null` for non-matching columns.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/joins#full-join}
+   *
+   * @param table the table to join.
+   * @param on the `on` clause.
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all users and their pets
+   * const usersWithPets: { user: User | null; pets: Pet | null; }[] = await db.select()
+   *   .from(users)
+   *   .fullJoin(pets, eq(users.id, pets.ownerId))
+   *
+   * // Select userId and petId
+   * const usersIdsAndPetIds: { userId: number | null; petId: number | null; }[] = await db.select({
+   *   userId: users.id,
+   *   petId: pets.id,
+   * })
+   *   .from(users)
+   *   .fullJoin(pets, eq(users.id, pets.ownerId))
+   * ```
+   */
+  fullJoin = this.createJoin("full", !1);
+  /**
+   * Executes a `cross join` operation by combining rows from two tables into a new table.
+   *
+   * Calling this method retrieves all rows from both main and joined tables, merging all rows from each table.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/joins#cross-join}
+   *
+   * @param table the table to join.
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all users, each user with every pet
+   * const usersWithPets: { user: User; pets: Pet; }[] = await db.select()
+   *   .from(users)
+   *   .crossJoin(pets)
+   *
+   * // Select userId and petId
+   * const usersIdsAndPetIds: { userId: number; petId: number; }[] = await db.select({
+   *   userId: users.id,
+   *   petId: pets.id,
+   * })
+   *   .from(users)
+   *   .crossJoin(pets)
+   * ```
+   */
+  crossJoin = this.createJoin("cross", !1);
+  /**
+   * Executes a `cross join lateral` operation by combining rows from two queries into a new table.
+   *
+   * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
+   *
+   * Calling this method retrieves all rows from both main and joined queries, merging all rows from each query.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/joins#cross-join-lateral}
+   *
+   * @param table the query to join.
+   */
+  crossJoinLateral = this.createJoin("cross", !0);
+  createSetOperator(e, t) {
+    return (r) => {
+      const i = typeof r == "function" ? r(Ea()) : r;
+      if (!mr(this.getSelectedFields(), i.getSelectedFields()))
+        throw new Error(
+          "Set operator error (union / intersect / except): selected fields are not the same or are in a different order"
+        );
+      return this.config.setOperators.push({ type: e, isAll: t, rightSelect: i }), this;
+    };
+  }
+  /**
+   * Adds `union` set operator to the query.
+   *
+   * Calling this method will combine the result sets of the `select` statements and remove any duplicate rows that appear across them.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/set-operations#union}
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all unique names from customers and users tables
+   * await db.select({ name: users.name })
+   *   .from(users)
+   *   .union(
+   *     db.select({ name: customers.name }).from(customers)
+   *   );
+   * // or
+   * import { union } from 'drizzle-orm/pg-core'
+   *
+   * await union(
+   *   db.select({ name: users.name }).from(users),
+   *   db.select({ name: customers.name }).from(customers)
+   * );
+   * ```
+   */
+  union = this.createSetOperator("union", !1);
+  /**
+   * Adds `union all` set operator to the query.
+   *
+   * Calling this method will combine the result-set of the `select` statements and keep all duplicate rows that appear across them.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/set-operations#union-all}
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all transaction ids from both online and in-store sales
+   * await db.select({ transaction: onlineSales.transactionId })
+   *   .from(onlineSales)
+   *   .unionAll(
+   *     db.select({ transaction: inStoreSales.transactionId }).from(inStoreSales)
+   *   );
+   * // or
+   * import { unionAll } from 'drizzle-orm/pg-core'
+   *
+   * await unionAll(
+   *   db.select({ transaction: onlineSales.transactionId }).from(onlineSales),
+   *   db.select({ transaction: inStoreSales.transactionId }).from(inStoreSales)
+   * );
+   * ```
+   */
+  unionAll = this.createSetOperator("union", !0);
+  /**
+   * Adds `intersect` set operator to the query.
+   *
+   * Calling this method will retain only the rows that are present in both result sets and eliminate duplicates.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/set-operations#intersect}
+   *
+   * @example
+   *
+   * ```ts
+   * // Select course names that are offered in both departments A and B
+   * await db.select({ courseName: depA.courseName })
+   *   .from(depA)
+   *   .intersect(
+   *     db.select({ courseName: depB.courseName }).from(depB)
+   *   );
+   * // or
+   * import { intersect } from 'drizzle-orm/pg-core'
+   *
+   * await intersect(
+   *   db.select({ courseName: depA.courseName }).from(depA),
+   *   db.select({ courseName: depB.courseName }).from(depB)
+   * );
+   * ```
+   */
+  intersect = this.createSetOperator("intersect", !1);
+  /**
+   * Adds `intersect all` set operator to the query.
+   *
+   * Calling this method will retain only the rows that are present in both result sets including all duplicates.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/set-operations#intersect-all}
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all products and quantities that are ordered by both regular and VIP customers
+   * await db.select({
+   *   productId: regularCustomerOrders.productId,
+   *   quantityOrdered: regularCustomerOrders.quantityOrdered
+   * })
+   * .from(regularCustomerOrders)
+   * .intersectAll(
+   *   db.select({
+   *     productId: vipCustomerOrders.productId,
+   *     quantityOrdered: vipCustomerOrders.quantityOrdered
+   *   })
+   *   .from(vipCustomerOrders)
+   * );
+   * // or
+   * import { intersectAll } from 'drizzle-orm/pg-core'
+   *
+   * await intersectAll(
+   *   db.select({
+   *     productId: regularCustomerOrders.productId,
+   *     quantityOrdered: regularCustomerOrders.quantityOrdered
+   *   })
+   *   .from(regularCustomerOrders),
+   *   db.select({
+   *     productId: vipCustomerOrders.productId,
+   *     quantityOrdered: vipCustomerOrders.quantityOrdered
+   *   })
+   *   .from(vipCustomerOrders)
+   * );
+   * ```
+   */
+  intersectAll = this.createSetOperator("intersect", !0);
+  /**
+   * Adds `except` set operator to the query.
+   *
+   * Calling this method will retrieve all unique rows from the left query, except for the rows that are present in the result set of the right query.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/set-operations#except}
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all courses offered in department A but not in department B
+   * await db.select({ courseName: depA.courseName })
+   *   .from(depA)
+   *   .except(
+   *     db.select({ courseName: depB.courseName }).from(depB)
+   *   );
+   * // or
+   * import { except } from 'drizzle-orm/pg-core'
+   *
+   * await except(
+   *   db.select({ courseName: depA.courseName }).from(depA),
+   *   db.select({ courseName: depB.courseName }).from(depB)
+   * );
+   * ```
+   */
+  except = this.createSetOperator("except", !1);
+  /**
+   * Adds `except all` set operator to the query.
+   *
+   * Calling this method will retrieve all rows from the left query, except for the rows that are present in the result set of the right query.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/set-operations#except-all}
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all products that are ordered by regular customers but not by VIP customers
+   * await db.select({
+   *   productId: regularCustomerOrders.productId,
+   *   quantityOrdered: regularCustomerOrders.quantityOrdered,
+   * })
+   * .from(regularCustomerOrders)
+   * .exceptAll(
+   *   db.select({
+   *     productId: vipCustomerOrders.productId,
+   *     quantityOrdered: vipCustomerOrders.quantityOrdered,
+   *   })
+   *   .from(vipCustomerOrders)
+   * );
+   * // or
+   * import { exceptAll } from 'drizzle-orm/pg-core'
+   *
+   * await exceptAll(
+   *   db.select({
+   *     productId: regularCustomerOrders.productId,
+   *     quantityOrdered: regularCustomerOrders.quantityOrdered
+   *   })
+   *   .from(regularCustomerOrders),
+   *   db.select({
+   *     productId: vipCustomerOrders.productId,
+   *     quantityOrdered: vipCustomerOrders.quantityOrdered
+   *   })
+   *   .from(vipCustomerOrders)
+   * );
+   * ```
+   */
+  exceptAll = this.createSetOperator("except", !0);
+  /** @internal */
+  addSetOperators(e) {
+    return this.config.setOperators.push(...e), this;
+  }
+  /**
+   * Adds a `where` clause to the query.
+   *
+   * Calling this method will select only those rows that fulfill a specified condition.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/select#filtering}
+   *
+   * @param where the `where` clause.
+   *
+   * @example
+   * You can use conditional operators and `sql function` to filter the rows to be selected.
+   *
+   * ```ts
+   * // Select all cars with green color
+   * await db.select().from(cars).where(eq(cars.color, 'green'));
+   * // or
+   * await db.select().from(cars).where(sql`${cars.color} = 'green'`)
+   * ```
+   *
+   * You can logically combine conditional operators with `and()` and `or()` operators:
+   *
+   * ```ts
+   * // Select all BMW cars with a green color
+   * await db.select().from(cars).where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
+   *
+   * // Select all cars with the green or blue color
+   * await db.select().from(cars).where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
+   * ```
+   */
+  where(e) {
+    return typeof e == "function" && (e = e(
+      new Proxy(
+        this.config.fields,
+        new ge({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
+      )
+    )), this.config.where = e, this;
+  }
+  /**
+   * Adds a `having` clause to the query.
+   *
+   * Calling this method will select only those rows that fulfill a specified condition. It is typically used with aggregate functions to filter the aggregated data based on a specified condition.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/select#aggregations}
+   *
+   * @param having the `having` clause.
+   *
+   * @example
+   *
+   * ```ts
+   * // Select all brands with more than one car
+   * await db.select({
+   * 	brand: cars.brand,
+   * 	count: sql<number>`cast(count(${cars.id}) as int)`,
+   * })
+   *   .from(cars)
+   *   .groupBy(cars.brand)
+   *   .having(({ count }) => gt(count, 1));
+   * ```
+   */
+  having(e) {
+    return typeof e == "function" && (e = e(
+      new Proxy(
+        this.config.fields,
+        new ge({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
+      )
+    )), this.config.having = e, this;
+  }
+  groupBy(...e) {
+    if (typeof e[0] == "function") {
+      const t = e[0](
+        new Proxy(
+          this.config.fields,
+          new ge({ sqlAliasedBehavior: "alias", sqlBehavior: "sql" })
+        )
+      );
+      this.config.groupBy = Array.isArray(t) ? t : [t];
+    } else
+      this.config.groupBy = e;
+    return this;
+  }
+  orderBy(...e) {
+    if (typeof e[0] == "function") {
+      const t = e[0](
+        new Proxy(
+          this.config.fields,
+          new ge({ sqlAliasedBehavior: "alias", sqlBehavior: "sql" })
+        )
+      ), r = Array.isArray(t) ? t : [t];
+      this.config.setOperators.length > 0 ? this.config.setOperators.at(-1).orderBy = r : this.config.orderBy = r;
+    } else {
+      const t = e;
+      this.config.setOperators.length > 0 ? this.config.setOperators.at(-1).orderBy = t : this.config.orderBy = t;
+    }
+    return this;
+  }
+  /**
+   * Adds a `limit` clause to the query.
+   *
+   * Calling this method will set the maximum number of rows that will be returned by this query.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/select#limit--offset}
+   *
+   * @param limit the `limit` clause.
+   *
+   * @example
+   *
+   * ```ts
+   * // Get the first 10 people from this query.
+   * await db.select().from(people).limit(10);
+   * ```
+   */
+  limit(e) {
+    return this.config.setOperators.length > 0 ? this.config.setOperators.at(-1).limit = e : this.config.limit = e, this;
+  }
+  /**
+   * Adds an `offset` clause to the query.
+   *
+   * Calling this method will skip a number of rows when returning results from this query.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/select#limit--offset}
+   *
+   * @param offset the `offset` clause.
+   *
+   * @example
+   *
+   * ```ts
+   * // Get the 10th-20th people from this query.
+   * await db.select().from(people).offset(10).limit(10);
+   * ```
+   */
+  offset(e) {
+    return this.config.setOperators.length > 0 ? this.config.setOperators.at(-1).offset = e : this.config.offset = e, this;
+  }
+  /**
+   * Adds a `for` clause to the query.
+   *
+   * Calling this method will specify a lock strength for this query that controls how strictly it acquires exclusive access to the rows being queried.
+   *
+   * See docs: {@link https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE-SHARE}
+   *
+   * @param strength the lock strength.
+   * @param config the lock configuration.
+   */
+  for(e, t = {}) {
+    return this.config.lockingClause = { strength: e, config: t }, this;
+  }
+  /** @internal */
+  getSQL() {
+    return this.dialect.buildSelectQuery(this.config);
+  }
+  toSQL() {
+    const { typings: e, ...t } = this.dialect.sqlToQuery(this.getSQL());
+    return t;
+  }
+  as(e) {
+    return new Proxy(
+      new _e(this.getSQL(), this.config.fields, e),
+      new ge({ alias: e, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
+    );
+  }
+  /** @internal */
+  getSelectedFields() {
+    return new Proxy(
+      this.config.fields,
+      new ge({ alias: this.tableName, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
+    );
+  }
+  $dynamic() {
+    return this;
+  }
+}
+class vn extends Pa {
+  static [I] = "PgSelect";
+  /** @internal */
+  _prepare(e) {
+    const { session: t, config: r, dialect: i, joinsNotNullableMap: s, authToken: u } = this;
+    if (!t)
+      throw new Error("Cannot execute a query on a query builder. Please use a database instance instead.");
+    return Se.startActiveSpan("drizzle.prepareQuery", () => {
+      const a = Me(r.fields), d = t.prepareQuery(i.sqlToQuery(this.getSQL()), a, e, !0);
+      return d.joinsNotNullableMap = s, d.setToken(u);
+    });
+  }
+  /**
+   * Create a prepared statement for this query. This allows
+   * the database to remember this query for the given session
+   * and call it by name, rather than specifying the full query.
+   *
+   * {@link https://www.postgresql.org/docs/current/sql-prepare.html | Postgres prepare documentation}
+   */
+  prepare(e) {
+    return this._prepare(e);
+  }
+  authToken;
+  /** @internal */
+  setToken(e) {
+    return this.authToken = e, this;
+  }
+  execute = (e) => Se.startActiveSpan("drizzle.operation", () => this._prepare().execute(e, this.authToken));
+}
+ks(vn, [ke]);
+function Ge(n, e) {
+  return (t, r, ...i) => {
+    const s = [r, ...i].map((u) => ({
+      type: n,
+      isAll: e,
+      rightSelect: u
+    }));
+    for (const u of s)
+      if (!mr(t.getSelectedFields(), u.rightSelect.getSelectedFields()))
+        throw new Error(
+          "Set operator error (union / intersect / except): selected fields are not the same or are in a different order"
+        );
+    return t.addSetOperators(s);
+  };
+}
+const Ea = () => ({
+  union: _a,
+  unionAll: Ca,
+  intersect: Ta,
+  intersectAll: Aa,
+  except: xa,
+  exceptAll: Ba
+}), _a = Ge("union", !1), Ca = Ge("union", !0), Ta = Ge("intersect", !1), Aa = Ge("intersect", !0), xa = Ge("except", !1), Ba = Ge("except", !0);
+class Sn {
+  static [I] = "PgQueryBuilder";
+  dialect;
+  dialectConfig;
+  constructor(e) {
+    this.dialect = Q(e, Pt) ? e : void 0, this.dialectConfig = Q(e, Pt) ? void 0 : e;
+  }
+  $with = (e, t) => {
+    const r = this;
+    return { as: (s) => (typeof s == "function" && (s = s(r)), new Proxy(
+      new Zr(
+        s.getSQL(),
+        t ?? ("getSelectedFields" in s ? s.getSelectedFields() ?? {} : {}),
+        e,
+        !0
+      ),
+      new ge({ alias: e, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
+    )) };
+  };
+  with(...e) {
+    const t = this;
+    function r(u) {
+      return new Ee({
+        fields: u ?? void 0,
+        session: void 0,
+        dialect: t.getDialect(),
+        withList: e
+      });
+    }
+    function i(u) {
+      return new Ee({
+        fields: u ?? void 0,
+        session: void 0,
+        dialect: t.getDialect(),
+        distinct: !0
+      });
+    }
+    function s(u, a) {
+      return new Ee({
+        fields: a ?? void 0,
+        session: void 0,
+        dialect: t.getDialect(),
+        distinct: { on: u }
+      });
+    }
+    return { select: r, selectDistinct: i, selectDistinctOn: s };
+  }
+  select(e) {
+    return new Ee({
+      fields: e ?? void 0,
+      session: void 0,
+      dialect: this.getDialect()
+    });
+  }
+  selectDistinct(e) {
+    return new Ee({
+      fields: e ?? void 0,
+      session: void 0,
+      dialect: this.getDialect(),
+      distinct: !0
+    });
+  }
+  selectDistinctOn(e, t) {
+    return new Ee({
+      fields: t ?? void 0,
+      session: void 0,
+      dialect: this.getDialect(),
+      distinct: { on: e }
+    });
+  }
+  // Lazy load dialect to avoid circular dependency
+  getDialect() {
+    return this.dialect || (this.dialect = new Pt(this.dialectConfig)), this.dialect;
+  }
+}
+class qr {
+  constructor(e, t, r, i, s) {
+    this.table = e, this.session = t, this.dialect = r, this.withList = i, this.overridingSystemValue_ = s;
+  }
+  static [I] = "PgInsertBuilder";
+  authToken;
+  /** @internal */
+  setToken(e) {
+    return this.authToken = e, this;
+  }
+  overridingSystemValue() {
+    return this.overridingSystemValue_ = !0, this;
+  }
+  values(e) {
+    if (e = Array.isArray(e) ? e : [e], e.length === 0)
+      throw new Error("values() must be called with at least one value");
+    const t = e.map((r) => {
+      const i = {}, s = this.table[U.Symbol.Columns];
+      for (const u of Object.keys(r)) {
+        const a = r[u];
+        i[u] = Q(a, z) ? a : new Le(a, s[u]);
+      }
+      return i;
+    });
+    return new Fr(
+      this.table,
+      t,
+      this.session,
+      this.dialect,
+      this.withList,
+      !1,
+      this.overridingSystemValue_
+    ).setToken(this.authToken);
+  }
+  select(e) {
+    const t = typeof e == "function" ? e(new Sn()) : e;
+    if (!Q(t, z) && !mr(this.table[sr], t._.selectedFields))
+      throw new Error(
+        "Insert select error: selected fields are not the same or are in a different order compared to the table definition"
+      );
+    return new Fr(this.table, t, this.session, this.dialect, this.withList, !0);
+  }
+}
+class Fr extends ke {
+  constructor(e, t, r, i, s, u, a) {
+    super(), this.session = r, this.dialect = i, this.config = { table: e, values: t, withList: s, select: u, overridingSystemValue_: a };
+  }
+  static [I] = "PgInsert";
+  config;
+  returning(e = this.config.table[U.Symbol.Columns]) {
+    return this.config.returningFields = e, this.config.returning = Me(e), this;
+  }
+  /**
+   * Adds an `on conflict do nothing` clause to the query.
+   *
+   * Calling this method simply avoids inserting a row as its alternative action.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/insert#on-conflict-do-nothing}
+   *
+   * @param config The `target` and `where` clauses.
+   *
+   * @example
+   * ```ts
+   * // Insert one row and cancel the insert if there's a conflict
+   * await db.insert(cars)
+   *   .values({ id: 1, brand: 'BMW' })
+   *   .onConflictDoNothing();
+   *
+   * // Explicitly specify conflict target
+   * await db.insert(cars)
+   *   .values({ id: 1, brand: 'BMW' })
+   *   .onConflictDoNothing({ target: cars.id });
+   * ```
+   */
+  onConflictDoNothing(e = {}) {
+    if (e.target === void 0)
+      this.config.onConflict = A`do nothing`;
+    else {
+      let t = "";
+      t = Array.isArray(e.target) ? e.target.map((i) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(i))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(e.target));
+      const r = e.where ? A` where ${e.where}` : void 0;
+      this.config.onConflict = A`(${A.raw(t)})${r} do nothing`;
+    }
+    return this;
+  }
+  /**
+   * Adds an `on conflict do update` clause to the query.
+   *
+   * Calling this method will update the existing row that conflicts with the row proposed for insertion as its alternative action.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/insert#upserts-and-conflicts}
+   *
+   * @param config The `target`, `set` and `where` clauses.
+   *
+   * @example
+   * ```ts
+   * // Update the row if there's a conflict
+   * await db.insert(cars)
+   *   .values({ id: 1, brand: 'BMW' })
+   *   .onConflictDoUpdate({
+   *     target: cars.id,
+   *     set: { brand: 'Porsche' }
+   *   });
+   *
+   * // Upsert with 'where' clause
+   * await db.insert(cars)
+   *   .values({ id: 1, brand: 'BMW' })
+   *   .onConflictDoUpdate({
+   *     target: cars.id,
+   *     set: { brand: 'newBMW' },
+   *     targetWhere: sql`${cars.createdAt} > '2023-01-01'::date`,
+   *   });
+   * ```
+   */
+  onConflictDoUpdate(e) {
+    if (e.where && (e.targetWhere || e.setWhere))
+      throw new Error(
+        'You cannot use both "where" and "targetWhere"/"setWhere" at the same time - "where" is deprecated, use "targetWhere" or "setWhere" instead.'
+      );
+    const t = e.where ? A` where ${e.where}` : void 0, r = e.targetWhere ? A` where ${e.targetWhere}` : void 0, i = e.setWhere ? A` where ${e.setWhere}` : void 0, s = this.dialect.buildUpdateSet(this.config.table, nn(this.config.table, e.set));
+    let u = "";
+    return u = Array.isArray(e.target) ? e.target.map((a) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(a))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(e.target)), this.config.onConflict = A`(${A.raw(u)})${r} do update set ${s}${t}${i}`, this;
+  }
+  /** @internal */
+  getSQL() {
+    return this.dialect.buildInsertQuery(this.config);
+  }
+  toSQL() {
+    const { typings: e, ...t } = this.dialect.sqlToQuery(this.getSQL());
+    return t;
+  }
+  /** @internal */
+  _prepare(e) {
+    return Se.startActiveSpan("drizzle.prepareQuery", () => this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, e, !0));
+  }
+  prepare(e) {
+    return this._prepare(e);
+  }
+  authToken;
+  /** @internal */
+  setToken(e) {
+    return this.authToken = e, this;
+  }
+  execute = (e) => Se.startActiveSpan("drizzle.operation", () => this._prepare().execute(e, this.authToken));
+  /** @internal */
+  getSelectedFields() {
+    return this.config.returningFields ? new Proxy(
+      this.config.returningFields,
+      new ge({
+        alias: Ne(this.config.table),
+        sqlAliasedBehavior: "alias",
+        sqlBehavior: "error"
+      })
+    ) : void 0;
+  }
+  $dynamic() {
+    return this;
+  }
+}
+class Na extends ke {
+  constructor(e, t, r) {
+    super(), this.session = t, this.dialect = r, this.config = { view: e };
+  }
+  static [I] = "PgRefreshMaterializedView";
+  config;
+  concurrently() {
+    if (this.config.withNoData !== void 0)
+      throw new Error("Cannot use concurrently and withNoData together");
+    return this.config.concurrently = !0, this;
+  }
+  withNoData() {
+    if (this.config.concurrently !== void 0)
+      throw new Error("Cannot use concurrently and withNoData together");
+    return this.config.withNoData = !0, this;
+  }
+  /** @internal */
+  getSQL() {
+    return this.dialect.buildRefreshMaterializedViewQuery(this.config);
+  }
+  toSQL() {
+    const { typings: e, ...t } = this.dialect.sqlToQuery(this.getSQL());
+    return t;
+  }
+  /** @internal */
+  _prepare(e) {
+    return Se.startActiveSpan("drizzle.prepareQuery", () => this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), void 0, e, !0));
+  }
+  prepare(e) {
+    return this._prepare(e);
+  }
+  authToken;
+  /** @internal */
+  setToken(e) {
+    return this.authToken = e, this;
+  }
+  execute = (e) => Se.startActiveSpan("drizzle.operation", () => this._prepare().execute(e, this.authToken));
+}
+class jr {
+  constructor(e, t, r, i) {
+    this.table = e, this.session = t, this.dialect = r, this.withList = i;
+  }
+  static [I] = "PgUpdateBuilder";
+  authToken;
+  setToken(e) {
+    return this.authToken = e, this;
+  }
+  set(e) {
+    return new Ia(
+      this.table,
+      nn(this.table, e),
+      this.session,
+      this.dialect,
+      this.withList
+    ).setToken(this.authToken);
+  }
+}
+class Ia extends ke {
+  constructor(e, t, r, i, s) {
+    super(), this.session = r, this.dialect = i, this.config = { set: t, table: e, withList: s, joins: [] }, this.tableName = Re(e), this.joinsNotNullableMap = typeof this.tableName == "string" ? { [this.tableName]: !0 } : {};
+  }
+  static [I] = "PgUpdate";
+  config;
+  tableName;
+  joinsNotNullableMap;
+  from(e) {
+    const t = e, r = Re(t);
+    return typeof r == "string" && (this.joinsNotNullableMap[r] = !0), this.config.from = t, this;
+  }
+  getTableLikeFields(e) {
+    return Q(e, ve) ? e[U.Symbol.Columns] : Q(e, _e) ? e._.selectedFields : e[ue].selectedFields;
+  }
+  createJoin(e) {
+    return (t, r) => {
+      const i = Re(t);
+      if (typeof i == "string" && this.config.joins.some((s) => s.alias === i))
+        throw new Error(`Alias "${i}" is already used in this query`);
+      if (typeof r == "function") {
+        const s = this.config.from && !Q(this.config.from, z) ? this.getTableLikeFields(this.config.from) : void 0;
+        r = r(
+          new Proxy(
+            this.config.table[U.Symbol.Columns],
+            new ge({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
+          ),
+          s && new Proxy(
+            s,
+            new ge({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
+          )
+        );
+      }
+      if (this.config.joins.push({ on: r, table: t, joinType: e, alias: i }), typeof i == "string")
+        switch (e) {
+          case "left": {
+            this.joinsNotNullableMap[i] = !1;
+            break;
+          }
+          case "right": {
+            this.joinsNotNullableMap = Object.fromEntries(
+              Object.entries(this.joinsNotNullableMap).map(([s]) => [s, !1])
+            ), this.joinsNotNullableMap[i] = !0;
+            break;
+          }
+          case "inner": {
+            this.joinsNotNullableMap[i] = !0;
+            break;
+          }
+          case "full": {
+            this.joinsNotNullableMap = Object.fromEntries(
+              Object.entries(this.joinsNotNullableMap).map(([s]) => [s, !1])
+            ), this.joinsNotNullableMap[i] = !1;
+            break;
+          }
+        }
+      return this;
+    };
+  }
+  leftJoin = this.createJoin("left");
+  rightJoin = this.createJoin("right");
+  innerJoin = this.createJoin("inner");
+  fullJoin = this.createJoin("full");
+  /**
+   * Adds a 'where' clause to the query.
+   *
+   * Calling this method will update only those rows that fulfill a specified condition.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/update}
+   *
+   * @param where the 'where' clause.
+   *
+   * @example
+   * You can use conditional operators and `sql function` to filter the rows to be updated.
+   *
+   * ```ts
+   * // Update all cars with green color
+   * await db.update(cars).set({ color: 'red' })
+   *   .where(eq(cars.color, 'green'));
+   * // or
+   * await db.update(cars).set({ color: 'red' })
+   *   .where(sql`${cars.color} = 'green'`)
+   * ```
+   *
+   * You can logically combine conditional operators with `and()` and `or()` operators:
+   *
+   * ```ts
+   * // Update all BMW cars with a green color
+   * await db.update(cars).set({ color: 'red' })
+   *   .where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
+   *
+   * // Update all cars with the green or blue color
+   * await db.update(cars).set({ color: 'red' })
+   *   .where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
+   * ```
+   */
+  where(e) {
+    return this.config.where = e, this;
+  }
+  returning(e) {
+    if (!e && (e = Object.assign({}, this.config.table[U.Symbol.Columns]), this.config.from)) {
+      const t = Re(this.config.from);
+      if (typeof t == "string" && this.config.from && !Q(this.config.from, z)) {
+        const r = this.getTableLikeFields(this.config.from);
+        e[t] = r;
+      }
+      for (const r of this.config.joins) {
+        const i = Re(r.table);
+        if (typeof i == "string" && !Q(r.table, z)) {
+          const s = this.getTableLikeFields(r.table);
+          e[i] = s;
+        }
+      }
+    }
+    return this.config.returningFields = e, this.config.returning = Me(e), this;
+  }
+  /** @internal */
+  getSQL() {
+    return this.dialect.buildUpdateQuery(this.config);
+  }
+  toSQL() {
+    const { typings: e, ...t } = this.dialect.sqlToQuery(this.getSQL());
+    return t;
+  }
+  /** @internal */
+  _prepare(e) {
+    const t = this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, e, !0);
+    return t.joinsNotNullableMap = this.joinsNotNullableMap, t;
+  }
+  prepare(e) {
+    return this._prepare(e);
+  }
+  authToken;
+  /** @internal */
+  setToken(e) {
+    return this.authToken = e, this;
+  }
+  execute = (e) => this._prepare().execute(e, this.authToken);
+  /** @internal */
+  getSelectedFields() {
+    return this.config.returningFields ? new Proxy(
+      this.config.returningFields,
+      new ge({
+        alias: Ne(this.config.table),
+        sqlAliasedBehavior: "alias",
+        sqlBehavior: "error"
+      })
+    ) : void 0;
+  }
+  $dynamic() {
+    return this;
+  }
+}
+class xt extends z {
+  constructor(e) {
+    super(xt.buildEmbeddedCount(e.source, e.filters).queryChunks), this.params = e, this.mapWith(Number), this.session = e.session, this.sql = xt.buildCount(
+      e.source,
+      e.filters
+    );
+  }
+  sql;
+  token;
+  static [I] = "PgCountBuilder";
+  [Symbol.toStringTag] = "PgCountBuilder";
+  session;
+  static buildEmbeddedCount(e, t) {
+    return A`(select count(*) from ${e}${A.raw(" where ").if(t)}${t})`;
+  }
+  static buildCount(e, t) {
+    return A`select count(*) as count from ${e}${A.raw(" where ").if(t)}${t};`;
+  }
+  /** @intrnal */
+  setToken(e) {
+    return this.token = e, this;
+  }
+  then(e, t) {
+    return Promise.resolve(this.session.count(this.sql, this.token)).then(
+      e,
+      t
+    );
+  }
+  catch(e) {
+    return this.then(void 0, e);
+  }
+  finally(e) {
+    return this.then(
+      (t) => (e?.(), t),
+      (t) => {
+        throw e?.(), t;
+      }
+    );
+  }
+}
+class La {
+  constructor(e, t, r, i, s, u, a) {
+    this.fullSchema = e, this.schema = t, this.tableNamesMap = r, this.table = i, this.tableConfig = s, this.dialect = u, this.session = a;
+  }
+  static [I] = "PgRelationalQueryBuilder";
+  findMany(e) {
+    return new Ur(
+      this.fullSchema,
+      this.schema,
+      this.tableNamesMap,
+      this.table,
+      this.tableConfig,
+      this.dialect,
+      this.session,
+      e || {},
+      "many"
+    );
+  }
+  findFirst(e) {
+    return new Ur(
+      this.fullSchema,
+      this.schema,
+      this.tableNamesMap,
+      this.table,
+      this.tableConfig,
+      this.dialect,
+      this.session,
+      e ? { ...e, limit: 1 } : { limit: 1 },
+      "first"
+    );
+  }
+}
+class Ur extends ke {
+  constructor(e, t, r, i, s, u, a, d, y) {
+    super(), this.fullSchema = e, this.schema = t, this.tableNamesMap = r, this.table = i, this.tableConfig = s, this.dialect = u, this.session = a, this.config = d, this.mode = y;
+  }
+  static [I] = "PgRelationalQuery";
+  /** @internal */
+  _prepare(e) {
+    return Se.startActiveSpan("drizzle.prepareQuery", () => {
+      const { query: t, builtQuery: r } = this._toSQL();
+      return this.session.prepareQuery(
+        r,
+        void 0,
+        e,
+        !0,
+        (i, s) => {
+          const u = i.map(
+            (a) => ar(this.schema, this.tableConfig, a, t.selection, s)
+          );
+          return this.mode === "first" ? u[0] : u;
+        }
+      );
+    });
+  }
+  prepare(e) {
+    return this._prepare(e);
+  }
+  _getQuery() {
+    return this.dialect.buildRelationalQueryWithoutPK({
+      fullSchema: this.fullSchema,
+      schema: this.schema,
+      tableNamesMap: this.tableNamesMap,
+      table: this.table,
+      tableConfig: this.tableConfig,
+      queryConfig: this.config,
+      tableAlias: this.tableConfig.tsName
+    });
+  }
+  /** @internal */
+  getSQL() {
+    return this._getQuery().sql;
+  }
+  _toSQL() {
+    const e = this._getQuery(), t = this.dialect.sqlToQuery(e.sql);
+    return { query: e, builtQuery: t };
+  }
+  toSQL() {
+    return this._toSQL().builtQuery;
+  }
+  authToken;
+  /** @internal */
+  setToken(e) {
+    return this.authToken = e, this;
+  }
+  execute() {
+    return Se.startActiveSpan("drizzle.operation", () => this._prepare().execute(void 0, this.authToken));
+  }
+}
+class Oa extends ke {
+  constructor(e, t, r, i) {
+    super(), this.execute = e, this.sql = t, this.query = r, this.mapBatchResult = i;
+  }
+  static [I] = "PgRaw";
+  /** @internal */
+  getSQL() {
+    return this.sql;
+  }
+  getQuery() {
+    return this.query;
+  }
+  mapResult(e, t) {
+    return t ? this.mapBatchResult(e) : e;
+  }
+  _prepare() {
+    return this;
+  }
+  /** @internal */
+  isResponseInArrayMode() {
+    return !1;
+  }
+}
+class Ra {
+  constructor(e, t, r) {
+    if (this.dialect = e, this.session = t, this._ = r ? {
+      schema: r.schema,
+      fullSchema: r.fullSchema,
+      tableNamesMap: r.tableNamesMap,
+      session: t
+    } : {
+      schema: void 0,
+      fullSchema: {},
+      tableNamesMap: {},
+      session: t
+    }, this.query = {}, this._.schema)
+      for (const [i, s] of Object.entries(this._.schema))
+        this.query[i] = new La(
+          r.fullSchema,
+          this._.schema,
+          this._.tableNamesMap,
+          r.fullSchema[i],
+          s,
+          e,
+          t
+        );
+  }
+  static [I] = "PgDatabase";
+  query;
+  /**
+   * Creates a subquery that defines a temporary named result set as a CTE.
+   *
+   * It is useful for breaking down complex queries into simpler parts and for reusing the result set in subsequent parts of the query.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/select#with-clause}
+   *
+   * @param alias The alias for the subquery.
+   *
+   * Failure to provide an alias will result in a DrizzleTypeError, preventing the subquery from being referenced in other queries.
+   *
+   * @example
+   *
+   * ```ts
+   * // Create a subquery with alias 'sq' and use it in the select query
+   * const sq = db.$with('sq').as(db.select().from(users).where(eq(users.id, 42)));
+   *
+   * const result = await db.with(sq).select().from(sq);
+   * ```
+   *
+   * To select arbitrary SQL values as fields in a CTE and reference them in other CTEs or in the main query, you need to add aliases to them:
+   *
+   * ```ts
+   * // Select an arbitrary SQL value as a field in a CTE and reference it in the main query
+   * const sq = db.$with('sq').as(db.select({
+   *   name: sql<string>`upper(${users.name})`.as('name'),
+   * })
+   * .from(users));
+   *
+   * const result = await db.with(sq).select({ name: sq.name }).from(sq);
+   * ```
+   */
+  $with = (e, t) => {
+    const r = this;
+    return { as: (s) => (typeof s == "function" && (s = s(new Sn(r.dialect))), new Proxy(
+      new Zr(
+        s.getSQL(),
+        t ?? ("getSelectedFields" in s ? s.getSelectedFields() ?? {} : {}),
+        e,
+        !0
+      ),
+      new ge({ alias: e, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
+    )) };
+  };
+  $count(e, t) {
+    return new xt({ source: e, filters: t, session: this.session });
+  }
+  /**
+   * Incorporates a previously defined CTE (using `$with`) into the main query.
+   *
+   * This method allows the main query to reference a temporary named result set.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/select#with-clause}
+   *
+   * @param queries The CTEs to incorporate into the main query.
+   *
+   * @example
+   *
+   * ```ts
+   * // Define a subquery 'sq' as a CTE using $with
+   * const sq = db.$with('sq').as(db.select().from(users).where(eq(users.id, 42)));
+   *
+   * // Incorporate the CTE 'sq' into the main query and select from it
+   * const result = await db.with(sq).select().from(sq);
+   * ```
+   */
+  with(...e) {
+    const t = this;
+    function r(y) {
+      return new Ee({
+        fields: y ?? void 0,
+        session: t.session,
+        dialect: t.dialect,
+        withList: e
+      });
+    }
+    function i(y) {
+      return new Ee({
+        fields: y ?? void 0,
+        session: t.session,
+        dialect: t.dialect,
+        withList: e,
+        distinct: !0
+      });
+    }
+    function s(y, f) {
+      return new Ee({
+        fields: f ?? void 0,
+        session: t.session,
+        dialect: t.dialect,
+        withList: e,
+        distinct: { on: y }
+      });
+    }
+    function u(y) {
+      return new jr(y, t.session, t.dialect, e);
+    }
+    function a(y) {
+      return new qr(y, t.session, t.dialect, e);
+    }
+    function d(y) {
+      return new kr(y, t.session, t.dialect, e);
+    }
+    return { select: r, selectDistinct: i, selectDistinctOn: s, update: u, insert: a, delete: d };
+  }
+  select(e) {
+    return new Ee({
+      fields: e ?? void 0,
+      session: this.session,
+      dialect: this.dialect
+    });
+  }
+  selectDistinct(e) {
+    return new Ee({
+      fields: e ?? void 0,
+      session: this.session,
+      dialect: this.dialect,
+      distinct: !0
+    });
+  }
+  selectDistinctOn(e, t) {
+    return new Ee({
+      fields: t ?? void 0,
+      session: this.session,
+      dialect: this.dialect,
+      distinct: { on: e }
+    });
+  }
+  /**
+   * Creates an update query.
+   *
+   * Calling this method without `.where()` clause will update all rows in a table. The `.where()` clause specifies which rows should be updated.
+   *
+   * Use `.set()` method to specify which values to update.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/update}
+   *
+   * @param table The table to update.
+   *
+   * @example
+   *
+   * ```ts
+   * // Update all rows in the 'cars' table
+   * await db.update(cars).set({ color: 'red' });
+   *
+   * // Update rows with filters and conditions
+   * await db.update(cars).set({ color: 'red' }).where(eq(cars.brand, 'BMW'));
+   *
+   * // Update with returning clause
+   * const updatedCar: Car[] = await db.update(cars)
+   *   .set({ color: 'red' })
+   *   .where(eq(cars.id, 1))
+   *   .returning();
+   * ```
+   */
+  update(e) {
+    return new jr(e, this.session, this.dialect);
+  }
+  /**
+   * Creates an insert query.
+   *
+   * Calling this method will create new rows in a table. Use `.values()` method to specify which values to insert.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/insert}
+   *
+   * @param table The table to insert into.
+   *
+   * @example
+   *
+   * ```ts
+   * // Insert one row
+   * await db.insert(cars).values({ brand: 'BMW' });
+   *
+   * // Insert multiple rows
+   * await db.insert(cars).values([{ brand: 'BMW' }, { brand: 'Porsche' }]);
+   *
+   * // Insert with returning clause
+   * const insertedCar: Car[] = await db.insert(cars)
+   *   .values({ brand: 'BMW' })
+   *   .returning();
+   * ```
+   */
+  insert(e) {
+    return new qr(e, this.session, this.dialect);
+  }
+  /**
+   * Creates a delete query.
+   *
+   * Calling this method without `.where()` clause will delete all rows in a table. The `.where()` clause specifies which rows should be deleted.
+   *
+   * See docs: {@link https://orm.drizzle.team/docs/delete}
+   *
+   * @param table The table to delete from.
+   *
+   * @example
+   *
+   * ```ts
+   * // Delete all rows in the 'cars' table
+   * await db.delete(cars);
+   *
+   * // Delete rows with filters and conditions
+   * await db.delete(cars).where(eq(cars.color, 'green'));
+   *
+   * // Delete with returning clause
+   * const deletedCar: Car[] = await db.delete(cars)
+   *   .where(eq(cars.id, 1))
+   *   .returning();
+   * ```
+   */
+  delete(e) {
+    return new kr(e, this.session, this.dialect);
+  }
+  refreshMaterializedView(e) {
+    return new Na(e, this.session, this.dialect);
+  }
+  authToken;
+  execute(e) {
+    const t = typeof e == "string" ? A.raw(e) : e.getSQL(), r = this.dialect.sqlToQuery(t), i = this.session.prepareQuery(
+      r,
+      void 0,
+      void 0,
+      !1
+    );
+    return new Oa(
+      () => i.execute(void 0, this.authToken),
+      t,
+      r,
+      (s) => i.mapResult(s, !0)
+    );
+  }
+  transaction(e, t) {
+    return this.session.transaction(e, t);
+  }
+}
+class Pn {
+  constructor(e, t) {
+    this.unique = e, this.name = t;
+  }
+  static [I] = "PgIndexBuilderOn";
+  on(...e) {
+    return new Xt(
+      e.map((t) => {
+        if (Q(t, z))
+          return t;
+        t = t;
+        const r = new Ht(t.name, !!t.keyAsName, t.columnType, t.indexConfig);
+        return t.indexConfig = JSON.parse(JSON.stringify(t.defaultConfig)), r;
+      }),
+      this.unique,
+      !1,
+      this.name
+    );
+  }
+  onOnly(...e) {
+    return new Xt(
+      e.map((t) => {
+        if (Q(t, z))
+          return t;
+        t = t;
+        const r = new Ht(t.name, !!t.keyAsName, t.columnType, t.indexConfig);
+        return t.indexConfig = t.defaultConfig, r;
+      }),
+      this.unique,
+      !0,
+      this.name
+    );
+  }
+  /**
+   * Specify what index method to use. Choices are `btree`, `hash`, `gist`, `spgist`, `gin`, `brin`, or user-installed access methods like `bloom`. The default method is `btree.
+   *
+   * If you have the `pg_vector` extension installed in your database, you can use the `hnsw` and `ivfflat` options, which are predefined types.
+   *
+   * **You can always specify any string you want in the method, in case Drizzle doesn't have it natively in its types**
+   *
+   * @param method The name of the index method to be used
+   * @param columns
+   * @returns
+   */
+  using(e, ...t) {
+    return new Xt(
+      t.map((r) => {
+        if (Q(r, z))
+          return r;
+        r = r;
+        const i = new Ht(r.name, !!r.keyAsName, r.columnType, r.indexConfig);
+        return r.indexConfig = JSON.parse(JSON.stringify(r.defaultConfig)), i;
+      }),
+      this.unique,
+      !0,
+      this.name,
+      e
+    );
+  }
+}
+class Xt {
+  static [I] = "PgIndexBuilder";
+  /** @internal */
+  config;
+  constructor(e, t, r, i, s = "btree") {
+    this.config = {
+      name: i,
+      columns: e,
+      unique: t,
+      only: r,
+      method: s
+    };
+  }
+  concurrently() {
+    return this.config.concurrently = !0, this;
+  }
+  with(e) {
+    return this.config.with = e, this;
+  }
+  where(e) {
+    return this.config.where = e, this;
+  }
+  /** @internal */
+  build(e) {
+    return new Ma(this.config, e);
+  }
+}
+class Ma {
+  static [I] = "PgIndex";
+  config;
+  constructor(e, t) {
+    this.config = { ...e, table: t };
+  }
+}
+function it(n) {
+  return new Pn(!1, n);
+}
+function En(n) {
+  return new Pn(!0, n);
+}
+class Da {
+  constructor(e) {
+    this.query = e;
+  }
+  authToken;
+  getQuery() {
+    return this.query;
+  }
+  mapResult(e, t) {
+    return e;
+  }
+  /** @internal */
+  setToken(e) {
+    return this.authToken = e, this;
+  }
+  static [I] = "PgPreparedQuery";
+  /** @internal */
+  joinsNotNullableMap;
+}
+class $a {
+  constructor(e) {
+    this.dialect = e;
+  }
+  static [I] = "PgSession";
+  /** @internal */
+  execute(e, t) {
+    return Se.startActiveSpan("drizzle.operation", () => Se.startActiveSpan("drizzle.prepareQuery", () => this.prepareQuery(
+      this.dialect.sqlToQuery(e),
+      void 0,
+      void 0,
+      !1
+    )).setToken(t).execute(void 0, t));
+  }
+  all(e) {
+    return this.prepareQuery(
+      this.dialect.sqlToQuery(e),
+      void 0,
+      void 0,
+      !1
+    ).all();
+  }
+  /** @internal */
+  async count(e, t) {
+    const r = await this.execute(e, t);
+    return Number(
+      r[0].count
+    );
+  }
+}
+const lt = De().primaryKey().generatedAlwaysAsIdentity(), er = { withTimezone: !0 }, ct = {
+  created_at: St(er).defaultNow().notNull(),
+  updated_at: St(er),
+  deleted_at: St(er)
+}, yr = ut(
+  "users",
+  {
+    id: lt,
+    uuid: mn().defaultRandom().unique().notNull(),
+    ...ct
+  },
+  (n) => [En("uuid_idx").on(n.uuid)]
+), Qa = ut(
+  "adhoc_games",
+  {
+    id: lt,
+    solution: st().notNull(),
+    user_id: De().notNull().references(() => yr.id),
+    ...ct
+  },
+  (n) => [it("adhoc_game_user_idx").on(n.user_id)]
+), Bt = ut(
+  "solutions",
+  {
+    id: lt,
+    value: st().notNull().unique(),
+    date: an().defaultNow().notNull().unique(),
+    ...ct
+  },
+  (n) => [En("daily_game_solution_date_idx").on(n.date)]
+), tt = ut(
+  "daily_games",
+  {
+    id: lt,
+    user_id: De().notNull().references(() => yr.id),
+    solution_id: De().notNull().references(() => Bt.id),
+    ...ct
+  },
+  (n) => [
+    it("daily_game_user_idx").on(n.user_id),
+    it("daily_game_solution_idx").on(n.solution_id)
+  ]
+), gt = ut(
+  "attempts",
+  {
+    id: lt,
+    value: st().notNull(),
+    feedback: st().notNull(),
+    daily_game_id: De().references(() => tt.id),
+    adhoc_game_id: De().references(() => Qa.id),
+    ...ct
+  },
+  (n) => [
+    ma(
+      "game_type",
+      A`
+      (${n.daily_game_id} IS NOT NULL AND ${n.adhoc_game_id} IS NULL)
+      OR
+      (${n.daily_game_id} IS NULL AND ${n.adhoc_game_id} IS NOT NULL)
+    `
+    ),
+    it("daily_game_attempt_idx").on(n.daily_game_id),
+    it("adhoc_game_attempt_idx").on(n.adhoc_game_id)
+  ]
+);
+async function ka({
+  db: n,
+  game: e
+}) {
+  console.info("get attempts");
+  const t = "solution_id" in e;
+  return await n.select().from(gt).where(
+    He(t ? gt.daily_game_id : gt.adhoc_game_id, e.id)
+  ).orderBy(yn(gt.created_at));
+}
+const ot = {
+  maxAttempts: 8,
+  solutionLength: 4
+};
+function qa(n, e) {
+  const t = {};
+  for (let r = 0; r < n.length; r++) {
+    const i = n[r], s = i[e];
+    t[s] = i;
+  }
+  return t;
+}
+const ur = "var(--token-default)";
+new Array(ot.solutionLength).fill(
+  ur
+);
+new Array(ot.maxAttempts).fill(ur).map(() => new Array(ot.solutionLength).fill(ur));
+const Fa = [
+  "fairy",
+  "fire",
+  "lightning",
+  "grass",
+  "ice",
+  "water",
+  "rock"
+], ja = Fa.map((n, e) => {
+  const t = e + 1;
+  return {
+    icon: n,
+    color: `var(--token-${t})`,
+    id: t
+  };
+}), _n = "X", Ua = [
+  {
+    value: "-",
+    label: "incorrect color",
+    key: "incorrect"
+  },
+  {
+    value: "O",
+    label: "correct color, incorrect position",
+    key: "halfCorrect"
+  },
+  {
+    value: _n,
+    label: "correct color, correct position",
+    key: "correct"
+  }
+], za = Ua.map((n, e) => ({
+  ...n,
+  id: e,
+  color: `var(--feedback-token-${n.key})`
+}));
+qa(za, "value");
+new Array(ot.solutionLength).fill(_n).join("");
+function Va(n) {
+  const e = new Uint32Array(1);
+  return crypto.getRandomValues(e), Math.floor(e[0] / (Math.pow(2, 32) - 1) * n);
+}
+function Wa(n) {
+  const e = Va(n.length);
+  return n[e];
+}
+function Ka() {
+  const n = ja.map((t) => t.id);
+  return new Array(ot.solutionLength).fill(0).map(() => Wa(n)).join("");
+}
+async function Ha({
+  db: n
+}) {
+  console.info("create new solution");
+  const e = Ka(), r = (await n.insert(Bt).values({
+    value: e
+  }).returning()).pop();
+  if (!r)
+    throw Error("failed to create new solution");
+  return r;
+}
+async function Ga({
+  db: n
+}) {
+  return console.info("get daily solution"), (await n.select().from(Bt).where(A`${Bt.date} = CURRENT_DATE`)).pop();
+}
+async function Cn({
+  db: n
+}) {
+  const e = await Ga({ db: n });
+  e && console.info(`get solution '${e.id}'`);
+  const t = e || await Ha({ db: n });
+  return e || console.info(`create new solution '${t.id}'`), t;
+}
+async function Ja({
+  db: n,
+  user: e
+}) {
+  console.info("create new daily solution");
+  const t = await Cn({ db: n }), i = (await n.insert(tt).values({
+    user_id: e.id,
+    solution_id: t.id
+  }).returning()).pop();
+  if (!i)
+    throw Error("failed to create new daily solution");
+  return i;
+}
+async function Ya({
+  db: n,
+  user: e
+}) {
+  console.info("get daily solution");
+  const t = await Cn({ db: n });
+  return (await n.select().from(tt).where(
+    At(
+      He(tt.user_id, e.id),
+      He(tt.solution_id, t.id)
+    )
+  )).pop();
+}
+async function Za({
+  db: n,
+  user: e
+}) {
+  console.info("get or create daily game");
+  const t = await Ya({ db: n, user: e });
+  t && console.info(`get daily game '${t.id}'`);
+  const r = t || await Ja({ db: n, user: e });
+  return t || console.info(`create new daily game '${r.id}'`), r;
+}
+async function Xa({
+  db: n
+}) {
+  const t = (await n.insert(yr).values({}).returning()).pop();
+  if (!t)
+    throw Error("failed to create new user");
+  return t;
+}
+async function eu({ db: n }) {
+  const e = await Xa({ db: n }), t = await Za({ db: n, user: e }), r = await ka({ db: n, game: t });
+  return { user: e, attempts: r };
+}
+var tu = Object.create, Je = Object.defineProperty, ru = Object.getOwnPropertyDescriptor, nu = Object.getOwnPropertyNames, su = Object.getPrototypeOf, iu = Object.prototype.hasOwnProperty, ou = (n, e, t) => e in n ? Je(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t, g = (n, e) => Je(n, "name", { value: e, configurable: !0 }), ye = (n, e) => () => (n && (e = n(n = 0)), e), X = (n, e) => () => (e || n((e = { exports: {} }).exports, e), e.exports), Te = (n, e) => {
   for (var t in e)
-    Ge(n, t, {
+    Je(n, t, {
       get: e[t],
       enumerable: !0
     });
-}, Jr = (n, e, t, r) => {
+}, Tn = (n, e, t, r) => {
   if (e && typeof e == "object" || typeof e == "function")
-    for (let i of Ps(e))
-      !_s.call(n, i) && i !== t && Ge(n, i, { get: () => e[i], enumerable: !(r = Ss(e, i)) || r.enumerable });
+    for (let i of nu(e))
+      !iu.call(n, i) && i !== t && Je(n, i, { get: () => e[i], enumerable: !(r = ru(e, i)) || r.enumerable });
   return n;
-}, Qe = (n, e, t) => (t = n != null ? vs(Es(n)) : {}, Jr(e || !n || !n.__esModule ? Ge(t, "default", { value: n, enumerable: !0 }) : t, n)), he = (n) => Jr(Ge({}, "__esModule", { value: !0 }), n), J = (n, e, t) => Cs(n, typeof e != "symbol" ? e + "" : e, t), Ts = X((n) => {
+}, qe = (n, e, t) => (t = n != null ? tu(su(n)) : {}, Tn(e || !n || !n.__esModule ? Je(t, "default", { value: n, enumerable: !0 }) : t, n)), he = (n) => Tn(Je({}, "__esModule", { value: !0 }), n), J = (n, e, t) => ou(n, typeof e != "symbol" ? e + "" : e, t), au = X((n) => {
   V(), n.byteLength = d, n.toByteArray = f, n.fromByteArray = v;
   var e = [], t = [], r = typeof Uint8Array < "u" ? Uint8Array : Array, i = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   for (s = 0, u = i.length; s < u; ++s)
@@ -64,7 +5539,7 @@ var vs = Object.create, Ge = Object.defineProperty, Ss = Object.getOwnPropertyDe
     return S === 1 ? (h = c[w - 1], _.push(e[h >> 2] + e[h << 4 & 63] + "==")) : S === 2 && (h = (c[w - 2] << 8) + c[w - 1], _.push(e[h >> 10] + e[h >> 4 & 63] + e[h << 2 & 63] + "=")), _.join("");
   }
   g(v, "fromByteArray");
-}), As = X((n) => {
+}), uu = X((n) => {
   V(), n.read = function(e, t, r, i, s) {
     var u, a, d = s * 8 - i - 1, y = (1 << d) - 1, f = y >> 1, b = -7, m = r ? s - 1 : 0, v = r ? -1 : 1, c = e[t + m];
     for (m += v, u = c & (1 << -b) - 1, c >>= -b, b += d; b > 0; u = u * 256 + e[t + m], m += v, b -= 8)
@@ -87,9 +5562,9 @@ var vs = Object.create, Ge = Object.defineProperty, Ss = Object.getOwnPropertyDe
       ;
     e[r + c - h] |= w * 128;
   };
-}), xs = X((n) => {
+}), lu = X((n) => {
   V();
-  var e = Ts(), t = As(), r = typeof Symbol == "function" && typeof Symbol.for == "function" ? Symbol.for("nodejs.util.inspect.custom") : null;
+  var e = au(), t = uu(), r = typeof Symbol == "function" && typeof Symbol.for == "function" ? Symbol.for("nodejs.util.inspect.custom") : null;
   n.Buffer = a, n.SlowBuffer = _, n.INSPECT_MAX_BYTES = 50;
   var i = 2147483647;
   n.kMaxLength = i, a.TYPED_ARRAY_SUPPORT = s(), !a.TYPED_ARRAY_SUPPORT && typeof console < "u" && typeof console.error == "function" && console.error("This browser lacks typed array (Uint8Array) support which is required by `buffer` v5.x. Use `buffer` v4.x if you require old browser support.");
@@ -652,7 +6127,7 @@ var vs = Object.create, Ge = Object.defineProperty, Ss = Object.getOwnPropertyDe
     (!l || l < 0) && (l = 0), (!p || p < 0 || p > C) && (p = C);
     let N = "";
     for (let $ = l; $ < p; ++$)
-      N += bs[o[$]];
+      N += vs[o[$]];
     return N;
   }
   g(re, "hexSlice");
@@ -1062,9 +6537,9 @@ var vs = Object.create, Ge = Object.defineProperty, Ss = Object.getOwnPropertyDe
     throw Math.floor(o) !== o ? (Oe(o, p), new je.ERR_OUT_OF_RANGE(p || "offset", "an integer", o)) : l < 0 ? new je.ERR_BUFFER_OUT_OF_BOUNDS() : new je.ERR_OUT_OF_RANGE(p || "offset", `>= ${p ? 1 : 0} and <= ${l}`, o);
   }
   g(Ue, "boundsError");
-  var ws = /[^+/0-9A-Za-z-_]/g;
+  var bs = /[^+/0-9A-Za-z-_]/g;
   function Br(o) {
-    if (o = o.split("=")[0], o = o.trim().replace(ws, ""), o.length < 2)
+    if (o = o.split("=")[0], o = o.trim().replace(bs, ""), o.length < 2)
       return "";
     for (; o.length % 4 !== 0; )
       o = o + "=";
@@ -1156,7 +6631,7 @@ var vs = Object.create, Ge = Object.defineProperty, Ss = Object.getOwnPropertyDe
     return o !== o;
   }
   g(pt, "numberIsNaN");
-  var bs = function() {
+  var vs = function() {
     let o = "0123456789abcdef", l = new Array(256);
     for (let p = 0; p < 16; ++p) {
       let C = p * 16;
@@ -1173,8 +6648,8 @@ var vs = Object.create, Ge = Object.defineProperty, Ss = Object.getOwnPropertyDe
     throw new Error("BigInt not supported");
   }
   g(Lr, "BufferBigIntNotDefined");
-}), It, pr, G, Z, V = ye(() => {
-  It = globalThis, pr = globalThis.setImmediate ?? ((n) => setTimeout(n, 0)), G = typeof globalThis.Buffer == "function" && typeof globalThis.Buffer.allocUnsafe == "function" ? globalThis.Buffer : xs().Buffer, Z = globalThis.process ?? {}, Z.env ?? (Z.env = {});
+}), Ot, wr, G, Z, V = ye(() => {
+  Ot = globalThis, wr = globalThis.setImmediate ?? ((n) => setTimeout(n, 0)), G = typeof globalThis.Buffer == "function" && typeof globalThis.Buffer.allocUnsafe == "function" ? globalThis.Buffer : lu().Buffer, Z = globalThis.process ?? {}, Z.env ?? (Z.env = {});
   try {
     Z.nextTick(() => {
     });
@@ -1182,7 +6657,7 @@ var vs = Object.create, Ge = Object.defineProperty, Ss = Object.getOwnPropertyDe
     let n = Promise.resolve();
     Z.nextTick = n.then.bind(n);
   }
-}), ke = X((n, e) => {
+}), Fe = X((n, e) => {
   V();
   var t = typeof Reflect == "object" ? Reflect : null, r = t && typeof t.apply == "function" ? t.apply : g(function(P, B, x) {
     return Function.prototype.apply.call(P, B, x);
@@ -1411,13 +6886,13 @@ var vs = Object.create, Ge = Object.defineProperty, Ss = Object.getOwnPropertyDe
       throw new TypeError('The "emitter" argument must be of type EventEmitter. Received type ' + typeof P);
   }
   g(M, "eventTargetAgnosticAddListener");
-}), Yr = {};
-Te(Yr, { Socket: () => Lt, isIP: () => Zr });
-function Zr(n) {
+}), An = {};
+Te(An, { Socket: () => Rt, isIP: () => xn });
+function xn(n) {
   return 0;
 }
-var Or, Ht, Xe, Lt, Ot = ye(() => {
-  V(), Or = Qe(ke(), 1), g(Zr, "isIP"), Ht = /^[^.]+\./, Xe = class K extends Or.EventEmitter {
+var zr, tr, Xe, Rt, Mt = ye(() => {
+  V(), zr = qe(Fe(), 1), g(xn, "isIP"), tr = /^[^.]+\./, Xe = class K extends zr.EventEmitter {
     constructor() {
       super(...arguments), J(this, "opts", {}), J(this, "connecting", !1), J(this, "pending", !0), J(
         this,
@@ -1695,16 +7170,16 @@ var Or, Ht, Xe, Lt, Ot = ye(() => {
   }, g(Xe, "Socket"), J(Xe, "defaults", { poolQueryViaFetch: !1, fetchEndpoint: g(
     (n, e, t) => {
       let r;
-      return t?.jwtAuth ? r = n.replace(Ht, "apiauth.") : r = n.replace(Ht, "api."), "https://" + r + "/sql";
+      return t?.jwtAuth ? r = n.replace(tr, "apiauth.") : r = n.replace(tr, "api."), "https://" + r + "/sql";
     },
     "fetchEndpoint"
   ), fetchConnectionCache: !0, fetchFunction: void 0, webSocketConstructor: void 0, wsProxy: g(
     (n) => n + "/v2",
     "wsProxy"
-  ), useSecureWebSocket: !0, forceDisablePgSSL: !0, coalesceWrites: !0, pipelineConnect: "password", subtls: void 0, rootCerts: "", pipelineTLS: !1, disableSNI: !1 }), J(Xe, "opts", {}), Lt = Xe;
-}), Xr = {};
-Te(Xr, { parse: () => gr });
-function gr(n, e = !1) {
+  ), useSecureWebSocket: !0, forceDisablePgSSL: !0, coalesceWrites: !0, pipelineConnect: "password", subtls: void 0, rootCerts: "", pipelineTLS: !1, disableSNI: !1 }), J(Xe, "opts", {}), Rt = Xe;
+}), Bn = {};
+Te(Bn, { parse: () => br });
+function br(n, e = !1) {
   let { protocol: t } = new URL(n), r = "http:" + n.substring(
     t.length
   ), { username: i, password: s, host: u, hostname: a, port: d, pathname: y, search: f, searchParams: b, hash: m } = new URL(
@@ -1727,13 +7202,13 @@ function gr(n, e = !1) {
     hash: m
   };
 }
-var en = ye(() => {
-  V(), g(gr, "parse");
-}), tn = X((n) => {
+var Nn = ye(() => {
+  V(), g(br, "parse");
+}), In = X((n) => {
   V(), n.parse = function(i, s) {
     return new t(i, s).parse();
   };
-  var e = class rn {
+  var e = class Ln {
     constructor(s, u) {
       this.source = s, this.transform = u || r, this.position = 0, this.entries = [], this.recorded = [], this.dimension = 0;
     }
@@ -1765,7 +7240,7 @@ var en = ye(() => {
       var u, a, d;
       for (this.consumeDimensions(); !this.isEof(); )
         if (u = this.nextCharacter(), u.value === "{" && !d)
-          this.dimension++, this.dimension > 1 && (a = new rn(this.source.substr(this.position - 1), this.transform), this.entries.push(a.parse(
+          this.dimension++, this.dimension > 1 && (a = new Ln(this.source.substr(this.position - 1), this.transform), this.entries.push(a.parse(
             !0
           )), this.position += a.position - 2);
         else if (u.value === "}" && !d) {
@@ -1784,15 +7259,15 @@ var en = ye(() => {
     return i;
   }
   g(r, "identity");
-}), nn = X((n, e) => {
+}), On = X((n, e) => {
   V();
-  var t = tn();
+  var t = In();
   e.exports = { create: g(function(r, i) {
     return { parse: g(function() {
       return t.parse(r, i);
     }, "parse") };
   }, "create") };
-}), Bs = X((n, e) => {
+}), cu = X((n, e) => {
   V();
   var t = /(\d{1,})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(\.\d{1,})?.*?( BC)?$/, r = /^(\d{1,})-(\d{2})-(\d{2})( BC)?$/, i = /([Z+-])(\d{2})?:?(\d{2})?:?(\d{2})?/, s = /^-?infinity$/;
   e.exports = g(function(f) {
@@ -1849,7 +7324,7 @@ var en = ye(() => {
     return f >= 0 && f < 100;
   }
   g(y, "is0To99");
-}), Ns = X((n, e) => {
+}), hu = X((n, e) => {
   V(), e.exports = r;
   var t = Object.prototype.hasOwnProperty;
   function r(i) {
@@ -1861,9 +7336,9 @@ var en = ye(() => {
     return i;
   }
   g(r, "extend");
-}), Is = X((n, e) => {
+}), fu = X((n, e) => {
   V();
-  var t = Ns();
+  var t = hu();
   e.exports = r;
   function r(_) {
     if (!(this instanceof r))
@@ -1922,7 +7397,7 @@ var en = ye(() => {
     }, {});
   }
   g(S, "parse");
-}), Ls = X((n, e) => {
+}), du = X((n, e) => {
   V(), e.exports = g(function(t) {
     if (/^\\x/.test(t))
       return new G(t.substr(
@@ -1942,9 +7417,9 @@ var en = ye(() => {
       }
     return new G(r, "binary");
   }, "parseBytea");
-}), Os = X((n, e) => {
+}), pu = X((n, e) => {
   V();
-  var t = tn(), r = nn(), i = Bs(), s = Is(), u = Ls();
+  var t = In(), r = On(), i = cu(), s = fu(), u = du();
   function a(E) {
     return g(function(D) {
       return D === null ? D : E(D);
@@ -2048,7 +7523,7 @@ var en = ye(() => {
     ), E(1182, w), E(1185, w), E(1186, s), E(1187, S), E(17, u), E(114, JSON.parse.bind(JSON)), E(3802, JSON.parse.bind(JSON)), E(199, M), E(3807, M), E(3907, h), E(2951, h), E(791, h), E(1183, h), E(1270, h);
   }, "init");
   e.exports = { init: x };
-}), Rs = X((n, e) => {
+}), gu = X((n, e) => {
   V();
   var t = 1e6;
   function r(i) {
@@ -2081,9 +7556,9 @@ var en = ye(() => {
     return y = s % t, f = 4294967296 * y + u, b = "" + f % t, a + b + d;
   }
   g(r, "readInt8"), e.exports = r;
-}), Ms = X((n, e) => {
+}), mu = X((n, e) => {
   V();
-  var t = Rs(), r = g(function(h, w, S, _, T) {
+  var t = gu(), r = g(function(h, w, S, _, T) {
     S = S || 0, _ = _ || !1, T = T || function(F, j, O) {
       return F * Math.pow(2, O) + j;
     };
@@ -2191,7 +7666,7 @@ var en = ye(() => {
     h(20, t), h(21, s), h(23, u), h(26, u), h(1700, y), h(700, a), h(701, d), h(16, v), h(1114, f.bind(null, !1)), h(1184, f.bind(null, !0)), h(1e3, b), h(1007, b), h(1016, b), h(1008, b), h(1009, b), h(25, m);
   }, "init");
   e.exports = { init: c };
-}), Ds = X((n, e) => {
+}), yu = X((n, e) => {
   V(), e.exports = {
     BOOL: 16,
     BYTEA: 17,
@@ -2254,9 +7729,9 @@ var en = ye(() => {
     REGNAMESPACE: 4089,
     REGROLE: 4096
   };
-}), Rt = X((n) => {
+}), Dt = X((n) => {
   V();
-  var e = Os(), t = Ms(), r = nn(), i = Ds();
+  var e = pu(), t = mu(), r = On(), i = yu();
   n.getTypeParser = a, n.setTypeParser = d, n.arrayParser = r, n.builtins = i;
   var s = { text: {}, binary: {} };
   function u(y) {
@@ -2275,9 +7750,9 @@ var en = ye(() => {
   }), t.init(function(y, f) {
     s.binary[y] = f;
   });
-}), mr = X((n, e) => {
+}), vr = X((n, e) => {
   V();
-  var t = Rt();
+  var t = Dt();
   function r(i) {
     this._types = i || t, this.text = {}, this.binary = {};
   }
@@ -2296,7 +7771,7 @@ var en = ye(() => {
     return s = s || "text", this.getOverrides(s)[i] || this._types.getTypeParser(i, s);
   }, e.exports = r;
 });
-function tt(n) {
+function rt(n) {
   let e = 1779033703, t = 3144134277, r = 1013904242, i = 2773480762, s = 1359893119, u = 2600822924, a = 528734635, d = 1541459225, y = 0, f = 0, b = [
     1116352408,
     1899447441,
@@ -2401,9 +7876,9 @@ function tt(n) {
   }, "digest");
   return n === void 0 ? { add: w, digest: S } : (w(n), S());
 }
-var $s = ye(() => {
-  V(), g(tt, "sha256");
-}), xe, sr, Qs = ye(() => {
+var wu = ye(() => {
+  V(), g(rt, "sha256");
+}), xe, lr, bu = ye(() => {
   V(), xe = class Pe {
     constructor() {
       J(this, "_dataLength", 0), J(this, "_bufferLength", 0), J(this, "_state", new Int32Array(4)), J(this, "_buffer", new ArrayBuffer(68)), J(this, "_buffer8"), J(this, "_buffer32"), this._buffer8 = new Uint8Array(this._buffer, 0, 68), this._buffer32 = new Uint32Array(this._buffer, 0, 17), this.start();
@@ -2506,18 +7981,18 @@ var $s = ye(() => {
         this._state
       );
     }
-  }, g(xe, "Md5"), J(xe, "stateIdentity", new Int32Array([1732584193, -271733879, -1732584194, 271733878])), J(xe, "buffer32Identity", new Int32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])), J(xe, "hexChars", "0123456789abcdef"), J(xe, "hexOut", []), J(xe, "onePassHasher", new xe()), sr = xe;
-}), yr = {};
-Te(yr, { createHash: () => on, createHmac: () => an, randomBytes: () => sn });
-function sn(n) {
+  }, g(xe, "Md5"), J(xe, "stateIdentity", new Int32Array([1732584193, -271733879, -1732584194, 271733878])), J(xe, "buffer32Identity", new Int32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])), J(xe, "hexChars", "0123456789abcdef"), J(xe, "hexOut", []), J(xe, "onePassHasher", new xe()), lr = xe;
+}), Sr = {};
+Te(Sr, { createHash: () => Mn, createHmac: () => Dn, randomBytes: () => Rn });
+function Rn(n) {
   return crypto.getRandomValues(G.alloc(n));
 }
-function on(n) {
+function Mn(n) {
   if (n === "sha256")
     return { update: g(function(e) {
       return { digest: g(
         function() {
-          return G.from(tt(e));
+          return G.from(rt(e));
         },
         "digest"
       ) };
@@ -2526,13 +8001,13 @@ function on(n) {
     return { update: g(function(e) {
       return {
         digest: g(function() {
-          return typeof e == "string" ? sr.hashStr(e) : sr.hashByteArray(e);
+          return typeof e == "string" ? lr.hashStr(e) : lr.hashByteArray(e);
         }, "digest")
       };
     }, "update") };
   throw new Error(`Hash type '${n}' not supported`);
 }
-function an(n, e) {
+function Dn(n, e) {
   if (n !== "sha256")
     throw new Error(`Only sha256 is supported (requested: '${n}')`);
   return { update: g(function(t) {
@@ -2543,7 +8018,7 @@ function an(n, e) {
         ));
         let r = e.length;
         if (r > 64)
-          e = tt(e);
+          e = rt(e);
         else if (r < 64) {
           let d = new Uint8Array(64);
           d.set(e), e = d;
@@ -2556,15 +8031,15 @@ function an(n, e) {
         let u = new Uint8Array(t.length + 64);
         u.set(i, 0), u.set(t, 64);
         let a = new Uint8Array(96);
-        return a.set(s, 0), a.set(tt(u), 64), G.from(tt(a));
+        return a.set(s, 0), a.set(rt(u), 64), G.from(rt(a));
       },
       "digest"
     ) };
   }, "update") };
 }
-var un = ye(() => {
-  V(), $s(), Qs(), g(sn, "randomBytes"), g(on, "createHash"), g(an, "createHmac");
-}), Mt = X((n, e) => {
+var $n = ye(() => {
+  V(), wu(), bu(), g(Rn, "randomBytes"), g(Mn, "createHash"), g(Dn, "createHmac");
+}), $t = X((n, e) => {
   V(), e.exports = {
     host: "localhost",
     user: Z.platform === "win32" ? Z.env.USERNAME : Z.env.USER,
@@ -2590,7 +8065,7 @@ var un = ye(() => {
     keepalives: 1,
     keepalives_idle: 0
   };
-  var t = Rt(), r = t.getTypeParser(20, "text"), i = t.getTypeParser(
+  var t = Dt(), r = t.getTypeParser(20, "text"), i = t.getTypeParser(
     1016,
     "text"
   );
@@ -2600,9 +8075,9 @@ var un = ye(() => {
       "text"
     ) : r), t.setTypeParser(1016, "text", s ? t.getTypeParser(1007, "text") : i);
   });
-}), Dt = X((n, e) => {
+}), Qt = X((n, e) => {
   V();
-  var t = (un(), he(yr)), r = Mt();
+  var t = ($n(), he(Sr)), r = $t();
   function i(c) {
     var h = c.replace(
       /\\/g,
@@ -2684,13 +8159,13 @@ var un = ye(() => {
     postgresMd5PasswordHash: v,
     md5: m
   };
-}), at = {};
-Te(at, { default: () => ln });
-var ln, $t = ye(() => {
-  V(), ln = {};
-}), ks = X((n, e) => {
+}), ht = {};
+Te(ht, { default: () => Qn });
+var Qn, kt = ye(() => {
+  V(), Qn = {};
+}), vu = X((n, e) => {
   V();
-  var t = (un(), he(yr));
+  var t = ($n(), he(Sr));
   function r(h) {
     if (h.indexOf("SCRAM-SHA-256") === -1)
       throw new Error("SASL: Only mechanism SCRAM-SHA-256 is currently supported");
@@ -2818,31 +8293,31 @@ var ln, $t = ye(() => {
     return T;
   }
   g(c, "Hi"), e.exports = { startSession: r, continueSession: i, finalizeSession: s };
-}), wr = {};
-Te(wr, { join: () => cn });
-function cn(...n) {
+}), Pr = {};
+Te(Pr, { join: () => kn });
+function kn(...n) {
   return n.join("/");
 }
-var hn = ye(() => {
+var qn = ye(() => {
   V(), g(
-    cn,
+    kn,
     "join"
   );
-}), br = {};
-Te(br, { stat: () => fn });
-function fn(n, e) {
+}), Er = {};
+Te(Er, { stat: () => Fn });
+function Fn(n, e) {
   e(new Error("No filesystem"));
 }
-var dn = ye(() => {
-  V(), g(fn, "stat");
-}), vr = {};
-Te(vr, { default: () => pn });
-var pn, gn = ye(() => {
-  V(), pn = {};
-}), mn = {};
-Te(mn, { StringDecoder: () => yn });
-var Gt, yn, qs = ye(() => {
-  V(), Gt = class {
+var jn = ye(() => {
+  V(), g(Fn, "stat");
+}), _r = {};
+Te(_r, { default: () => Un });
+var Un, zn = ye(() => {
+  V(), Un = {};
+}), Vn = {};
+Te(Vn, { StringDecoder: () => Wn });
+var rr, Wn, Su = ye(() => {
+  V(), rr = class {
     constructor(e) {
       J(this, "td"), this.td = new TextDecoder(e);
     }
@@ -2852,10 +8327,10 @@ var Gt, yn, qs = ye(() => {
     end(e) {
       return this.td.decode(e);
     }
-  }, g(Gt, "StringDecoder"), yn = Gt;
-}), Fs = X((n, e) => {
+  }, g(rr, "StringDecoder"), Wn = rr;
+}), Pu = X((n, e) => {
   V();
-  var { Transform: t } = (gn(), he(vr)), { StringDecoder: r } = (qs(), he(mn)), i = Symbol(
+  var { Transform: t } = (zn(), he(_r)), { StringDecoder: r } = (Su(), he(Vn)), i = Symbol(
     "last"
   ), s = Symbol("decoder");
   function u(b, m, v) {
@@ -2917,9 +8392,9 @@ var Gt, yn, qs = ye(() => {
     }, c;
   }
   g(f, "split"), e.exports = f;
-}), js = X((n, e) => {
+}), Eu = X((n, e) => {
   V();
-  var t = (hn(), he(wr)), r = (gn(), he(vr)).Stream, i = Fs(), s = ($t(), he(at)), u = 5432, a = Z.platform === "win32", d = Z.stderr, y = 56, f = 7, b = 61440, m = 32768;
+  var t = (qn(), he(Pr)), r = (zn(), he(_r)).Stream, i = Pu(), s = (kt(), he(ht)), u = 5432, a = Z.platform === "win32", d = Z.stderr, y = 56, f = 7, b = 61440, m = 32768;
   function v(M) {
     return (M & b) == m;
   }
@@ -3008,9 +8483,9 @@ var Gt, yn, qs = ye(() => {
     }
     return !0;
   };
-}), Us = X((n, e) => {
-  V(), hn(), he(wr);
-  var t = (dn(), he(br)), r = js();
+}), _u = X((n, e) => {
+  V(), qn(), he(Pr);
+  var t = (jn(), he(Er)), r = Eu();
   e.exports = function(i, s) {
     var u = r.getFileName();
     t.stat(u, function(a, d) {
@@ -3022,13 +8497,13 @@ var Gt, yn, qs = ye(() => {
       r.getPassword(i, y, s);
     });
   }, e.exports.warnTo = r.warnTo;
-}), wn = {};
-Te(wn, { default: () => bn });
-var bn, zs = ye(() => {
-  V(), bn = {};
-}), Vs = X((n, e) => {
+}), Kn = {};
+Te(Kn, { default: () => Hn });
+var Hn, Cu = ye(() => {
+  V(), Hn = {};
+}), Tu = X((n, e) => {
   V();
-  var t = (en(), he(Xr)), r = (dn(), he(br));
+  var t = (Nn(), he(Bn)), r = (jn(), he(Er));
   function i(s) {
     if (s.charAt(0) === "/") {
       var a = s.split(" ");
@@ -3068,9 +8543,9 @@ var bn, zs = ye(() => {
     return a;
   }
   g(i, "parse"), e.exports = i, i.parse = i;
-}), Sr = X((n, e) => {
+}), Cr = X((n, e) => {
   V();
-  var t = (zs(), he(wn)), r = Mt(), i = Vs().parse, s = g(function(b, m, v) {
+  var t = (Cu(), he(Kn)), r = $t(), i = Tu().parse, s = g(function(b, m, v) {
     return v === void 0 ? v = Z.env["PG" + b.toUpperCase()] : v === !1 || (v = Z.env[v]), m[b] || v || r[b];
   }, "val"), u = g(function() {
     switch (Z.env.PGSSLMODE) {
@@ -3117,9 +8592,9 @@ var bn, zs = ye(() => {
   g(y, "ConnectionParameters");
   var f = y;
   e.exports = f;
-}), Ws = X((n, e) => {
+}), Au = X((n, e) => {
   V();
-  var t = Rt(), r = /^([A-Za-z]+)(?: (\d+))?(?: (\d+))?/, i = class {
+  var t = Dt(), r = /^([A-Za-z]+)(?: (\d+))?(?: (\d+))?/, i = class {
     constructor(a, d) {
       this.command = null, this.rowCount = null, this.oid = null, this.rows = [], this.fields = [], this._parsers = void 0, this._types = d, this.RowCtor = null, this.rowAsArray = a === "array", this.rowAsArray && (this.parseRow = this._parseRowAsArray);
     }
@@ -3162,9 +8637,9 @@ var bn, zs = ye(() => {
   g(i, "Result");
   var s = i;
   e.exports = s;
-}), Ks = X((n, e) => {
+}), xu = X((n, e) => {
   V();
-  var { EventEmitter: t } = ke(), r = Ws(), i = Dt(), s = class extends t {
+  var { EventEmitter: t } = Fe(), r = Au(), i = Qt(), s = class extends t {
     constructor(d, y, f) {
       super(), d = i.normalizeQueryConfig(d, y, f), this.text = d.text, this.values = d.values, this.rows = d.rows, this.types = d.types, this.name = d.name, this.binary = d.binary, this.portal = d.portal || "", this.callback = d.callback, this._rowMode = d.rowMode, Z.domain && d.callback && (this.callback = Z.domain.bind(d.callback)), this._result = new r(this._rowMode, this.types), this._results = this._result, this.isPreparedStatement = !1, this._canceledDueToError = !1, this._promise = null;
     }
@@ -3259,7 +8734,7 @@ var bn, zs = ye(() => {
   g(s, "Query");
   var u = s;
   e.exports = u;
-}), vn = X((n) => {
+}), Gn = X((n) => {
   V(), Object.defineProperty(n, "__esModule", { value: !0 }), n.NoticeMessage = n.DataRowMessage = n.CommandCompleteMessage = n.ReadyForQueryMessage = n.NotificationResponseMessage = n.BackendKeyDataMessage = n.AuthenticationMD5Password = n.ParameterStatusMessage = n.ParameterDescriptionMessage = n.RowDescriptionMessage = n.Field = n.CopyResponse = n.CopyDataMessage = n.DatabaseError = n.copyDone = n.emptyQuery = n.replicationStart = n.portalSuspended = n.noData = n.closeComplete = n.bindComplete = n.parseComplete = void 0, n.parseComplete = { name: "parseComplete", length: 5 }, n.bindComplete = { name: "bindComplete", length: 5 }, n.closeComplete = { name: "closeComplete", length: 5 }, n.noData = { name: "noData", length: 5 }, n.portalSuspended = { name: "portalSuspended", length: 5 }, n.replicationStart = { name: "replicationStart", length: 4 }, n.emptyQuery = { name: "emptyQuery", length: 4 }, n.copyDone = { name: "copyDone", length: 4 };
   var e = class extends Error {
     constructor(O, q, W) {
@@ -3373,7 +8848,7 @@ var bn, zs = ye(() => {
   g(R, "NoticeMessage");
   var F = R;
   n.NoticeMessage = F;
-}), Hs = X((n) => {
+}), Bu = X((n) => {
   V(), Object.defineProperty(n, "__esModule", { value: !0 }), n.Writer = void 0;
   var e = class {
     constructor(i = 256) {
@@ -3426,9 +8901,9 @@ var bn, zs = ye(() => {
   g(e, "Writer");
   var t = e;
   n.Writer = t;
-}), Gs = X((n) => {
+}), Nu = X((n) => {
   V(), Object.defineProperty(n, "__esModule", { value: !0 }), n.serialize = void 0;
-  var e = Hs(), t = new e.Writer(), r = g((O) => {
+  var e = Bu(), t = new e.Writer(), r = g((O) => {
     t.addInt16(3).addInt16(0);
     for (let H of Object.keys(O))
       t.addCString(
@@ -3511,7 +8986,7 @@ var bn, zs = ye(() => {
     cancel: w
   };
   n.serialize = j;
-}), Js = X((n) => {
+}), Iu = X((n) => {
   V(), Object.defineProperty(n, "__esModule", { value: !0 }), n.BufferReader = void 0;
   var e = G.allocUnsafe(0), t = class {
     constructor(s = 0) {
@@ -3556,9 +9031,9 @@ var bn, zs = ye(() => {
   g(t, "BufferReader");
   var r = t;
   n.BufferReader = r;
-}), Ys = X((n) => {
+}), Lu = X((n) => {
   V(), Object.defineProperty(n, "__esModule", { value: !0 }), n.Parser = void 0;
-  var e = vn(), t = Js(), r = 1, i = 4, s = r + i, u = G.allocUnsafe(0), a = class {
+  var e = Gn(), t = Iu(), r = 1, i = 4, s = r + i, u = G.allocUnsafe(0), a = class {
     constructor(f) {
       if (this.buffer = u, this.bufferLength = 0, this.bufferOffset = 0, this.reader = new t.BufferReader(), f?.mode === "binary")
         throw new Error("Binary mode not supported yet");
@@ -3798,40 +9273,40 @@ var bn, zs = ye(() => {
   g(a, "Parser");
   var d = a;
   n.Parser = d;
-}), Sn = X((n) => {
+}), Jn = X((n) => {
   V(), Object.defineProperty(n, "__esModule", { value: !0 }), n.DatabaseError = n.serialize = n.parse = void 0;
-  var e = vn();
+  var e = Gn();
   Object.defineProperty(n, "DatabaseError", { enumerable: !0, get: g(
     function() {
       return e.DatabaseError;
     },
     "get"
   ) });
-  var t = Gs();
+  var t = Nu();
   Object.defineProperty(n, "serialize", {
     enumerable: !0,
     get: g(function() {
       return t.serialize;
     }, "get")
   });
-  var r = Ys();
+  var r = Lu();
   function i(s, u) {
     let a = new r.Parser();
     return s.on("data", (d) => a.parse(d, u)), new Promise((d) => s.on("end", () => d()));
   }
   g(i, "parse"), n.parse = i;
-}), Pn = {};
-Te(Pn, { connect: () => En });
-function En({ socket: n, servername: e }) {
+}), Yn = {};
+Te(Yn, { connect: () => Zn });
+function Zn({ socket: n, servername: e }) {
   return n.startTls(e), n;
 }
-var Zs = ye(
+var Ou = ye(
   () => {
-    V(), g(En, "connect");
+    V(), g(Zn, "connect");
   }
-), _n = X((n, e) => {
+), Xn = X((n, e) => {
   V();
-  var t = (Ot(), he(Yr)), r = ke().EventEmitter, { parse: i, serialize: s } = Sn(), u = s.flush(), a = s.sync(), d = s.end(), y = class extends r {
+  var t = (Mt(), he(An)), r = Fe().EventEmitter, { parse: i, serialize: s } = Jn(), u = s.flush(), a = s.sync(), d = s.end(), y = class extends r {
     constructor(m) {
       super(), m = m || {}, this.stream = m.stream || new t.Socket(), this._keepAlive = m.keepAlive, this._keepAliveInitialDelayMillis = m.keepAliveInitialDelayMillis, this.lastBuffer = !1, this.parsedStatements = {}, this.ssl = m.ssl || !1, this._ending = !1, this._emitMessage = !1;
       var v = this;
@@ -3863,7 +9338,7 @@ var Zs = ye(
           default:
             return c.stream.end(), c.emit("error", new Error("There was an error establishing an SSL connection"));
         }
-        var _ = (Zs(), he(Pn));
+        var _ = (Ou(), he(Yn));
         let T = { socket: c.stream };
         c.ssl !== !0 && (Object.assign(T, c.ssl), "key" in c.ssl && (T.key = c.ssl.key)), t.isIP(v) === 0 && (T.servername = v);
         try {
@@ -3963,11 +9438,11 @@ var Zs = ye(
   g(y, "Connection");
   var f = y;
   e.exports = f;
-}), Xs = X((n, e) => {
+}), Ru = X((n, e) => {
   V();
-  var t = ke().EventEmitter;
-  $t(), he(at);
-  var r = Dt(), i = ks(), s = Us(), u = mr(), a = Sr(), d = Ks(), y = Mt(), f = _n(), b = class extends t {
+  var t = Fe().EventEmitter;
+  kt(), he(ht);
+  var r = Qt(), i = vu(), s = _u(), u = vr(), a = Cr(), d = xu(), y = $t(), f = Xn(), b = class extends t {
     constructor(c) {
       super(), this.connectionParameters = new a(c), this.user = this.connectionParameters.user, this.database = this.connectionParameters.database, this.port = this.connectionParameters.port, this.host = this.connectionParameters.host, Object.defineProperty(
         this,
@@ -3975,7 +9450,7 @@ var Zs = ye(
         { configurable: !0, enumerable: !1, writable: !0, value: this.connectionParameters.password }
       ), this.replication = this.connectionParameters.replication;
       var h = c || {};
-      this._Promise = h.Promise || It.Promise, this._types = new u(h.types), this._ending = !1, this._connecting = !1, this._connected = !1, this._connectionError = !1, this._queryable = !0, this.connection = h.connection || new f({ stream: h.stream, ssl: this.connectionParameters.ssl, keepAlive: h.keepAlive || !1, keepAliveInitialDelayMillis: h.keepAliveInitialDelayMillis || 0, encoding: this.connectionParameters.client_encoding || "utf8" }), this.queryQueue = [], this.binary = h.binary || y.binary, this.processID = null, this.secretKey = null, this.ssl = this.connectionParameters.ssl || !1, this.ssl && this.ssl.key && Object.defineProperty(this.ssl, "key", { enumerable: !1 }), this._connectionTimeoutMillis = h.connectionTimeoutMillis || 0;
+      this._Promise = h.Promise || Ot.Promise, this._types = new u(h.types), this._ending = !1, this._connecting = !1, this._connected = !1, this._connectionError = !1, this._queryable = !0, this.connection = h.connection || new f({ stream: h.stream, ssl: this.connectionParameters.ssl, keepAlive: h.keepAlive || !1, keepAliveInitialDelayMillis: h.keepAliveInitialDelayMillis || 0, encoding: this.connectionParameters.client_encoding || "utf8" }), this.queryQueue = [], this.binary = h.binary || y.binary, this.processID = null, this.secretKey = null, this.ssl = this.connectionParameters.ssl || !1, this.ssl && this.ssl.key && Object.defineProperty(this.ssl, "key", { enumerable: !1 }), this._connectionTimeoutMillis = h.connectionTimeoutMillis || 0;
     }
     _errorAllQueries(c) {
       let h = g((w) => {
@@ -4239,9 +9714,9 @@ var Zs = ye(
   g(b, "Client");
   var m = b;
   m.Query = d, e.exports = m;
-}), ei = X((n, e) => {
+}), Mu = X((n, e) => {
   V();
-  var t = ke().EventEmitter, r = g(function() {
+  var t = Fe().EventEmitter, r = g(function() {
   }, "NOOP"), i = g((c, h) => {
     let w = c.findIndex(h);
     return w === -1 ? void 0 : c.splice(w, 1)[0];
@@ -4294,7 +9769,7 @@ var Zs = ye(
         writable: !0,
         value: h.password
       }), h != null && h.ssl && h.ssl.key && Object.defineProperty(this.options.ssl, "key", { enumerable: !1 }), this.options.max = this.options.max || this.options.poolSize || 10, this.options.maxUses = this.options.maxUses || 1 / 0, this.options.allowExitOnIdle = this.options.allowExitOnIdle || !1, this.options.maxLifetimeSeconds = this.options.maxLifetimeSeconds || 0, this.log = this.options.log || function() {
-      }, this.Client = this.options.Client || w || Qt().Client, this.Promise = this.options.Promise || It.Promise, typeof this.options.idleTimeoutMillis > "u" && (this.options.idleTimeoutMillis = 1e4), this._clients = [], this._idle = [], this._expired = /* @__PURE__ */ new WeakSet(), this._pendingQueue = [], this._endCallback = void 0, this.ending = !1, this.ended = !1;
+      }, this.Client = this.options.Client || w || qt().Client, this.Promise = this.options.Promise || Ot.Promise, typeof this.options.idleTimeoutMillis > "u" && (this.options.idleTimeoutMillis = 1e4), this._clients = [], this._idle = [], this._expired = /* @__PURE__ */ new WeakSet(), this._pendingQueue = [], this._endCallback = void 0, this.ending = !1, this.ended = !1;
     }
     _isFull() {
       return this._clients.length >= this.options.max;
@@ -4424,7 +9899,7 @@ var Zs = ye(
     query(h, w, S) {
       if (typeof h == "function") {
         let T = f(this.Promise, h);
-        return pr(function() {
+        return wr(function() {
           return T.callback(new Error("Passing a function as the first parameter to pool.query is not supported"));
         }), T.result;
       }
@@ -4475,11 +9950,11 @@ var Zs = ye(
   g(m, "Pool");
   var v = m;
   e.exports = v;
-}), Cn = {};
-Te(Cn, { default: () => Tn });
-var Tn, ti = ye(() => {
-  V(), Tn = {};
-}), ri = X((n, e) => {
+}), es = {};
+Te(es, { default: () => ts });
+var ts, Du = ye(() => {
+  V(), ts = {};
+}), $u = X((n, e) => {
   e.exports = { name: "pg", version: "8.8.0", description: "PostgreSQL client - pure javascript & libpq with the same API", keywords: [
     "database",
     "libpq",
@@ -4494,9 +9969,9 @@ var Tn, ti = ye(() => {
     co: "4.6.0",
     "pg-copy-streams": "0.3.0"
   }, peerDependencies: { "pg-native": ">=3.0.1" }, peerDependenciesMeta: { "pg-native": { optional: !0 } }, scripts: { test: "make test-all" }, files: ["lib", "SPONSORS.md"], license: "MIT", engines: { node: ">= 8.0.0" }, gitHead: "c99fb2c127ddf8d712500db2c7b9a5491a178655" };
-}), ni = X((n, e) => {
+}), Qu = X((n, e) => {
   V();
-  var t = ke().EventEmitter, r = ($t(), he(at)), i = Dt(), s = e.exports = function(a, d, y) {
+  var t = Fe().EventEmitter, r = (kt(), he(ht)), i = Qt(), s = e.exports = function(a, d, y) {
     t.call(this), a = i.normalizeQueryConfig(a, d, y), this.text = a.text, this.values = a.values, this.name = a.name, this.callback = a.callback, this.state = "new", this._arrayMode = a.rowMode === "array", this._emitRowEvents = !1, this.on("newListener", function(f) {
       f === "row" && (this._emitRowEvents = !0);
     }.bind(this));
@@ -4527,7 +10002,7 @@ var Tn, ti = ye(() => {
     var d = this;
     this.native = a.native, a.native.arrayMode = this._arrayMode;
     var y = g(function(m, v, c) {
-      if (a.native.arrayMode = !1, pr(function() {
+      if (a.native.arrayMode = !1, wr(function() {
         d.emit("_done");
       }), m)
         return d.handleError(m);
@@ -4566,12 +10041,12 @@ var Tn, ti = ye(() => {
     } else
       a.native.query(this.text, y);
   };
-}), si = X((n, e) => {
+}), ku = X((n, e) => {
   V();
-  var t = (ti(), he(Cn)), r = mr();
-  ri();
-  var i = ke().EventEmitter, s = ($t(), he(at)), u = Sr(), a = ni(), d = e.exports = function(y) {
-    i.call(this), y = y || {}, this._Promise = y.Promise || It.Promise, this._types = new r(y.types), this.native = new t({ types: this._types }), this._queryQueue = [], this._ending = !1, this._connecting = !1, this._connected = !1, this._queryable = !0;
+  var t = (Du(), he(es)), r = vr();
+  $u();
+  var i = Fe().EventEmitter, s = (kt(), he(ht)), u = Cr(), a = Qu(), d = e.exports = function(y) {
+    i.call(this), y = y || {}, this._Promise = y.Promise || Ot.Promise, this._types = new r(y.types), this.native = new t({ types: this._types }), this._queryQueue = [], this._ending = !1, this._connecting = !1, this._connected = !1, this._queryable = !0;
     var f = this.connectionParameters = new u(y);
     this.user = f.user, Object.defineProperty(this, "password", { configurable: !0, enumerable: !1, writable: !0, value: f.password }), this.database = f.database, this.host = f.host, this.port = f.port, this.namedQueries = {};
   };
@@ -4682,11 +10157,11 @@ var Tn, ti = ye(() => {
   }, d.prototype.getTypeParser = function(y, f) {
     return this._types.getTypeParser(y, f);
   };
-}), Rr = X((n, e) => {
-  V(), e.exports = si();
-}), Qt = X((n, e) => {
+}), Vr = X((n, e) => {
+  V(), e.exports = ku();
+}), qt = X((n, e) => {
   V();
-  var t = Xs(), r = Mt(), i = _n(), s = ei(), { DatabaseError: u } = Sn(), a = g(
+  var t = Ru(), r = $t(), i = Xn(), s = Mu(), { DatabaseError: u } = Jn(), a = g(
     (y) => {
       var f;
       return f = class extends s {
@@ -4698,17 +10173,17 @@ var Tn, ti = ye(() => {
     "poolFactory"
   ), d = g(
     function(y) {
-      this.defaults = r, this.Client = y, this.Query = this.Client.Query, this.Pool = a(this.Client), this._pools = [], this.Connection = i, this.types = Rt(), this.DatabaseError = u;
+      this.defaults = r, this.Client = y, this.Query = this.Client.Query, this.Pool = a(this.Client), this._pools = [], this.Connection = i, this.types = Dt(), this.DatabaseError = u;
     },
     "PG"
   );
-  typeof Z.env.NODE_PG_FORCE_NATIVE < "u" ? e.exports = new d(Rr()) : (e.exports = new d(t), Object.defineProperty(e.exports, "native", {
+  typeof Z.env.NODE_PG_FORCE_NATIVE < "u" ? e.exports = new d(Vr()) : (e.exports = new d(t), Object.defineProperty(e.exports, "native", {
     configurable: !0,
     enumerable: !1,
     get() {
       var y = null;
       try {
-        y = new d(Rr());
+        y = new d(Vr());
       } catch (f) {
         if (f.code !== "MODULE_NOT_FOUND")
           throw f;
@@ -4719,40 +10194,40 @@ var Tn, ti = ye(() => {
 });
 V();
 V();
-Ot();
-en();
+Mt();
+Nn();
 V();
-var ii = Object.defineProperty, oi = Object.defineProperties, ai = Object.getOwnPropertyDescriptors, Mr = Object.getOwnPropertySymbols, ui = Object.prototype.hasOwnProperty, li = Object.prototype.propertyIsEnumerable, Dr = g(
-  (n, e, t) => e in n ? ii(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t,
+var qu = Object.defineProperty, Fu = Object.defineProperties, ju = Object.getOwnPropertyDescriptors, Wr = Object.getOwnPropertySymbols, Uu = Object.prototype.hasOwnProperty, zu = Object.prototype.propertyIsEnumerable, Kr = g(
+  (n, e, t) => e in n ? qu(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t,
   "__defNormalProp"
-), ci = g((n, e) => {
+), Vu = g((n, e) => {
   for (var t in e || (e = {}))
-    ui.call(e, t) && Dr(n, t, e[t]);
-  if (Mr)
-    for (var t of Mr(e))
-      li.call(e, t) && Dr(n, t, e[t]);
+    Uu.call(e, t) && Kr(n, t, e[t]);
+  if (Wr)
+    for (var t of Wr(e))
+      zu.call(e, t) && Kr(n, t, e[t]);
   return n;
-}, "__spreadValues"), hi = g((n, e) => oi(n, ai(e)), "__spreadProps"), fi = 1008e3, $r = new Uint8Array(
+}, "__spreadValues"), Wu = g((n, e) => Fu(n, ju(e)), "__spreadProps"), Ku = 1008e3, Hr = new Uint8Array(
   new Uint16Array([258]).buffer
-)[0] === 2, di = new TextDecoder(), Pr = new TextEncoder(), gt = Pr.encode("0123456789abcdef"), mt = Pr.encode("0123456789ABCDEF"), pi = Pr.encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"), An = pi.slice();
-An[62] = 45;
-An[63] = 95;
-var et, yt;
-function xn(n, { alphabet: e, scratchArr: t } = {}) {
+)[0] === 2, Hu = new TextDecoder(), Tr = new TextEncoder(), mt = Tr.encode("0123456789abcdef"), yt = Tr.encode("0123456789ABCDEF"), Gu = Tr.encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"), rs = Gu.slice();
+rs[62] = 45;
+rs[63] = 95;
+var et, wt;
+function ns(n, { alphabet: e, scratchArr: t } = {}) {
   if (!et)
-    if (et = new Uint16Array(256), yt = new Uint16Array(256), $r)
+    if (et = new Uint16Array(256), wt = new Uint16Array(256), Hr)
       for (let v = 0; v < 256; v++)
-        et[v] = gt[v & 15] << 8 | gt[v >>> 4], yt[v] = mt[v & 15] << 8 | mt[v >>> 4];
+        et[v] = mt[v & 15] << 8 | mt[v >>> 4], wt[v] = yt[v & 15] << 8 | yt[v >>> 4];
     else
       for (let v = 0; v < 256; v++)
-        et[v] = gt[v & 15] | gt[v >>> 4] << 8, yt[v] = mt[v & 15] | mt[v >>> 4] << 8;
+        et[v] = mt[v & 15] | mt[v >>> 4] << 8, wt[v] = yt[v & 15] | yt[v >>> 4] << 8;
   n.byteOffset % 4 !== 0 && (n = new Uint8Array(n));
   let r = n.length, i = r >>> 1, s = r >>> 2, u = t || new Uint16Array(r), a = new Uint32Array(
     n.buffer,
     n.byteOffset,
     s
-  ), d = new Uint32Array(u.buffer, u.byteOffset, i), y = e === "upper" ? yt : et, f = 0, b = 0, m;
-  if ($r)
+  ), d = new Uint32Array(u.buffer, u.byteOffset, i), y = e === "upper" ? wt : et, f = 0, b = 0, m;
+  if (Hr)
     for (; f < s; )
       m = a[f++], d[b++] = y[m >>> 8 & 255] << 16 | y[m & 255], d[b++] = y[m >>> 24] << 16 | y[m >>> 16 & 255];
   else
@@ -4760,27 +10235,27 @@ function xn(n, { alphabet: e, scratchArr: t } = {}) {
       m = a[f++], d[b++] = y[m >>> 24] << 16 | y[m >>> 16 & 255], d[b++] = y[m >>> 8 & 255] << 16 | y[m & 255];
   for (f <<= 2; f < r; )
     u[f] = y[n[f++]];
-  return di.decode(u.subarray(0, r));
+  return Hu.decode(u.subarray(0, r));
 }
-g(xn, "_toHex");
-function Bn(n, e = {}) {
-  let t = "", r = n.length, i = fi >>> 1, s = Math.ceil(r / i), u = new Uint16Array(s > 1 ? i : r);
+g(ns, "_toHex");
+function ss(n, e = {}) {
+  let t = "", r = n.length, i = Ku >>> 1, s = Math.ceil(r / i), u = new Uint16Array(s > 1 ? i : r);
   for (let a = 0; a < s; a++) {
     let d = a * i, y = d + i;
-    t += xn(n.subarray(d, y), hi(ci(
+    t += ns(n.subarray(d, y), Wu(Vu(
       {},
       e
     ), { scratchArr: u }));
   }
   return t;
 }
-g(Bn, "_toHexChunked");
-function Nn(n, e = {}) {
-  return e.alphabet !== "upper" && typeof n.toHex == "function" ? n.toHex() : Bn(n, e);
+g(ss, "_toHexChunked");
+function is(n, e = {}) {
+  return e.alphabet !== "upper" && typeof n.toHex == "function" ? n.toHex() : ss(n, e);
 }
-g(Nn, "toHex");
+g(is, "toHex");
 V();
-var In = class Ln {
+var os = class as {
   constructor(e, t) {
     this.strings = e, this.values = t;
   }
@@ -4789,10 +10264,10 @@ var In = class Ln {
     for (let i = 0, s = t.length; i < s; i++)
       if (e.query += t[i], i < r.length) {
         let u = r[i];
-        if (u instanceof Mn)
+        if (u instanceof cs)
           e.query += u.sql;
-        else if (u instanceof vt)
-          if (u.queryData instanceof Ln)
+        else if (u instanceof Et)
+          if (u.queryData instanceof as)
             u.queryData.toParameterizedQuery(
               e
             );
@@ -4809,35 +10284,35 @@ var In = class Ln {
     return e;
   }
 };
-g(In, "SqlTemplate");
-var On = In, Rn = class {
+g(os, "SqlTemplate");
+var us = os, ls = class {
   constructor(e) {
     this.sql = e;
   }
 };
-g(Rn, "UnsafeRawSql");
-var Mn = Rn, gi = Qe(mr()), mi = Qe(Dt()), Dn = class $n extends Error {
+g(ls, "UnsafeRawSql");
+var cs = ls, Ju = qe(vr()), Yu = qe(Qt()), hs = class fs extends Error {
   constructor(e) {
     super(e), J(this, "name", "NeonDbError"), J(this, "severity"), J(this, "code"), J(this, "detail"), J(this, "hint"), J(this, "position"), J(this, "internalPosition"), J(
       this,
       "internalQuery"
-    ), J(this, "where"), J(this, "schema"), J(this, "table"), J(this, "column"), J(this, "dataType"), J(this, "constraint"), J(this, "file"), J(this, "line"), J(this, "routine"), J(this, "sourceError"), "captureStackTrace" in Error && typeof Error.captureStackTrace == "function" && Error.captureStackTrace(this, $n);
+    ), J(this, "where"), J(this, "schema"), J(this, "table"), J(this, "column"), J(this, "dataType"), J(this, "constraint"), J(this, "file"), J(this, "line"), J(this, "routine"), J(this, "sourceError"), "captureStackTrace" in Error && typeof Error.captureStackTrace == "function" && Error.captureStackTrace(this, fs);
   }
 };
 g(
-  Dn,
+  hs,
   "NeonDbError"
 );
-var Ve = Dn, Qr = "transaction() expects an array of queries, or a function returning an array of queries", yi = ["severity", "code", "detail", "hint", "position", "internalPosition", "internalQuery", "where", "schema", "table", "column", "dataType", "constraint", "file", "line", "routine"];
-function Qn(n) {
-  return n instanceof G ? "\\x" + Nn(n) : n;
+var Ve = hs, Gr = "transaction() expects an array of queries, or a function returning an array of queries", Zu = ["severity", "code", "detail", "hint", "position", "internalPosition", "internalQuery", "where", "schema", "table", "column", "dataType", "constraint", "file", "line", "routine"];
+function ds(n) {
+  return n instanceof G ? "\\x" + is(n) : n;
 }
-g(Qn, "encodeBuffersAsBytea");
-function ir(n) {
-  let { query: e, params: t } = n instanceof On ? n.toParameterizedQuery() : n;
-  return { query: e, params: t.map((r) => Qn((0, mi.prepareValue)(r))) };
+g(ds, "encodeBuffersAsBytea");
+function cr(n) {
+  let { query: e, params: t } = n instanceof us ? n.toParameterizedQuery() : n;
+  return { query: e, params: t.map((r) => ds((0, Yu.prepareValue)(r))) };
 }
-g(ir, "prepareQuery");
+g(cr, "prepareQuery");
 function We(n, {
   arrayMode: e,
   fullResults: t,
@@ -4851,7 +10326,7 @@ function We(n, {
     throw new Error("No database connection string was provided to `neon()`. Perhaps an environment variable has not been set?");
   let d;
   try {
-    d = gr(n);
+    d = br(n);
   } catch {
     throw new Error("Database connection string provided to `neon()` is not a valid URL. Connection string: " + String(n));
   }
@@ -4871,15 +10346,15 @@ function We(n, {
       throw new Error(
         'This function can now be called only as a tagged-template function: sql`SELECT ${value}`, not sql("SELECT $1", [value], options). For a conventional function call with value placeholders ($1, $2, etc.), use sql.query("SELECT $1", [value], options).'
       );
-    return new vt(h, new On(w, S));
+    return new Et(h, new us(w, S));
   }
-  g(c, "templateFn"), c.query = (w, S, _) => new vt(h, { query: w, params: S ?? [] }, _), c.unsafe = (w) => new Mn(w), c.transaction = async (w, S) => {
+  g(c, "templateFn"), c.query = (w, S, _) => new Et(h, { query: w, params: S ?? [] }, _), c.unsafe = (w) => new cs(w), c.transaction = async (w, S) => {
     if (typeof w == "function" && (w = w(c)), !Array.isArray(w))
-      throw new Error(Qr);
+      throw new Error(Gr);
     w.forEach((L) => {
-      if (!(L instanceof vt))
+      if (!(L instanceof Et))
         throw new Error(
-          Qr
+          Gr
         );
     });
     let _ = w.map((L) => L.queryData), T = w.map((L) => L.opts ?? {});
@@ -4889,7 +10364,7 @@ function We(n, {
     let {
       fetchEndpoint: T,
       fetchFunction: L
-    } = Lt, M = Array.isArray(w) ? { queries: w.map((H) => ir(H)) } : ir(w), P = r ?? {}, B = e ?? !1, x = t ?? !1, E = i, D = s, R = u;
+    } = Rt, M = Array.isArray(w) ? { queries: w.map((H) => cr(H)) } : cr(w), P = r ?? {}, B = e ?? !1, x = t ?? !1, E = i, D = s, R = u;
     _ !== void 0 && (_.fetchOptions !== void 0 && (P = { ...P, ..._.fetchOptions }), _.arrayMode !== void 0 && (B = _.arrayMode), _.fullResults !== void 0 && (x = _.fullResults), _.isolationLevel !== void 0 && (E = _.isolationLevel), _.readOnly !== void 0 && (D = _.readOnly), _.deferrable !== void 0 && (R = _.deferrable)), S !== void 0 && !Array.isArray(S) && S.fetchOptions !== void 0 && (P = { ...P, ...S.fetchOptions });
     let F = a;
     !Array.isArray(S) && S?.authToken !== void 0 && (F = S.authToken);
@@ -4897,7 +10372,7 @@ function We(n, {
       "Neon-Connection-String": n,
       "Neon-Raw-Text-Output": "true",
       "Neon-Array-Mode": "true"
-    }, q = await qn(F);
+    }, q = await gs(F);
     q && (O.Authorization = `Bearer ${q}`), Array.isArray(w) && (E !== void 0 && (O["Neon-Batch-Isolation-Level"] = E), D !== void 0 && (O["Neon-Batch-Read-Only"] = String(D)), R !== void 0 && (O["Neon-Batch-Deferrable"] = String(
       R
     )));
@@ -4916,17 +10391,17 @@ function We(n, {
           throw new Ve("Neon internal error: unexpected result format");
         return ee.map((re, we) => {
           let oe = S[we] ?? {}, de = oe.arrayMode ?? B, Ye = oe.fullResults ?? x;
-          return or(re, { arrayMode: de, fullResults: Ye, types: oe.types });
+          return hr(re, { arrayMode: de, fullResults: Ye, types: oe.types });
         });
       } else {
         let ee = S ?? {}, re = ee.arrayMode ?? B, we = ee.fullResults ?? x;
-        return or(H, { arrayMode: re, fullResults: we, types: ee.types });
+        return hr(H, { arrayMode: re, fullResults: we, types: ee.types });
       }
     } else {
       let { status: H } = W;
       if (H === 400) {
         let ee = await W.json(), re = new Ve(ee.message);
-        for (let we of yi)
+        for (let we of Zu)
           re[we] = ee[we] ?? void 0;
         throw re;
       } else {
@@ -4938,7 +10413,7 @@ function We(n, {
   return g(h, "execute"), c;
 }
 g(We, "neon");
-var kn = class {
+var ps = class {
   constructor(e, t, r) {
     this.execute = e, this.queryData = t, this.opts = r;
   }
@@ -4954,16 +10429,16 @@ var kn = class {
     return this.execute(this.queryData, this.opts).finally(e);
   }
 };
-g(kn, "NeonQueryPromise");
-var vt = kn;
-function or(n, { arrayMode: e, fullResults: t, types: r }) {
-  let i = new gi.default(r), s = n.fields.map((d) => d.name), u = n.fields.map((d) => i.getTypeParser(d.dataTypeID)), a = e === !0 ? n.rows.map((d) => d.map((y, f) => y === null ? null : u[f](
+g(ps, "NeonQueryPromise");
+var Et = ps;
+function hr(n, { arrayMode: e, fullResults: t, types: r }) {
+  let i = new Ju.default(r), s = n.fields.map((d) => d.name), u = n.fields.map((d) => i.getTypeParser(d.dataTypeID)), a = e === !0 ? n.rows.map((d) => d.map((y, f) => y === null ? null : u[f](
     y
   ))) : n.rows.map((d) => Object.fromEntries(d.map((y, f) => [s[f], y === null ? null : u[f](y)])));
   return t ? (n.viaNeonFetch = !0, n.rowAsArray = e, n.rows = a, n._parsers = u, n._types = i, n) : a;
 }
-g(or, "processQueryResult");
-async function qn(n) {
+g(hr, "processQueryResult");
+async function gs(n) {
   if (typeof n == "string")
     return n;
   if (typeof n == "function")
@@ -4974,11 +10449,11 @@ async function qn(n) {
       throw e instanceof Error && (t = new Ve(`Error getting auth token: ${e.message}`)), t;
     }
 }
-g(qn, "getAuthToken");
+g(gs, "getAuthToken");
 V();
-var wi = Qe(Qt());
+var Xu = qe(qt());
 V();
-var bi = Qe(Qt()), Fn = class extends bi.Client {
+var el = qe(qt()), ms = class extends el.Client {
   constructor(e) {
     super(e), this.config = e;
   }
@@ -5053,11 +10528,11 @@ var bi = Qe(Qt()), Fn = class extends bi.Client {
     r.message = "SASLResponse", r.serverSignature = H.toString("base64"), r.response = x + ",p=" + j, this.connection.sendSCRAMClientFinalMessage(this.saslSession.response);
   }
 };
-g(Fn, "NeonClient");
-var vi = Fn;
-Ot();
-var Si = Qe(Sr());
-function jn(n, e) {
+g(ms, "NeonClient");
+var tl = ms;
+Mt();
+var rl = qe(Cr());
+function ys(n, e) {
   if (e)
     return { callback: e, result: void 0 };
   let t, r, i = g(function(u, a) {
@@ -5067,26 +10542,26 @@ function jn(n, e) {
   });
   return { callback: i, result: s };
 }
-g(jn, "promisify");
-var Pi = class extends wi.Pool {
+g(ys, "promisify");
+var nl = class extends Xu.Pool {
   constructor() {
-    super(...arguments), J(this, "Client", vi), J(this, "hasFetchUnsupportedListeners", !1), J(this, "addListener", this.on);
+    super(...arguments), J(this, "Client", tl), J(this, "hasFetchUnsupportedListeners", !1), J(this, "addListener", this.on);
   }
   on(e, t) {
     return e !== "error" && (this.hasFetchUnsupportedListeners = !0), super.on(e, t);
   }
   query(e, t, r) {
-    if (!Lt.poolQueryViaFetch || this.hasFetchUnsupportedListeners || typeof e == "function")
+    if (!Rt.poolQueryViaFetch || this.hasFetchUnsupportedListeners || typeof e == "function")
       return super.query(
         e,
         t,
         r
       );
     typeof t == "function" && (r = t, t = void 0);
-    let i = jn(this.Promise, r);
+    let i = ys(this.Promise, r);
     r = i.callback;
     try {
-      let s = new Si.default(
+      let s = new rl.default(
         this.options
       ), u = encodeURIComponent, a = encodeURI, d = `postgresql://${u(s.user)}:${u(s.password)}@${u(s.host)}/${a(s.database)}`, y = typeof e == "string" ? e : e.text, f = t ?? e.values ?? [];
       We(d, { fullResults: !0, arrayMode: e.rowMode === "array" }).query(y, f, { types: e.types ?? this.options?.types }).then((b) => r(void 0, b)).catch((b) => r(
@@ -5098,12 +10573,12 @@ var Pi = class extends wi.Pool {
     return i.result;
   }
 };
-g(Pi, "NeonPool");
-Ot();
-var Er = Qe(Qt());
-Er.DatabaseError;
-Er.defaults;
-var be = Er.types;
+g(nl, "NeonPool");
+Mt();
+var Ar = qe(qt());
+Ar.DatabaseError;
+Ar.defaults;
+var be = Ar.types;
 /*! Bundled license information:
 
 ieee754/index.js:
@@ -5117,5275 +10592,14 @@ buffer/index.js:
    * @license  MIT
    *)
 */
-const I = Symbol.for("drizzle:entityKind");
-function Q(n, e) {
-  if (!n || typeof n != "object")
-    return !1;
-  if (n instanceof e)
-    return !0;
-  if (!Object.prototype.hasOwnProperty.call(e, I))
-    throw new Error(
-      `Class "${e.name ?? "<unknown>"}" doesn't look like a Drizzle entity. If this is incorrect and the class is provided by Drizzle, please report this as a bug.`
-    );
-  let t = Object.getPrototypeOf(n).constructor;
-  if (t)
-    for (; t; ) {
-      if (I in t && t[I] === e[I])
-        return !0;
-      t = Object.getPrototypeOf(t);
-    }
-  return !1;
-}
-class Ei {
-  static [I] = "ConsoleLogWriter";
-  write(e) {
-    console.log(e);
-  }
-}
-class _i {
-  static [I] = "DefaultLogger";
-  writer;
-  constructor(e) {
-    this.writer = e?.writer ?? new Ei();
-  }
-  logQuery(e, t) {
-    const r = t.map((s) => {
-      try {
-        return JSON.stringify(s);
-      } catch {
-        return String(s);
-      }
-    }), i = r.length ? ` -- params: [${r.join(", ")}]` : "";
-    this.writer.write(`Query: ${e}${i}`);
-  }
-}
-class Ci {
-  static [I] = "NoopLogger";
-  logQuery() {
-  }
-}
-class qe {
-  static [I] = "QueryPromise";
-  [Symbol.toStringTag] = "QueryPromise";
-  catch(e) {
-    return this.then(void 0, e);
-  }
-  finally(e) {
-    return this.then(
-      (t) => (e?.(), t),
-      (t) => {
-        throw e?.(), t;
-      }
-    );
-  }
-  then(e, t) {
-    return this.execute().then(e, t);
-  }
-}
-class ce {
-  constructor(e, t) {
-    this.table = e, this.config = t, this.name = t.name, this.keyAsName = t.keyAsName, this.notNull = t.notNull, this.default = t.default, this.defaultFn = t.defaultFn, this.onUpdateFn = t.onUpdateFn, this.hasDefault = t.hasDefault, this.primary = t.primaryKey, this.isUnique = t.isUnique, this.uniqueName = t.uniqueName, this.uniqueType = t.uniqueType, this.dataType = t.dataType, this.columnType = t.columnType, this.generated = t.generated, this.generatedIdentity = t.generatedIdentity;
-  }
-  static [I] = "Column";
-  name;
-  keyAsName;
-  primary;
-  notNull;
-  default;
-  defaultFn;
-  onUpdateFn;
-  hasDefault;
-  isUnique;
-  uniqueName;
-  uniqueType;
-  dataType;
-  columnType;
-  enumValues = void 0;
-  generated = void 0;
-  generatedIdentity = void 0;
-  config;
-  mapFromDriverValue(e) {
-    return e;
-  }
-  mapToDriverValue(e) {
-    return e;
-  }
-  // ** @internal */
-  shouldDisableInsert() {
-    return this.config.generated !== void 0 && this.config.generated.type !== "byDefault";
-  }
-}
-class Ti {
-  static [I] = "ColumnBuilder";
-  config;
-  constructor(e, t, r) {
-    this.config = {
-      name: e,
-      keyAsName: e === "",
-      notNull: !1,
-      default: void 0,
-      hasDefault: !1,
-      primaryKey: !1,
-      isUnique: !1,
-      uniqueName: void 0,
-      uniqueType: void 0,
-      dataType: t,
-      columnType: r,
-      generated: void 0
-    };
-  }
-  /**
-   * Changes the data type of the column. Commonly used with `json` columns. Also, useful for branded types.
-   *
-   * @example
-   * ```ts
-   * const users = pgTable('users', {
-   * 	id: integer('id').$type<UserId>().primaryKey(),
-   * 	details: json('details').$type<UserDetails>().notNull(),
-   * });
-   * ```
-   */
-  $type() {
-    return this;
-  }
-  /**
-   * Adds a `not null` clause to the column definition.
-   *
-   * Affects the `select` model of the table - columns *without* `not null` will be nullable on select.
-   */
-  notNull() {
-    return this.config.notNull = !0, this;
-  }
-  /**
-   * Adds a `default <value>` clause to the column definition.
-   *
-   * Affects the `insert` model of the table - columns *with* `default` are optional on insert.
-   *
-   * If you need to set a dynamic default value, use {@link $defaultFn} instead.
-   */
-  default(e) {
-    return this.config.default = e, this.config.hasDefault = !0, this;
-  }
-  /**
-   * Adds a dynamic default value to the column.
-   * The function will be called when the row is inserted, and the returned value will be used as the column value.
-   *
-   * **Note:** This value does not affect the `drizzle-kit` behavior, it is only used at runtime in `drizzle-orm`.
-   */
-  $defaultFn(e) {
-    return this.config.defaultFn = e, this.config.hasDefault = !0, this;
-  }
-  /**
-   * Alias for {@link $defaultFn}.
-   */
-  $default = this.$defaultFn;
-  /**
-   * Adds a dynamic update value to the column.
-   * The function will be called when the row is updated, and the returned value will be used as the column value if none is provided.
-   * If no `default` (or `$defaultFn`) value is provided, the function will be called when the row is inserted as well, and the returned value will be used as the column value.
-   *
-   * **Note:** This value does not affect the `drizzle-kit` behavior, it is only used at runtime in `drizzle-orm`.
-   */
-  $onUpdateFn(e) {
-    return this.config.onUpdateFn = e, this.config.hasDefault = !0, this;
-  }
-  /**
-   * Alias for {@link $onUpdateFn}.
-   */
-  $onUpdate = this.$onUpdateFn;
-  /**
-   * Adds a `primary key` clause to the column definition. This implicitly makes the column `not null`.
-   *
-   * In SQLite, `integer primary key` implicitly makes the column auto-incrementing.
-   */
-  primaryKey() {
-    return this.config.primaryKey = !0, this.config.notNull = !0, this;
-  }
-  /** @internal Sets the name of the column to the key within the table definition if a name was not given. */
-  setName(e) {
-    this.config.name === "" && (this.config.name = e);
-  }
-}
-const Ie = Symbol.for("drizzle:Name");
-class Ai {
-  static [I] = "PgForeignKeyBuilder";
-  /** @internal */
-  reference;
-  /** @internal */
-  _onUpdate = "no action";
-  /** @internal */
-  _onDelete = "no action";
-  constructor(e, t) {
-    this.reference = () => {
-      const { name: r, columns: i, foreignColumns: s } = e();
-      return { name: r, columns: i, foreignTable: s[0].table, foreignColumns: s };
-    }, t && (this._onUpdate = t.onUpdate, this._onDelete = t.onDelete);
-  }
-  onUpdate(e) {
-    return this._onUpdate = e === void 0 ? "no action" : e, this;
-  }
-  onDelete(e) {
-    return this._onDelete = e === void 0 ? "no action" : e, this;
-  }
-  /** @internal */
-  build(e) {
-    return new xi(e, this);
-  }
-}
-class xi {
-  constructor(e, t) {
-    this.table = e, this.reference = t.reference, this.onUpdate = t._onUpdate, this.onDelete = t._onDelete;
-  }
-  static [I] = "PgForeignKey";
-  reference;
-  onUpdate;
-  onDelete;
-  getName() {
-    const { name: e, columns: t, foreignColumns: r } = this.reference(), i = t.map((a) => a.name), s = r.map((a) => a.name), u = [
-      this.table[Ie],
-      ...i,
-      r[0].table[Ie],
-      ...s
-    ];
-    return e ?? `${u.join("_")}_fk`;
-  }
-}
-function Bi(n, ...e) {
-  return n(...e);
-}
-function Ni(n, e) {
-  return `${n[Ie]}_${e.join("_")}_unique`;
-}
-function kr(n, e, t) {
-  for (let r = e; r < n.length; r++) {
-    const i = n[r];
-    if (i === "\\") {
-      r++;
-      continue;
-    }
-    if (i === '"')
-      return [n.slice(e, r).replace(/\\/g, ""), r + 1];
-    if (!t && (i === "," || i === "}"))
-      return [n.slice(e, r).replace(/\\/g, ""), r];
-  }
-  return [n.slice(e).replace(/\\/g, ""), n.length];
-}
-function Un(n, e = 0) {
-  const t = [];
-  let r = e, i = !1;
-  for (; r < n.length; ) {
-    const s = n[r];
-    if (s === ",") {
-      (i || r === e) && t.push(""), i = !0, r++;
-      continue;
-    }
-    if (i = !1, s === "\\") {
-      r += 2;
-      continue;
-    }
-    if (s === '"') {
-      const [d, y] = kr(n, r + 1, !0);
-      t.push(d), r = y;
-      continue;
-    }
-    if (s === "}")
-      return [t, r + 1];
-    if (s === "{") {
-      const [d, y] = Un(n, r + 1);
-      t.push(d), r = y;
-      continue;
-    }
-    const [u, a] = kr(n, r, !1);
-    t.push(u), r = a;
-  }
-  return [t, r];
-}
-function Ii(n) {
-  const [e] = Un(n, 1);
-  return e;
-}
-function zn(n) {
-  return `{${n.map((e) => Array.isArray(e) ? zn(e) : typeof e == "string" ? `"${e.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"` : `${e}`).join(",")}}`;
-}
-class te extends Ti {
-  foreignKeyConfigs = [];
-  static [I] = "PgColumnBuilder";
-  array(e) {
-    return new Oi(this.config.name, this, e);
-  }
-  references(e, t = {}) {
-    return this.foreignKeyConfigs.push({ ref: e, actions: t }), this;
-  }
-  unique(e, t) {
-    return this.config.isUnique = !0, this.config.uniqueName = e, this.config.uniqueType = t?.nulls, this;
-  }
-  generatedAlwaysAs(e) {
-    return this.config.generated = {
-      as: e,
-      type: "always",
-      mode: "stored"
-    }, this;
-  }
-  /** @internal */
-  buildForeignKeys(e, t) {
-    return this.foreignKeyConfigs.map(({ ref: r, actions: i }) => Bi(
-      (s, u) => {
-        const a = new Ai(() => {
-          const d = s();
-          return { columns: [e], foreignColumns: [d] };
-        });
-        return u.onUpdate && a.onUpdate(u.onUpdate), u.onDelete && a.onDelete(u.onDelete), a.build(t);
-      },
-      r,
-      i
-    ));
-  }
-  /** @internal */
-  buildExtraConfigColumn(e) {
-    return new Li(e, this.config);
-  }
-}
-class Y extends ce {
-  constructor(e, t) {
-    t.uniqueName || (t.uniqueName = Ni(e, [t.name])), super(e, t), this.table = e;
-  }
-  static [I] = "PgColumn";
-}
-class Li extends Y {
-  static [I] = "ExtraConfigColumn";
-  getSQLType() {
-    return this.getSQLType();
-  }
-  indexConfig = {
-    order: this.config.order ?? "asc",
-    nulls: this.config.nulls ?? "last",
-    opClass: this.config.opClass
-  };
-  defaultConfig = {
-    order: "asc",
-    nulls: "last",
-    opClass: void 0
-  };
-  asc() {
-    return this.indexConfig.order = "asc", this;
-  }
-  desc() {
-    return this.indexConfig.order = "desc", this;
-  }
-  nullsFirst() {
-    return this.indexConfig.nulls = "first", this;
-  }
-  nullsLast() {
-    return this.indexConfig.nulls = "last", this;
-  }
-  /**
-   * ### PostgreSQL documentation quote
-   *
-   * > An operator class with optional parameters can be specified for each column of an index.
-   * The operator class identifies the operators to be used by the index for that column.
-   * For example, a B-tree index on four-byte integers would use the int4_ops class;
-   * this operator class includes comparison functions for four-byte integers.
-   * In practice the default operator class for the column's data type is usually sufficient.
-   * The main point of having operator classes is that for some data types, there could be more than one meaningful ordering.
-   * For example, we might want to sort a complex-number data type either by absolute value or by real part.
-   * We could do this by defining two operator classes for the data type and then selecting the proper class when creating an index.
-   * More information about operator classes check:
-   *
-   * ### Useful links
-   * https://www.postgresql.org/docs/current/sql-createindex.html
-   *
-   * https://www.postgresql.org/docs/current/indexes-opclass.html
-   *
-   * https://www.postgresql.org/docs/current/xindex.html
-   *
-   * ### Additional types
-   * If you have the `pg_vector` extension installed in your database, you can use the
-   * `vector_l2_ops`, `vector_ip_ops`, `vector_cosine_ops`, `vector_l1_ops`, `bit_hamming_ops`, `bit_jaccard_ops`, `halfvec_l2_ops`, `sparsevec_l2_ops` options, which are predefined types.
-   *
-   * **You can always specify any string you want in the operator class, in case Drizzle doesn't have it natively in its types**
-   *
-   * @param opClass
-   * @returns
-   */
-  op(e) {
-    return this.indexConfig.opClass = e, this;
-  }
-}
-class Jt {
-  static [I] = "IndexedColumn";
-  constructor(e, t, r, i) {
-    this.name = e, this.keyAsName = t, this.type = r, this.indexConfig = i;
-  }
-  name;
-  keyAsName;
-  type;
-  indexConfig;
-}
-class Oi extends te {
-  static [I] = "PgArrayBuilder";
-  constructor(e, t, r) {
-    super(e, "array", "PgArray"), this.config.baseBuilder = t, this.config.size = r;
-  }
-  /** @internal */
-  build(e) {
-    const t = this.config.baseBuilder.build(e);
-    return new _r(
-      e,
-      this.config,
-      t
-    );
-  }
-}
-class _r extends Y {
-  constructor(e, t, r, i) {
-    super(e, t), this.baseColumn = r, this.range = i, this.size = t.size;
-  }
-  size;
-  static [I] = "PgArray";
-  getSQLType() {
-    return `${this.baseColumn.getSQLType()}[${typeof this.size == "number" ? this.size : ""}]`;
-  }
-  mapFromDriverValue(e) {
-    return typeof e == "string" && (e = Ii(e)), e.map((t) => this.baseColumn.mapFromDriverValue(t));
-  }
-  mapToDriverValue(e, t = !1) {
-    const r = e.map(
-      (i) => i === null ? null : Q(this.baseColumn, _r) ? this.baseColumn.mapToDriverValue(i, !0) : this.baseColumn.mapToDriverValue(i)
-    );
-    return t ? r : zn(r);
-  }
-}
-const qr = Symbol.for("drizzle:isPgEnum");
-function Ri(n) {
-  return !!n && typeof n == "function" && qr in n && n[qr] === !0;
-}
-class _e {
-  static [I] = "Subquery";
-  constructor(e, t, r, i = !1) {
-    this._ = {
-      brand: "Subquery",
-      sql: e,
-      selectedFields: t,
-      alias: r,
-      isWith: i
-    };
-  }
-  // getSQL(): SQL<unknown> {
-  // 	return new SQL([this]);
-  // }
-}
-class Vn extends _e {
-  static [I] = "WithSubquery";
-}
-const Se = {
-  startActiveSpan(n, e) {
-    return e();
-  }
-}, ue = Symbol.for("drizzle:ViewBaseConfig"), St = Symbol.for("drizzle:Schema"), ar = Symbol.for("drizzle:Columns"), Fr = Symbol.for("drizzle:ExtraConfigColumns"), Yt = Symbol.for("drizzle:OriginalName"), Zt = Symbol.for("drizzle:BaseName"), _t = Symbol.for("drizzle:IsAlias"), jr = Symbol.for("drizzle:ExtraConfigBuilder"), Mi = Symbol.for("drizzle:IsDrizzleTable");
-class U {
-  static [I] = "Table";
-  /** @internal */
-  static Symbol = {
-    Name: Ie,
-    Schema: St,
-    OriginalName: Yt,
-    Columns: ar,
-    ExtraConfigColumns: Fr,
-    BaseName: Zt,
-    IsAlias: _t,
-    ExtraConfigBuilder: jr
-  };
-  /**
-   * @internal
-   * Can be changed if the table is aliased.
-   */
-  [Ie];
-  /**
-   * @internal
-   * Used to store the original name of the table, before any aliasing.
-   */
-  [Yt];
-  /** @internal */
-  [St];
-  /** @internal */
-  [ar];
-  /** @internal */
-  [Fr];
-  /**
-   *  @internal
-   * Used to store the table name before the transformation via the `tableCreator` functions.
-   */
-  [Zt];
-  /** @internal */
-  [_t] = !1;
-  /** @internal */
-  [Mi] = !0;
-  /** @internal */
-  [jr] = void 0;
-  constructor(e, t, r) {
-    this[Ie] = this[Yt] = e, this[St] = t, this[Zt] = r;
-  }
-}
-function Ne(n) {
-  return n[Ie];
-}
-function nt(n) {
-  return `${n[St] ?? "public"}.${n[Ie]}`;
-}
-function Wn(n) {
-  return n != null && typeof n.getSQL == "function";
-}
-function Di(n) {
-  const e = { sql: "", params: [] };
-  for (const t of n)
-    e.sql += t.sql, e.params.push(...t.params), t.typings?.length && (e.typings || (e.typings = []), e.typings.push(...t.typings));
-  return e;
-}
-class pe {
-  static [I] = "StringChunk";
-  value;
-  constructor(e) {
-    this.value = Array.isArray(e) ? e : [e];
-  }
-  getSQL() {
-    return new z([this]);
-  }
-}
-class z {
-  constructor(e) {
-    this.queryChunks = e;
-  }
-  static [I] = "SQL";
-  /** @internal */
-  decoder = Kn;
-  shouldInlineParams = !1;
-  append(e) {
-    return this.queryChunks.push(...e.queryChunks), this;
-  }
-  toQuery(e) {
-    return Se.startActiveSpan("drizzle.buildSQL", (t) => {
-      const r = this.buildQueryFromSourceParams(this.queryChunks, e);
-      return t?.setAttributes({
-        "drizzle.query.text": r.sql,
-        "drizzle.query.params": JSON.stringify(r.params)
-      }), r;
-    });
-  }
-  buildQueryFromSourceParams(e, t) {
-    const r = Object.assign({}, t, {
-      inlineParams: t.inlineParams || this.shouldInlineParams,
-      paramStartIndex: t.paramStartIndex || { value: 0 }
-    }), {
-      casing: i,
-      escapeName: s,
-      escapeParam: u,
-      prepareTyping: a,
-      inlineParams: d,
-      paramStartIndex: y
-    } = r;
-    return Di(e.map((f) => {
-      if (Q(f, pe))
-        return { sql: f.value.join(""), params: [] };
-      if (Q(f, ur))
-        return { sql: s(f.value), params: [] };
-      if (f === void 0)
-        return { sql: "", params: [] };
-      if (Array.isArray(f)) {
-        const b = [new pe("(")];
-        for (const [m, v] of f.entries())
-          b.push(v), m < f.length - 1 && b.push(new pe(", "));
-        return b.push(new pe(")")), this.buildQueryFromSourceParams(b, r);
-      }
-      if (Q(f, z))
-        return this.buildQueryFromSourceParams(f.queryChunks, {
-          ...r,
-          inlineParams: d || f.shouldInlineParams
-        });
-      if (Q(f, U)) {
-        const b = f[U.Symbol.Schema], m = f[U.Symbol.Name];
-        return {
-          sql: b === void 0 || f[_t] ? s(m) : s(b) + "." + s(m),
-          params: []
-        };
-      }
-      if (Q(f, ce)) {
-        const b = i.getColumnCasing(f);
-        if (t.invokeSource === "indexes")
-          return { sql: s(b), params: [] };
-        const m = f.table[U.Symbol.Schema];
-        return {
-          sql: f.table[_t] || m === void 0 ? s(f.table[U.Symbol.Name]) + "." + s(b) : s(m) + "." + s(f.table[U.Symbol.Name]) + "." + s(b),
-          params: []
-        };
-      }
-      if (Q(f, Fe)) {
-        const b = f[ue].schema, m = f[ue].name;
-        return {
-          sql: b === void 0 || f[ue].isAlias ? s(m) : s(b) + "." + s(m),
-          params: []
-        };
-      }
-      if (Q(f, Le)) {
-        if (Q(f.value, Ke))
-          return { sql: u(y.value++, f), params: [f], typings: ["none"] };
-        const b = f.value === null ? null : f.encoder.mapToDriverValue(f.value);
-        if (Q(b, z))
-          return this.buildQueryFromSourceParams([b], r);
-        if (d)
-          return { sql: this.mapInlineParam(b, r), params: [] };
-        let m = ["none"];
-        return a && (m = [a(f.encoder)]), { sql: u(y.value++, b), params: [b], typings: m };
-      }
-      return Q(f, Ke) ? { sql: u(y.value++, f), params: [f], typings: ["none"] } : Q(f, z.Aliased) && f.fieldAlias !== void 0 ? { sql: s(f.fieldAlias), params: [] } : Q(f, _e) ? f._.isWith ? { sql: s(f._.alias), params: [] } : this.buildQueryFromSourceParams([
-        new pe("("),
-        f._.sql,
-        new pe(") "),
-        new ur(f._.alias)
-      ], r) : Ri(f) ? f.schema ? { sql: s(f.schema) + "." + s(f.enumName), params: [] } : { sql: s(f.enumName), params: [] } : Wn(f) ? f.shouldOmitSQLParens?.() ? this.buildQueryFromSourceParams([f.getSQL()], r) : this.buildQueryFromSourceParams([
-        new pe("("),
-        f.getSQL(),
-        new pe(")")
-      ], r) : d ? { sql: this.mapInlineParam(f, r), params: [] } : { sql: u(y.value++, f), params: [f], typings: ["none"] };
-    }));
-  }
-  mapInlineParam(e, { escapeString: t }) {
-    if (e === null)
-      return "null";
-    if (typeof e == "number" || typeof e == "boolean")
-      return e.toString();
-    if (typeof e == "string")
-      return t(e);
-    if (typeof e == "object") {
-      const r = e.toString();
-      return t(r === "[object Object]" ? JSON.stringify(e) : r);
-    }
-    throw new Error("Unexpected param value: " + e);
-  }
-  getSQL() {
-    return this;
-  }
-  as(e) {
-    return e === void 0 ? this : new z.Aliased(this, e);
-  }
-  mapWith(e) {
-    return this.decoder = typeof e == "function" ? { mapFromDriverValue: e } : e, this;
-  }
-  inlineParams() {
-    return this.shouldInlineParams = !0, this;
-  }
-  /**
-   * This method is used to conditionally include a part of the query.
-   *
-   * @param condition - Condition to check
-   * @returns itself if the condition is `true`, otherwise `undefined`
-   */
-  if(e) {
-    return e ? this : void 0;
-  }
-}
-class ur {
-  constructor(e) {
-    this.value = e;
-  }
-  static [I] = "Name";
-  brand;
-  getSQL() {
-    return new z([this]);
-  }
-}
-function $i(n) {
-  return typeof n == "object" && n !== null && "mapToDriverValue" in n && typeof n.mapToDriverValue == "function";
-}
-const Kn = {
-  mapFromDriverValue: (n) => n
-}, Hn = {
-  mapToDriverValue: (n) => n
-};
-({
-  ...Kn,
-  ...Hn
-});
-class Le {
-  /**
-   * @param value - Parameter value
-   * @param encoder - Encoder to convert the value to a driver parameter
-   */
-  constructor(e, t = Hn) {
-    this.value = e, this.encoder = t;
-  }
-  static [I] = "Param";
-  brand;
-  getSQL() {
-    return new z([this]);
-  }
-}
-function A(n, ...e) {
-  const t = [];
-  (e.length > 0 || n.length > 0 && n[0] !== "") && t.push(new pe(n[0]));
-  for (const [r, i] of e.entries())
-    t.push(i, new pe(n[r + 1]));
-  return new z(t);
-}
-((n) => {
-  function e() {
-    return new z([]);
-  }
-  n.empty = e;
-  function t(d) {
-    return new z(d);
-  }
-  n.fromList = t;
-  function r(d) {
-    return new z([new pe(d)]);
-  }
-  n.raw = r;
-  function i(d, y) {
-    const f = [];
-    for (const [b, m] of d.entries())
-      b > 0 && y !== void 0 && f.push(y), f.push(m);
-    return new z(f);
-  }
-  n.join = i;
-  function s(d) {
-    return new ur(d);
-  }
-  n.identifier = s;
-  function u(d) {
-    return new Ke(d);
-  }
-  n.placeholder = u;
-  function a(d, y) {
-    return new Le(d, y);
-  }
-  n.param = a;
-})(A || (A = {}));
-((n) => {
-  class e {
-    constructor(r, i) {
-      this.sql = r, this.fieldAlias = i;
-    }
-    static [I] = "SQL.Aliased";
-    /** @internal */
-    isSelectionField = !1;
-    getSQL() {
-      return this.sql;
-    }
-    /** @internal */
-    clone() {
-      return new e(this.sql, this.fieldAlias);
-    }
-  }
-  n.Aliased = e;
-})(z || (z = {}));
-class Ke {
-  constructor(e) {
-    this.name = e;
-  }
-  static [I] = "Placeholder";
-  getSQL() {
-    return new z([this]);
-  }
-}
-function Xt(n, e) {
-  return n.map((t) => {
-    if (Q(t, Ke)) {
-      if (!(t.name in e))
-        throw new Error(`No value for placeholder "${t.name}" was provided`);
-      return e[t.name];
-    }
-    if (Q(t, Le) && Q(t.value, Ke)) {
-      if (!(t.value.name in e))
-        throw new Error(`No value for placeholder "${t.value.name}" was provided`);
-      return t.encoder.mapToDriverValue(e[t.value.name]);
-    }
-    return t;
-  });
-}
-const Qi = Symbol.for("drizzle:IsDrizzleView");
-class Fe {
-  static [I] = "View";
-  /** @internal */
-  [ue];
-  /** @internal */
-  [Qi] = !0;
-  constructor({ name: e, schema: t, selectedFields: r, query: i }) {
-    this[ue] = {
-      name: e,
-      originalName: e,
-      schema: t,
-      selectedFields: r,
-      query: i,
-      isExisting: !i,
-      isAlias: !1
-    };
-  }
-  getSQL() {
-    return new z([this]);
-  }
-}
-ce.prototype.getSQL = function() {
-  return new z([this]);
-};
-U.prototype.getSQL = function() {
-  return new z([this]);
-};
-_e.prototype.getSQL = function() {
-  return new z([this]);
-};
-class Ct {
-  constructor(e) {
-    this.table = e;
-  }
-  static [I] = "ColumnAliasProxyHandler";
-  get(e, t) {
-    return t === "table" ? this.table : e[t];
-  }
-}
-class Cr {
-  constructor(e, t) {
-    this.alias = e, this.replaceOriginalName = t;
-  }
-  static [I] = "TableAliasProxyHandler";
-  get(e, t) {
-    if (t === U.Symbol.IsAlias)
-      return !0;
-    if (t === U.Symbol.Name)
-      return this.alias;
-    if (this.replaceOriginalName && t === U.Symbol.OriginalName)
-      return this.alias;
-    if (t === ue)
-      return {
-        ...e[ue],
-        name: this.alias,
-        isAlias: !0
-      };
-    if (t === U.Symbol.Columns) {
-      const i = e[U.Symbol.Columns];
-      if (!i)
-        return i;
-      const s = {};
-      return Object.keys(i).map((u) => {
-        s[u] = new Proxy(
-          i[u],
-          new Ct(new Proxy(e, this))
-        );
-      }), s;
-    }
-    const r = e[t];
-    return Q(r, ce) ? new Proxy(r, new Ct(new Proxy(e, this))) : r;
-  }
-}
-function er(n, e) {
-  return new Proxy(n, new Cr(e, !1));
-}
-function Be(n, e) {
-  return new Proxy(
-    n,
-    new Ct(new Proxy(n.table, new Cr(e, !1)))
-  );
-}
-function Gn(n, e) {
-  return new z.Aliased(Tt(n.sql, e), n.fieldAlias);
-}
-function Tt(n, e) {
-  return A.join(n.queryChunks.map((t) => Q(t, ce) ? Be(t, e) : Q(t, z) ? Tt(t, e) : Q(t, z.Aliased) ? Gn(t, e) : t));
-}
-class ge {
-  static [I] = "SelectionProxyHandler";
-  config;
-  constructor(e) {
-    this.config = { ...e };
-  }
-  get(e, t) {
-    if (t === "_")
-      return {
-        ...e._,
-        selectedFields: new Proxy(
-          e._.selectedFields,
-          this
-        )
-      };
-    if (t === ue)
-      return {
-        ...e[ue],
-        selectedFields: new Proxy(
-          e[ue].selectedFields,
-          this
-        )
-      };
-    if (typeof t == "symbol")
-      return e[t];
-    const i = (Q(e, _e) ? e._.selectedFields : Q(e, Fe) ? e[ue].selectedFields : e)[t];
-    if (Q(i, z.Aliased)) {
-      if (this.config.sqlAliasedBehavior === "sql" && !i.isSelectionField)
-        return i.sql;
-      const s = i.clone();
-      return s.isSelectionField = !0, s;
-    }
-    if (Q(i, z)) {
-      if (this.config.sqlBehavior === "sql")
-        return i;
-      throw new Error(
-        `You tried to reference "${t}" field from a subquery, which is a raw SQL field, but it doesn't have an alias declared. Please add an alias to the field using ".as('alias')" method.`
-      );
-    }
-    return Q(i, ce) ? this.config.alias ? new Proxy(
-      i,
-      new Ct(
-        new Proxy(
-          i.table,
-          new Cr(this.config.alias, this.config.replaceOriginalName ?? !1)
-        )
-      )
-    ) : i : typeof i != "object" || i === null ? i : new Proxy(i, new ge(this.config));
-  }
-}
-function ki(n, e, t) {
-  const r = {}, i = n.reduce(
-    (s, { path: u, field: a }, d) => {
-      let y;
-      Q(a, ce) ? y = a : Q(a, z) ? y = a.decoder : y = a.sql.decoder;
-      let f = s;
-      for (const [b, m] of u.entries())
-        if (b < u.length - 1)
-          m in f || (f[m] = {}), f = f[m];
-        else {
-          const v = e[d], c = f[m] = v === null ? null : y.mapFromDriverValue(v);
-          if (t && Q(a, ce) && u.length === 2) {
-            const h = u[0];
-            h in r ? typeof r[h] == "string" && r[h] !== Ne(a.table) && (r[h] = !1) : r[h] = c === null ? Ne(a.table) : !1;
-          }
-        }
-      return s;
-    },
-    {}
-  );
-  if (t && Object.keys(r).length > 0)
-    for (const [s, u] of Object.entries(r))
-      typeof u == "string" && !t[u] && (i[s] = null);
-  return i;
-}
-function Me(n, e) {
-  return Object.entries(n).reduce((t, [r, i]) => {
-    if (typeof r != "string")
-      return t;
-    const s = e ? [...e, r] : [r];
-    return Q(i, ce) || Q(i, z) || Q(i, z.Aliased) ? t.push({ path: s, field: i }) : Q(i, U) ? t.push(...Me(i[U.Symbol.Columns], s)) : t.push(...Me(i, s)), t;
-  }, []);
-}
-function Tr(n, e) {
-  const t = Object.keys(n), r = Object.keys(e);
-  if (t.length !== r.length)
-    return !1;
-  for (const [i, s] of t.entries())
-    if (s !== r[i])
-      return !1;
-  return !0;
-}
-function Jn(n, e) {
-  const t = Object.entries(e).filter(([, r]) => r !== void 0).map(([r, i]) => Q(i, z) || Q(i, ce) ? [r, i] : [r, new Le(i, n[U.Symbol.Columns][r])]);
-  if (t.length === 0)
-    throw new Error("No values to set");
-  return Object.fromEntries(t);
-}
-function qi(n, e) {
-  for (const t of e)
-    for (const r of Object.getOwnPropertyNames(t.prototype))
-      r !== "constructor" && Object.defineProperty(
-        n.prototype,
-        r,
-        Object.getOwnPropertyDescriptor(t.prototype, r) || /* @__PURE__ */ Object.create(null)
-      );
-}
-function Fi(n) {
-  return n[U.Symbol.Columns];
-}
-function Re(n) {
-  return Q(n, _e) ? n._.alias : Q(n, Fe) ? n[ue].name : Q(n, z) ? void 0 : n[U.Symbol.IsAlias] ? n[U.Symbol.Name] : n[U.Symbol.BaseName];
-}
-function fe(n, e) {
-  return {
-    name: typeof n == "string" && n.length > 0 ? n : "",
-    config: typeof n == "object" ? n : e
-  };
-}
-function ji(n) {
-  if (typeof n != "object" || n === null || n.constructor.name !== "Object")
-    return !1;
-  if ("logger" in n) {
-    const e = typeof n.logger;
-    return !(e !== "boolean" && (e !== "object" || typeof n.logger.logQuery != "function") && e !== "undefined");
-  }
-  if ("schema" in n) {
-    const e = typeof n.schema;
-    return !(e !== "object" && e !== "undefined");
-  }
-  if ("casing" in n) {
-    const e = typeof n.casing;
-    return !(e !== "string" && e !== "undefined");
-  }
-  if ("mode" in n)
-    return !(n.mode !== "default" || n.mode !== "planetscale" || n.mode !== void 0);
-  if ("connection" in n) {
-    const e = typeof n.connection;
-    return !(e !== "string" && e !== "object" && e !== "undefined");
-  }
-  if ("client" in n) {
-    const e = typeof n.client;
-    return !(e !== "object" && e !== "function" && e !== "undefined");
-  }
-  return Object.keys(n).length === 0;
-}
-class Ur extends qe {
-  constructor(e, t, r, i) {
-    super(), this.session = t, this.dialect = r, this.config = { table: e, withList: i };
-  }
-  static [I] = "PgDelete";
-  config;
-  /**
-   * Adds a `where` clause to the query.
-   *
-   * Calling this method will delete only those rows that fulfill a specified condition.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/delete}
-   *
-   * @param where the `where` clause.
-   *
-   * @example
-   * You can use conditional operators and `sql function` to filter the rows to be deleted.
-   *
-   * ```ts
-   * // Delete all cars with green color
-   * await db.delete(cars).where(eq(cars.color, 'green'));
-   * // or
-   * await db.delete(cars).where(sql`${cars.color} = 'green'`)
-   * ```
-   *
-   * You can logically combine conditional operators with `and()` and `or()` operators:
-   *
-   * ```ts
-   * // Delete all BMW cars with a green color
-   * await db.delete(cars).where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
-   *
-   * // Delete all cars with the green or blue color
-   * await db.delete(cars).where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
-   * ```
-   */
-  where(e) {
-    return this.config.where = e, this;
-  }
-  returning(e = this.config.table[U.Symbol.Columns]) {
-    return this.config.returningFields = e, this.config.returning = Me(e), this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildDeleteQuery(this.config);
-  }
-  toSQL() {
-    const { typings: e, ...t } = this.dialect.sqlToQuery(this.getSQL());
-    return t;
-  }
-  /** @internal */
-  _prepare(e) {
-    return Se.startActiveSpan("drizzle.prepareQuery", () => this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, e, !0));
-  }
-  prepare(e) {
-    return this._prepare(e);
-  }
-  authToken;
-  /** @internal */
-  setToken(e) {
-    return this.authToken = e, this;
-  }
-  execute = (e) => Se.startActiveSpan("drizzle.operation", () => this._prepare().execute(e, this.authToken));
-  /** @internal */
-  getSelectedFields() {
-    return this.config.returningFields ? new Proxy(
-      this.config.returningFields,
-      new ge({
-        alias: Ne(this.config.table),
-        sqlAliasedBehavior: "alias",
-        sqlBehavior: "error"
-      })
-    ) : void 0;
-  }
-  $dynamic() {
-    return this;
-  }
-}
-function Ui(n) {
-  return (n.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? []).map((t) => t.toLowerCase()).join("_");
-}
-function zi(n) {
-  return (n.replace(/['\u2019]/g, "").match(/[\da-z]+|[A-Z]+(?![a-z])|[A-Z][\da-z]+/g) ?? []).reduce((t, r, i) => {
-    const s = i === 0 ? r.toLowerCase() : `${r[0].toUpperCase()}${r.slice(1)}`;
-    return t + s;
-  }, "");
-}
-function Vi(n) {
-  return n;
-}
-class Wi {
-  static [I] = "CasingCache";
-  /** @internal */
-  cache = {};
-  cachedTables = {};
-  convert;
-  constructor(e) {
-    this.convert = e === "snake_case" ? Ui : e === "camelCase" ? zi : Vi;
-  }
-  getColumnCasing(e) {
-    if (!e.keyAsName)
-      return e.name;
-    const t = e.table[U.Symbol.Schema] ?? "public", r = e.table[U.Symbol.OriginalName], i = `${t}.${r}.${e.name}`;
-    return this.cache[i] || this.cacheTable(e.table), this.cache[i];
-  }
-  cacheTable(e) {
-    const t = e[U.Symbol.Schema] ?? "public", r = e[U.Symbol.OriginalName], i = `${t}.${r}`;
-    if (!this.cachedTables[i]) {
-      for (const s of Object.values(e[U.Symbol.Columns])) {
-        const u = `${i}.${s.name}`;
-        this.cache[u] = this.convert(s.name);
-      }
-      this.cachedTables[i] = !0;
-    }
-  }
-  clearCache() {
-    this.cache = {}, this.cachedTables = {};
-  }
-}
-class Ki extends Error {
-  static [I] = "DrizzleError";
-  constructor({ message: e, cause: t }) {
-    super(e), this.name = "DrizzleError", this.cause = t;
-  }
-}
-class kt extends te {
-  static [I] = "PgIntColumnBaseBuilder";
-  generatedAlwaysAsIdentity(e) {
-    if (e) {
-      const { name: t, ...r } = e;
-      this.config.generatedIdentity = {
-        type: "always",
-        sequenceName: t,
-        sequenceOptions: r
-      };
-    } else
-      this.config.generatedIdentity = {
-        type: "always"
-      };
-    return this.config.hasDefault = !0, this.config.notNull = !0, this;
-  }
-  generatedByDefaultAsIdentity(e) {
-    if (e) {
-      const { name: t, ...r } = e;
-      this.config.generatedIdentity = {
-        type: "byDefault",
-        sequenceName: t,
-        sequenceOptions: r
-      };
-    } else
-      this.config.generatedIdentity = {
-        type: "byDefault"
-      };
-    return this.config.hasDefault = !0, this.config.notNull = !0, this;
-  }
-}
-class Hi extends kt {
-  static [I] = "PgBigInt53Builder";
-  constructor(e) {
-    super(e, "number", "PgBigInt53");
-  }
-  /** @internal */
-  build(e) {
-    return new Gi(e, this.config);
-  }
-}
-class Gi extends Y {
-  static [I] = "PgBigInt53";
-  getSQLType() {
-    return "bigint";
-  }
-  mapFromDriverValue(e) {
-    return typeof e == "number" ? e : Number(e);
-  }
-}
-class Ji extends kt {
-  static [I] = "PgBigInt64Builder";
-  constructor(e) {
-    super(e, "bigint", "PgBigInt64");
-  }
-  /** @internal */
-  build(e) {
-    return new Yi(
-      e,
-      this.config
-    );
-  }
-}
-class Yi extends Y {
-  static [I] = "PgBigInt64";
-  getSQLType() {
-    return "bigint";
-  }
-  // eslint-disable-next-line unicorn/prefer-native-coercion-functions
-  mapFromDriverValue(e) {
-    return BigInt(e);
-  }
-}
-function Zi(n, e) {
-  const { name: t, config: r } = fe(n, e);
-  return r.mode === "number" ? new Hi(t) : new Ji(t);
-}
-class Xi extends te {
-  static [I] = "PgBigSerial53Builder";
-  constructor(e) {
-    super(e, "number", "PgBigSerial53"), this.config.hasDefault = !0, this.config.notNull = !0;
-  }
-  /** @internal */
-  build(e) {
-    return new eo(
-      e,
-      this.config
-    );
-  }
-}
-class eo extends Y {
-  static [I] = "PgBigSerial53";
-  getSQLType() {
-    return "bigserial";
-  }
-  mapFromDriverValue(e) {
-    return typeof e == "number" ? e : Number(e);
-  }
-}
-class to extends te {
-  static [I] = "PgBigSerial64Builder";
-  constructor(e) {
-    super(e, "bigint", "PgBigSerial64"), this.config.hasDefault = !0;
-  }
-  /** @internal */
-  build(e) {
-    return new ro(
-      e,
-      this.config
-    );
-  }
-}
-class ro extends Y {
-  static [I] = "PgBigSerial64";
-  getSQLType() {
-    return "bigserial";
-  }
-  // eslint-disable-next-line unicorn/prefer-native-coercion-functions
-  mapFromDriverValue(e) {
-    return BigInt(e);
-  }
-}
-function no(n, e) {
-  const { name: t, config: r } = fe(n, e);
-  return r.mode === "number" ? new Xi(t) : new to(t);
-}
-class so extends te {
-  static [I] = "PgBooleanBuilder";
-  constructor(e) {
-    super(e, "boolean", "PgBoolean");
-  }
-  /** @internal */
-  build(e) {
-    return new io(e, this.config);
-  }
-}
-class io extends Y {
-  static [I] = "PgBoolean";
-  getSQLType() {
-    return "boolean";
-  }
-}
-function oo(n) {
-  return new so(n ?? "");
-}
-class ao extends te {
-  static [I] = "PgCharBuilder";
-  constructor(e, t) {
-    super(e, "string", "PgChar"), this.config.length = t.length, this.config.enumValues = t.enum;
-  }
-  /** @internal */
-  build(e) {
-    return new uo(
-      e,
-      this.config
-    );
-  }
-}
-class uo extends Y {
-  static [I] = "PgChar";
-  length = this.config.length;
-  enumValues = this.config.enumValues;
-  getSQLType() {
-    return this.length === void 0 ? "char" : `char(${this.length})`;
-  }
-}
-function lo(n, e = {}) {
-  const { name: t, config: r } = fe(n, e);
-  return new ao(t, r);
-}
-class co extends te {
-  static [I] = "PgCidrBuilder";
-  constructor(e) {
-    super(e, "string", "PgCidr");
-  }
-  /** @internal */
-  build(e) {
-    return new ho(e, this.config);
-  }
-}
-class ho extends Y {
-  static [I] = "PgCidr";
-  getSQLType() {
-    return "cidr";
-  }
-}
-function fo(n) {
-  return new co(n ?? "");
-}
-class po extends te {
-  static [I] = "PgCustomColumnBuilder";
-  constructor(e, t, r) {
-    super(e, "custom", "PgCustomColumn"), this.config.fieldConfig = t, this.config.customTypeParams = r;
-  }
-  /** @internal */
-  build(e) {
-    return new go(
-      e,
-      this.config
-    );
-  }
-}
-class go extends Y {
-  static [I] = "PgCustomColumn";
-  sqlName;
-  mapTo;
-  mapFrom;
-  constructor(e, t) {
-    super(e, t), this.sqlName = t.customTypeParams.dataType(t.fieldConfig), this.mapTo = t.customTypeParams.toDriver, this.mapFrom = t.customTypeParams.fromDriver;
-  }
-  getSQLType() {
-    return this.sqlName;
-  }
-  mapFromDriverValue(e) {
-    return typeof this.mapFrom == "function" ? this.mapFrom(e) : e;
-  }
-  mapToDriverValue(e) {
-    return typeof this.mapTo == "function" ? this.mapTo(e) : e;
-  }
-}
-function mo(n) {
-  return (e, t) => {
-    const { name: r, config: i } = fe(e, t);
-    return new po(r, i, n);
-  };
-}
-class ut extends te {
-  static [I] = "PgDateColumnBaseBuilder";
-  defaultNow() {
-    return this.default(A`now()`);
-  }
-}
-class yo extends ut {
-  static [I] = "PgDateBuilder";
-  constructor(e) {
-    super(e, "date", "PgDate");
-  }
-  /** @internal */
-  build(e) {
-    return new Yn(e, this.config);
-  }
-}
-class Yn extends Y {
-  static [I] = "PgDate";
-  getSQLType() {
-    return "date";
-  }
-  mapFromDriverValue(e) {
-    return new Date(e);
-  }
-  mapToDriverValue(e) {
-    return e.toISOString();
-  }
-}
-class wo extends ut {
-  static [I] = "PgDateStringBuilder";
-  constructor(e) {
-    super(e, "string", "PgDateString");
-  }
-  /** @internal */
-  build(e) {
-    return new Zn(
-      e,
-      this.config
-    );
-  }
-}
-class Zn extends Y {
-  static [I] = "PgDateString";
-  getSQLType() {
-    return "date";
-  }
-}
-function Xn(n, e) {
-  const { name: t, config: r } = fe(n, e);
-  return r?.mode === "date" ? new yo(t) : new wo(t);
-}
-class bo extends te {
-  static [I] = "PgDoublePrecisionBuilder";
-  constructor(e) {
-    super(e, "number", "PgDoublePrecision");
-  }
-  /** @internal */
-  build(e) {
-    return new vo(
-      e,
-      this.config
-    );
-  }
-}
-class vo extends Y {
-  static [I] = "PgDoublePrecision";
-  getSQLType() {
-    return "double precision";
-  }
-  mapFromDriverValue(e) {
-    return typeof e == "string" ? Number.parseFloat(e) : e;
-  }
-}
-function So(n) {
-  return new bo(n ?? "");
-}
-class Po extends te {
-  static [I] = "PgInetBuilder";
-  constructor(e) {
-    super(e, "string", "PgInet");
-  }
-  /** @internal */
-  build(e) {
-    return new Eo(e, this.config);
-  }
-}
-class Eo extends Y {
-  static [I] = "PgInet";
-  getSQLType() {
-    return "inet";
-  }
-}
-function _o(n) {
-  return new Po(n ?? "");
-}
-class Co extends kt {
-  static [I] = "PgIntegerBuilder";
-  constructor(e) {
-    super(e, "number", "PgInteger");
-  }
-  /** @internal */
-  build(e) {
-    return new To(e, this.config);
-  }
-}
-class To extends Y {
-  static [I] = "PgInteger";
-  getSQLType() {
-    return "integer";
-  }
-  mapFromDriverValue(e) {
-    return typeof e == "string" ? Number.parseInt(e) : e;
-  }
-}
-function De(n) {
-  return new Co(n ?? "");
-}
-class Ao extends te {
-  static [I] = "PgIntervalBuilder";
-  constructor(e, t) {
-    super(e, "string", "PgInterval"), this.config.intervalConfig = t;
-  }
-  /** @internal */
-  build(e) {
-    return new xo(e, this.config);
-  }
-}
-class xo extends Y {
-  static [I] = "PgInterval";
-  fields = this.config.intervalConfig.fields;
-  precision = this.config.intervalConfig.precision;
-  getSQLType() {
-    const e = this.fields ? ` ${this.fields}` : "", t = this.precision ? `(${this.precision})` : "";
-    return `interval${e}${t}`;
-  }
-}
-function Bo(n, e = {}) {
-  const { name: t, config: r } = fe(n, e);
-  return new Ao(t, r);
-}
-class No extends te {
-  static [I] = "PgJsonBuilder";
-  constructor(e) {
-    super(e, "json", "PgJson");
-  }
-  /** @internal */
-  build(e) {
-    return new es(e, this.config);
-  }
-}
-class es extends Y {
-  static [I] = "PgJson";
-  constructor(e, t) {
-    super(e, t);
-  }
-  getSQLType() {
-    return "json";
-  }
-  mapToDriverValue(e) {
-    return JSON.stringify(e);
-  }
-  mapFromDriverValue(e) {
-    if (typeof e == "string")
-      try {
-        return JSON.parse(e);
-      } catch {
-        return e;
-      }
-    return e;
-  }
-}
-function Io(n) {
-  return new No(n ?? "");
-}
-class Lo extends te {
-  static [I] = "PgJsonbBuilder";
-  constructor(e) {
-    super(e, "json", "PgJsonb");
-  }
-  /** @internal */
-  build(e) {
-    return new ts(e, this.config);
-  }
-}
-class ts extends Y {
-  static [I] = "PgJsonb";
-  constructor(e, t) {
-    super(e, t);
-  }
-  getSQLType() {
-    return "jsonb";
-  }
-  mapToDriverValue(e) {
-    return JSON.stringify(e);
-  }
-  mapFromDriverValue(e) {
-    if (typeof e == "string")
-      try {
-        return JSON.parse(e);
-      } catch {
-        return e;
-      }
-    return e;
-  }
-}
-function Oo(n) {
-  return new Lo(n ?? "");
-}
-class Ro extends te {
-  static [I] = "PgLineBuilder";
-  constructor(e) {
-    super(e, "array", "PgLine");
-  }
-  /** @internal */
-  build(e) {
-    return new Mo(
-      e,
-      this.config
-    );
-  }
-}
-class Mo extends Y {
-  static [I] = "PgLine";
-  getSQLType() {
-    return "line";
-  }
-  mapFromDriverValue(e) {
-    const [t, r, i] = e.slice(1, -1).split(",");
-    return [Number.parseFloat(t), Number.parseFloat(r), Number.parseFloat(i)];
-  }
-  mapToDriverValue(e) {
-    return `{${e[0]},${e[1]},${e[2]}}`;
-  }
-}
-class Do extends te {
-  static [I] = "PgLineABCBuilder";
-  constructor(e) {
-    super(e, "json", "PgLineABC");
-  }
-  /** @internal */
-  build(e) {
-    return new $o(
-      e,
-      this.config
-    );
-  }
-}
-class $o extends Y {
-  static [I] = "PgLineABC";
-  getSQLType() {
-    return "line";
-  }
-  mapFromDriverValue(e) {
-    const [t, r, i] = e.slice(1, -1).split(",");
-    return { a: Number.parseFloat(t), b: Number.parseFloat(r), c: Number.parseFloat(i) };
-  }
-  mapToDriverValue(e) {
-    return `{${e.a},${e.b},${e.c}}`;
-  }
-}
-function Qo(n, e) {
-  const { name: t, config: r } = fe(n, e);
-  return !r?.mode || r.mode === "tuple" ? new Ro(t) : new Do(t);
-}
-class ko extends te {
-  static [I] = "PgMacaddrBuilder";
-  constructor(e) {
-    super(e, "string", "PgMacaddr");
-  }
-  /** @internal */
-  build(e) {
-    return new qo(e, this.config);
-  }
-}
-class qo extends Y {
-  static [I] = "PgMacaddr";
-  getSQLType() {
-    return "macaddr";
-  }
-}
-function Fo(n) {
-  return new ko(n ?? "");
-}
-class jo extends te {
-  static [I] = "PgMacaddr8Builder";
-  constructor(e) {
-    super(e, "string", "PgMacaddr8");
-  }
-  /** @internal */
-  build(e) {
-    return new Uo(e, this.config);
-  }
-}
-class Uo extends Y {
-  static [I] = "PgMacaddr8";
-  getSQLType() {
-    return "macaddr8";
-  }
-}
-function zo(n) {
-  return new jo(n ?? "");
-}
-class Vo extends te {
-  static [I] = "PgNumericBuilder";
-  constructor(e, t, r) {
-    super(e, "string", "PgNumeric"), this.config.precision = t, this.config.scale = r;
-  }
-  /** @internal */
-  build(e) {
-    return new rs(e, this.config);
-  }
-}
-class rs extends Y {
-  static [I] = "PgNumeric";
-  precision;
-  scale;
-  constructor(e, t) {
-    super(e, t), this.precision = t.precision, this.scale = t.scale;
-  }
-  mapFromDriverValue(e) {
-    return typeof e == "string" ? e : String(e);
-  }
-  getSQLType() {
-    return this.precision !== void 0 && this.scale !== void 0 ? `numeric(${this.precision}, ${this.scale})` : this.precision === void 0 ? "numeric" : `numeric(${this.precision})`;
-  }
-}
-class Wo extends te {
-  static [I] = "PgNumericNumberBuilder";
-  constructor(e, t, r) {
-    super(e, "number", "PgNumericNumber"), this.config.precision = t, this.config.scale = r;
-  }
-  /** @internal */
-  build(e) {
-    return new Ko(
-      e,
-      this.config
-    );
-  }
-}
-class Ko extends Y {
-  static [I] = "PgNumericNumber";
-  precision;
-  scale;
-  constructor(e, t) {
-    super(e, t), this.precision = t.precision, this.scale = t.scale;
-  }
-  mapFromDriverValue(e) {
-    return typeof e == "number" ? e : Number(e);
-  }
-  mapToDriverValue = String;
-  getSQLType() {
-    return this.precision !== void 0 && this.scale !== void 0 ? `numeric(${this.precision}, ${this.scale})` : this.precision === void 0 ? "numeric" : `numeric(${this.precision})`;
-  }
-}
-class Ho extends te {
-  static [I] = "PgNumericBigIntBuilder";
-  constructor(e, t, r) {
-    super(e, "bigint", "PgNumericBigInt"), this.config.precision = t, this.config.scale = r;
-  }
-  /** @internal */
-  build(e) {
-    return new Go(
-      e,
-      this.config
-    );
-  }
-}
-class Go extends Y {
-  static [I] = "PgNumericBigInt";
-  precision;
-  scale;
-  constructor(e, t) {
-    super(e, t), this.precision = t.precision, this.scale = t.scale;
-  }
-  mapFromDriverValue = BigInt;
-  mapToDriverValue = String;
-  getSQLType() {
-    return this.precision !== void 0 && this.scale !== void 0 ? `numeric(${this.precision}, ${this.scale})` : this.precision === void 0 ? "numeric" : `numeric(${this.precision})`;
-  }
-}
-function Jo(n, e) {
-  const { name: t, config: r } = fe(n, e), i = r?.mode;
-  return i === "number" ? new Wo(t, r?.precision, r?.scale) : i === "bigint" ? new Ho(t, r?.precision, r?.scale) : new Vo(t, r?.precision, r?.scale);
-}
-class Yo extends te {
-  static [I] = "PgPointTupleBuilder";
-  constructor(e) {
-    super(e, "array", "PgPointTuple");
-  }
-  /** @internal */
-  build(e) {
-    return new Zo(
-      e,
-      this.config
-    );
-  }
-}
-class Zo extends Y {
-  static [I] = "PgPointTuple";
-  getSQLType() {
-    return "point";
-  }
-  mapFromDriverValue(e) {
-    if (typeof e == "string") {
-      const [t, r] = e.slice(1, -1).split(",");
-      return [Number.parseFloat(t), Number.parseFloat(r)];
-    }
-    return [e.x, e.y];
-  }
-  mapToDriverValue(e) {
-    return `(${e[0]},${e[1]})`;
-  }
-}
-class Xo extends te {
-  static [I] = "PgPointObjectBuilder";
-  constructor(e) {
-    super(e, "json", "PgPointObject");
-  }
-  /** @internal */
-  build(e) {
-    return new ea(
-      e,
-      this.config
-    );
-  }
-}
-class ea extends Y {
-  static [I] = "PgPointObject";
-  getSQLType() {
-    return "point";
-  }
-  mapFromDriverValue(e) {
-    if (typeof e == "string") {
-      const [t, r] = e.slice(1, -1).split(",");
-      return { x: Number.parseFloat(t), y: Number.parseFloat(r) };
-    }
-    return e;
-  }
-  mapToDriverValue(e) {
-    return `(${e.x},${e.y})`;
-  }
-}
-function ta(n, e) {
-  const { name: t, config: r } = fe(n, e);
-  return !r?.mode || r.mode === "tuple" ? new Yo(t) : new Xo(t);
-}
-function ra(n) {
-  const e = [];
-  for (let t = 0; t < n.length; t += 2)
-    e.push(Number.parseInt(n.slice(t, t + 2), 16));
-  return new Uint8Array(e);
-}
-function zr(n, e) {
-  const t = new ArrayBuffer(8), r = new DataView(t);
-  for (let i = 0; i < 8; i++)
-    r.setUint8(i, n[e + i]);
-  return r.getFloat64(0, !0);
-}
-function ns(n) {
-  const e = ra(n);
-  let t = 0;
-  const r = e[t];
-  t += 1;
-  const i = new DataView(e.buffer), s = i.getUint32(t, r === 1);
-  if (t += 4, s & 536870912 && (i.getUint32(t, r === 1), t += 4), (s & 65535) === 1) {
-    const u = zr(e, t);
-    t += 8;
-    const a = zr(e, t);
-    return t += 8, [u, a];
-  }
-  throw new Error("Unsupported geometry type");
-}
-class na extends te {
-  static [I] = "PgGeometryBuilder";
-  constructor(e) {
-    super(e, "array", "PgGeometry");
-  }
-  /** @internal */
-  build(e) {
-    return new sa(
-      e,
-      this.config
-    );
-  }
-}
-class sa extends Y {
-  static [I] = "PgGeometry";
-  getSQLType() {
-    return "geometry(point)";
-  }
-  mapFromDriverValue(e) {
-    return ns(e);
-  }
-  mapToDriverValue(e) {
-    return `point(${e[0]} ${e[1]})`;
-  }
-}
-class ia extends te {
-  static [I] = "PgGeometryObjectBuilder";
-  constructor(e) {
-    super(e, "json", "PgGeometryObject");
-  }
-  /** @internal */
-  build(e) {
-    return new oa(
-      e,
-      this.config
-    );
-  }
-}
-class oa extends Y {
-  static [I] = "PgGeometryObject";
-  getSQLType() {
-    return "geometry(point)";
-  }
-  mapFromDriverValue(e) {
-    const t = ns(e);
-    return { x: t[0], y: t[1] };
-  }
-  mapToDriverValue(e) {
-    return `point(${e.x} ${e.y})`;
-  }
-}
-function aa(n, e) {
-  const { name: t, config: r } = fe(n, e);
-  return !r?.mode || r.mode === "tuple" ? new na(t) : new ia(t);
-}
-class ua extends te {
-  static [I] = "PgRealBuilder";
-  constructor(e, t) {
-    super(e, "number", "PgReal"), this.config.length = t;
-  }
-  /** @internal */
-  build(e) {
-    return new la(e, this.config);
-  }
-}
-class la extends Y {
-  static [I] = "PgReal";
-  constructor(e, t) {
-    super(e, t);
-  }
-  getSQLType() {
-    return "real";
-  }
-  mapFromDriverValue = (e) => typeof e == "string" ? Number.parseFloat(e) : e;
-}
-function ca(n) {
-  return new ua(n ?? "");
-}
-class ha extends te {
-  static [I] = "PgSerialBuilder";
-  constructor(e) {
-    super(e, "number", "PgSerial"), this.config.hasDefault = !0, this.config.notNull = !0;
-  }
-  /** @internal */
-  build(e) {
-    return new fa(e, this.config);
-  }
-}
-class fa extends Y {
-  static [I] = "PgSerial";
-  getSQLType() {
-    return "serial";
-  }
-}
-function da(n) {
-  return new ha(n ?? "");
-}
-class pa extends kt {
-  static [I] = "PgSmallIntBuilder";
-  constructor(e) {
-    super(e, "number", "PgSmallInt");
-  }
-  /** @internal */
-  build(e) {
-    return new ga(e, this.config);
-  }
-}
-class ga extends Y {
-  static [I] = "PgSmallInt";
-  getSQLType() {
-    return "smallint";
-  }
-  mapFromDriverValue = (e) => typeof e == "string" ? Number(e) : e;
-}
-function ma(n) {
-  return new pa(n ?? "");
-}
-class ya extends te {
-  static [I] = "PgSmallSerialBuilder";
-  constructor(e) {
-    super(e, "number", "PgSmallSerial"), this.config.hasDefault = !0, this.config.notNull = !0;
-  }
-  /** @internal */
-  build(e) {
-    return new wa(
-      e,
-      this.config
-    );
-  }
-}
-class wa extends Y {
-  static [I] = "PgSmallSerial";
-  getSQLType() {
-    return "smallserial";
-  }
-}
-function ba(n) {
-  return new ya(n ?? "");
-}
-class va extends te {
-  static [I] = "PgTextBuilder";
-  constructor(e, t) {
-    super(e, "string", "PgText"), this.config.enumValues = t.enum;
-  }
-  /** @internal */
-  build(e) {
-    return new Sa(e, this.config);
-  }
-}
-class Sa extends Y {
-  static [I] = "PgText";
-  enumValues = this.config.enumValues;
-  getSQLType() {
-    return "text";
-  }
-}
-function Pa(n, e = {}) {
-  const { name: t, config: r } = fe(n, e);
-  return new va(t, r);
-}
-class Ea extends ut {
-  constructor(e, t, r) {
-    super(e, "string", "PgTime"), this.withTimezone = t, this.precision = r, this.config.withTimezone = t, this.config.precision = r;
-  }
-  static [I] = "PgTimeBuilder";
-  /** @internal */
-  build(e) {
-    return new ss(e, this.config);
-  }
-}
-class ss extends Y {
-  static [I] = "PgTime";
-  withTimezone;
-  precision;
-  constructor(e, t) {
-    super(e, t), this.withTimezone = t.withTimezone, this.precision = t.precision;
-  }
-  getSQLType() {
-    return `time${this.precision === void 0 ? "" : `(${this.precision})`}${this.withTimezone ? " with time zone" : ""}`;
-  }
-}
-function _a(n, e = {}) {
-  const { name: t, config: r } = fe(n, e);
-  return new Ea(t, r.withTimezone ?? !1, r.precision);
-}
-class Ca extends ut {
-  static [I] = "PgTimestampBuilder";
-  constructor(e, t, r) {
-    super(e, "date", "PgTimestamp"), this.config.withTimezone = t, this.config.precision = r;
-  }
-  /** @internal */
-  build(e) {
-    return new is(e, this.config);
-  }
-}
-class is extends Y {
-  static [I] = "PgTimestamp";
-  withTimezone;
-  precision;
-  constructor(e, t) {
-    super(e, t), this.withTimezone = t.withTimezone, this.precision = t.precision;
-  }
-  getSQLType() {
-    return `timestamp${this.precision === void 0 ? "" : ` (${this.precision})`}${this.withTimezone ? " with time zone" : ""}`;
-  }
-  mapFromDriverValue = (e) => new Date(this.withTimezone ? e : e + "+0000");
-  mapToDriverValue = (e) => e.toISOString();
-}
-class Ta extends ut {
-  static [I] = "PgTimestampStringBuilder";
-  constructor(e, t, r) {
-    super(e, "string", "PgTimestampString"), this.config.withTimezone = t, this.config.precision = r;
-  }
-  /** @internal */
-  build(e) {
-    return new os(
-      e,
-      this.config
-    );
-  }
-}
-class os extends Y {
-  static [I] = "PgTimestampString";
-  withTimezone;
-  precision;
-  constructor(e, t) {
-    super(e, t), this.withTimezone = t.withTimezone, this.precision = t.precision;
-  }
-  getSQLType() {
-    return `timestamp${this.precision === void 0 ? "" : `(${this.precision})`}${this.withTimezone ? " with time zone" : ""}`;
-  }
-}
-function Pt(n, e = {}) {
-  const { name: t, config: r } = fe(n, e);
-  return r?.mode === "string" ? new Ta(t, r.withTimezone ?? !1, r.precision) : new Ca(t, r?.withTimezone ?? !1, r?.precision);
-}
-class Aa extends te {
-  static [I] = "PgUUIDBuilder";
-  constructor(e) {
-    super(e, "string", "PgUUID");
-  }
-  /**
-   * Adds `default gen_random_uuid()` to the column definition.
-   */
-  defaultRandom() {
-    return this.default(A`gen_random_uuid()`);
-  }
-  /** @internal */
-  build(e) {
-    return new as(e, this.config);
-  }
-}
-class as extends Y {
-  static [I] = "PgUUID";
-  getSQLType() {
-    return "uuid";
-  }
-}
-function us(n) {
-  return new Aa(n ?? "");
-}
-class xa extends te {
-  static [I] = "PgVarcharBuilder";
-  constructor(e, t) {
-    super(e, "string", "PgVarchar"), this.config.length = t.length, this.config.enumValues = t.enum;
-  }
-  /** @internal */
-  build(e) {
-    return new Ba(
-      e,
-      this.config
-    );
-  }
-}
-class Ba extends Y {
-  static [I] = "PgVarchar";
-  length = this.config.length;
-  enumValues = this.config.enumValues;
-  getSQLType() {
-    return this.length === void 0 ? "varchar" : `varchar(${this.length})`;
-  }
-}
-function st(n, e = {}) {
-  const { name: t, config: r } = fe(n, e);
-  return new xa(t, r);
-}
-class Na extends te {
-  static [I] = "PgBinaryVectorBuilder";
-  constructor(e, t) {
-    super(e, "string", "PgBinaryVector"), this.config.dimensions = t.dimensions;
-  }
-  /** @internal */
-  build(e) {
-    return new Ia(
-      e,
-      this.config
-    );
-  }
-}
-class Ia extends Y {
-  static [I] = "PgBinaryVector";
-  dimensions = this.config.dimensions;
-  getSQLType() {
-    return `bit(${this.dimensions})`;
-  }
-}
-function La(n, e) {
-  const { name: t, config: r } = fe(n, e);
-  return new Na(t, r);
-}
-class Oa extends te {
-  static [I] = "PgHalfVectorBuilder";
-  constructor(e, t) {
-    super(e, "array", "PgHalfVector"), this.config.dimensions = t.dimensions;
-  }
-  /** @internal */
-  build(e) {
-    return new Ra(
-      e,
-      this.config
-    );
-  }
-}
-class Ra extends Y {
-  static [I] = "PgHalfVector";
-  dimensions = this.config.dimensions;
-  getSQLType() {
-    return `halfvec(${this.dimensions})`;
-  }
-  mapToDriverValue(e) {
-    return JSON.stringify(e);
-  }
-  mapFromDriverValue(e) {
-    return e.slice(1, -1).split(",").map((t) => Number.parseFloat(t));
-  }
-}
-function Ma(n, e) {
-  const { name: t, config: r } = fe(n, e);
-  return new Oa(t, r);
-}
-class Da extends te {
-  static [I] = "PgSparseVectorBuilder";
-  constructor(e, t) {
-    super(e, "string", "PgSparseVector"), this.config.dimensions = t.dimensions;
-  }
-  /** @internal */
-  build(e) {
-    return new $a(
-      e,
-      this.config
-    );
-  }
-}
-class $a extends Y {
-  static [I] = "PgSparseVector";
-  dimensions = this.config.dimensions;
-  getSQLType() {
-    return `sparsevec(${this.dimensions})`;
-  }
-}
-function Qa(n, e) {
-  const { name: t, config: r } = fe(n, e);
-  return new Da(t, r);
-}
-class ka extends te {
-  static [I] = "PgVectorBuilder";
-  constructor(e, t) {
-    super(e, "array", "PgVector"), this.config.dimensions = t.dimensions;
-  }
-  /** @internal */
-  build(e) {
-    return new qa(
-      e,
-      this.config
-    );
-  }
-}
-class qa extends Y {
-  static [I] = "PgVector";
-  dimensions = this.config.dimensions;
-  getSQLType() {
-    return `vector(${this.dimensions})`;
-  }
-  mapToDriverValue(e) {
-    return JSON.stringify(e);
-  }
-  mapFromDriverValue(e) {
-    return e.slice(1, -1).split(",").map((t) => Number.parseFloat(t));
-  }
-}
-function Fa(n, e) {
-  const { name: t, config: r } = fe(n, e);
-  return new ka(t, r);
-}
-function ja() {
-  return {
-    bigint: Zi,
-    bigserial: no,
-    boolean: oo,
-    char: lo,
-    cidr: fo,
-    customType: mo,
-    date: Xn,
-    doublePrecision: So,
-    inet: _o,
-    integer: De,
-    interval: Bo,
-    json: Io,
-    jsonb: Oo,
-    line: Qo,
-    macaddr: Fo,
-    macaddr8: zo,
-    numeric: Jo,
-    point: ta,
-    geometry: aa,
-    real: ca,
-    serial: da,
-    smallint: ma,
-    smallserial: ba,
-    text: Pa,
-    time: _a,
-    timestamp: Pt,
-    uuid: us,
-    varchar: st,
-    bit: La,
-    halfvec: Ma,
-    sparsevec: Qa,
-    vector: Fa
-  };
-}
-const lr = Symbol.for("drizzle:PgInlineForeignKeys"), Vr = Symbol.for("drizzle:EnableRLS");
-class ve extends U {
-  static [I] = "PgTable";
-  /** @internal */
-  static Symbol = Object.assign({}, U.Symbol, {
-    InlineForeignKeys: lr,
-    EnableRLS: Vr
-  });
-  /**@internal */
-  [lr] = [];
-  /** @internal */
-  [Vr] = !1;
-  /** @internal */
-  [U.Symbol.ExtraConfigBuilder] = void 0;
-  /** @internal */
-  [U.Symbol.ExtraConfigColumns] = {};
-}
-function Ua(n, e, t, r, i = n) {
-  const s = new ve(n, r, i), u = typeof e == "function" ? e(ja()) : e, a = Object.fromEntries(
-    Object.entries(u).map(([f, b]) => {
-      const m = b;
-      m.setName(f);
-      const v = m.build(s);
-      return s[lr].push(...m.buildForeignKeys(v, s)), [f, v];
-    })
-  ), d = Object.fromEntries(
-    Object.entries(u).map(([f, b]) => {
-      const m = b;
-      m.setName(f);
-      const v = m.buildExtraConfigColumn(s);
-      return [f, v];
-    })
-  ), y = Object.assign(s, a);
-  return y[U.Symbol.Columns] = a, y[U.Symbol.ExtraConfigColumns] = d, t && (y[ve.Symbol.ExtraConfigBuilder] = t), Object.assign(y, {
-    enableRLS: () => (y[ve.Symbol.EnableRLS] = !0, y)
-  });
-}
-const lt = (n, e, t) => Ua(n, e, t, void 0);
-class za {
-  static [I] = "PgPrimaryKeyBuilder";
-  /** @internal */
-  columns;
-  /** @internal */
-  name;
-  constructor(e, t) {
-    this.columns = e, this.name = t;
-  }
-  /** @internal */
-  build(e) {
-    return new Va(e, this.columns, this.name);
-  }
-}
-class Va {
-  constructor(e, t, r) {
-    this.table = e, this.columns = t, this.name = r;
-  }
-  static [I] = "PgPrimaryKey";
-  columns;
-  name;
-  getName() {
-    return this.name ?? `${this.table[ve.Symbol.Name]}_${this.columns.map((e) => e.name).join("_")}_pk`;
-  }
-}
-function me(n, e) {
-  return $i(e) && !Wn(n) && !Q(n, Le) && !Q(n, Ke) && !Q(n, ce) && !Q(n, U) && !Q(n, Fe) ? new Le(n, e) : n;
-}
-const He = (n, e) => A`${n} = ${me(e, n)}`, Wa = (n, e) => A`${n} <> ${me(e, n)}`;
-function At(...n) {
-  const e = n.filter(
-    (t) => t !== void 0
-  );
-  if (e.length !== 0)
-    return e.length === 1 ? new z(e) : new z([
-      new pe("("),
-      A.join(e, new pe(" and ")),
-      new pe(")")
-    ]);
-}
-function Ka(...n) {
-  const e = n.filter(
-    (t) => t !== void 0
-  );
-  if (e.length !== 0)
-    return e.length === 1 ? new z(e) : new z([
-      new pe("("),
-      A.join(e, new pe(" or ")),
-      new pe(")")
-    ]);
-}
-function Ha(n) {
-  return A`not ${n}`;
-}
-const Ga = (n, e) => A`${n} > ${me(e, n)}`, Ja = (n, e) => A`${n} >= ${me(e, n)}`, Ya = (n, e) => A`${n} < ${me(e, n)}`, Za = (n, e) => A`${n} <= ${me(e, n)}`;
-function Xa(n, e) {
-  return Array.isArray(e) ? e.length === 0 ? A`false` : A`${n} in ${e.map((t) => me(t, n))}` : A`${n} in ${me(e, n)}`;
-}
-function eu(n, e) {
-  return Array.isArray(e) ? e.length === 0 ? A`true` : A`${n} not in ${e.map((t) => me(t, n))}` : A`${n} not in ${me(e, n)}`;
-}
-function tu(n) {
-  return A`${n} is null`;
-}
-function ru(n) {
-  return A`${n} is not null`;
-}
-function nu(n) {
-  return A`exists ${n}`;
-}
-function su(n) {
-  return A`not exists ${n}`;
-}
-function iu(n, e, t) {
-  return A`${n} between ${me(e, n)} and ${me(
-    t,
-    n
-  )}`;
-}
-function ou(n, e, t) {
-  return A`${n} not between ${me(
-    e,
-    n
-  )} and ${me(t, n)}`;
-}
-function au(n, e) {
-  return A`${n} like ${e}`;
-}
-function uu(n, e) {
-  return A`${n} not like ${e}`;
-}
-function lu(n, e) {
-  return A`${n} ilike ${e}`;
-}
-function cu(n, e) {
-  return A`${n} not ilike ${e}`;
-}
-function ls(n) {
-  return A`${n} asc`;
-}
-function hu(n) {
-  return A`${n} desc`;
-}
-class cs {
-  constructor(e, t, r) {
-    this.sourceTable = e, this.referencedTable = t, this.relationName = r, this.referencedTableName = t[U.Symbol.Name];
-  }
-  static [I] = "Relation";
-  referencedTableName;
-  fieldName;
-}
-class fu {
-  constructor(e, t) {
-    this.table = e, this.config = t;
-  }
-  static [I] = "Relations";
-}
-class $e extends cs {
-  constructor(e, t, r, i) {
-    super(e, t, r?.relationName), this.config = r, this.isNullable = i;
-  }
-  static [I] = "One";
-  withFieldName(e) {
-    const t = new $e(
-      this.sourceTable,
-      this.referencedTable,
-      this.config,
-      this.isNullable
-    );
-    return t.fieldName = e, t;
-  }
-}
-class qt extends cs {
-  constructor(e, t, r) {
-    super(e, t, r?.relationName), this.config = r;
-  }
-  static [I] = "Many";
-  withFieldName(e) {
-    const t = new qt(
-      this.sourceTable,
-      this.referencedTable,
-      this.config
-    );
-    return t.fieldName = e, t;
-  }
-}
-function du() {
-  return {
-    and: At,
-    between: iu,
-    eq: He,
-    exists: nu,
-    gt: Ga,
-    gte: Ja,
-    ilike: lu,
-    inArray: Xa,
-    isNull: tu,
-    isNotNull: ru,
-    like: au,
-    lt: Ya,
-    lte: Za,
-    ne: Wa,
-    not: Ha,
-    notBetween: ou,
-    notExists: su,
-    notLike: uu,
-    notIlike: cu,
-    notInArray: eu,
-    or: Ka,
-    sql: A
-  };
-}
-function pu() {
-  return {
-    sql: A,
-    asc: ls,
-    desc: hu
-  };
-}
-function gu(n, e) {
-  Object.keys(n).length === 1 && "default" in n && !Q(n.default, U) && (n = n.default);
-  const t = {}, r = {}, i = {};
-  for (const [s, u] of Object.entries(n))
-    if (Q(u, U)) {
-      const a = nt(u), d = r[a];
-      t[a] = s, i[s] = {
-        tsName: s,
-        dbName: u[U.Symbol.Name],
-        schema: u[U.Symbol.Schema],
-        columns: u[U.Symbol.Columns],
-        relations: d?.relations ?? {},
-        primaryKey: d?.primaryKey ?? []
-      };
-      for (const f of Object.values(
-        u[U.Symbol.Columns]
-      ))
-        f.primary && i[s].primaryKey.push(f);
-      const y = u[U.Symbol.ExtraConfigBuilder]?.(u[U.Symbol.ExtraConfigColumns]);
-      if (y)
-        for (const f of Object.values(y))
-          Q(f, za) && i[s].primaryKey.push(...f.columns);
-    } else if (Q(u, fu)) {
-      const a = nt(u.table), d = t[a], y = u.config(
-        e(u.table)
-      );
-      let f;
-      for (const [b, m] of Object.entries(y))
-        if (d) {
-          const v = i[d];
-          v.relations[b] = m;
-        } else
-          a in r || (r[a] = {
-            relations: {},
-            primaryKey: f
-          }), r[a].relations[b] = m;
-    }
-  return { tables: i, tableNamesMap: t };
-}
-function mu(n) {
-  return function(t, r) {
-    return new $e(
-      n,
-      t,
-      r,
-      r?.fields.reduce((i, s) => i && s.notNull, !0) ?? !1
-    );
-  };
-}
-function yu(n) {
-  return function(t, r) {
-    return new qt(n, t, r);
-  };
-}
-function wu(n, e, t) {
-  if (Q(t, $e) && t.config)
-    return {
-      fields: t.config.fields,
-      references: t.config.references
-    };
-  const r = e[nt(t.referencedTable)];
-  if (!r)
-    throw new Error(
-      `Table "${t.referencedTable[U.Symbol.Name]}" not found in schema`
-    );
-  const i = n[r];
-  if (!i)
-    throw new Error(`Table "${r}" not found in schema`);
-  const s = t.sourceTable, u = e[nt(s)];
-  if (!u)
-    throw new Error(
-      `Table "${s[U.Symbol.Name]}" not found in schema`
-    );
-  const a = [];
-  for (const d of Object.values(
-    i.relations
-  ))
-    (t.relationName && t !== d && d.relationName === t.relationName || !t.relationName && d.referencedTable === t.sourceTable) && a.push(d);
-  if (a.length > 1)
-    throw t.relationName ? new Error(
-      `There are multiple relations with name "${t.relationName}" in table "${r}"`
-    ) : new Error(
-      `There are multiple relations between "${r}" and "${t.sourceTable[U.Symbol.Name]}". Please specify relation name`
-    );
-  if (a[0] && Q(a[0], $e) && a[0].config)
-    return {
-      fields: a[0].config.references,
-      references: a[0].config.fields
-    };
-  throw new Error(
-    `There is not enough information to infer relation "${u}.${t.fieldName}"`
-  );
-}
-function bu(n) {
-  return {
-    one: mu(n),
-    many: yu(n)
-  };
-}
-function cr(n, e, t, r, i = (s) => s) {
-  const s = {};
-  for (const [
-    u,
-    a
-  ] of r.entries())
-    if (a.isJson) {
-      const d = e.relations[a.tsKey], y = t[u], f = typeof y == "string" ? JSON.parse(y) : y;
-      s[a.tsKey] = Q(d, $e) ? f && cr(
-        n,
-        n[a.relationTableTsKey],
-        f,
-        a.selection,
-        i
-      ) : f.map(
-        (b) => cr(
-          n,
-          n[a.relationTableTsKey],
-          b,
-          a.selection,
-          i
-        )
-      );
-    } else {
-      const d = i(t[u]), y = a.field;
-      let f;
-      Q(y, ce) ? f = y : Q(y, z) ? f = y.decoder : f = y.sql.decoder, s[a.tsKey] = d === null ? null : f.mapFromDriverValue(d);
-    }
-  return s;
-}
-class hs extends Fe {
-  static [I] = "PgViewBase";
-}
-class Et {
-  static [I] = "PgDialect";
-  /** @internal */
-  casing;
-  constructor(e) {
-    this.casing = new Wi(e?.casing);
-  }
-  async migrate(e, t, r) {
-    const i = typeof r == "string" ? "__drizzle_migrations" : r.migrationsTable ?? "__drizzle_migrations", s = typeof r == "string" ? "drizzle" : r.migrationsSchema ?? "drizzle", u = A`
-			CREATE TABLE IF NOT EXISTS ${A.identifier(s)}.${A.identifier(i)} (
-				id SERIAL PRIMARY KEY,
-				hash text NOT NULL,
-				created_at bigint
-			)
-		`;
-    await t.execute(A`CREATE SCHEMA IF NOT EXISTS ${A.identifier(s)}`), await t.execute(u);
-    const d = (await t.all(
-      A`select id, hash, created_at from ${A.identifier(s)}.${A.identifier(i)} order by created_at desc limit 1`
-    ))[0];
-    await t.transaction(async (y) => {
-      for await (const f of e)
-        if (!d || Number(d.created_at) < f.folderMillis) {
-          for (const b of f.sql)
-            await y.execute(A.raw(b));
-          await y.execute(
-            A`insert into ${A.identifier(s)}.${A.identifier(i)} ("hash", "created_at") values(${f.hash}, ${f.folderMillis})`
-          );
-        }
-    });
-  }
-  escapeName(e) {
-    return `"${e}"`;
-  }
-  escapeParam(e) {
-    return `$${e + 1}`;
-  }
-  escapeString(e) {
-    return `'${e.replace(/'/g, "''")}'`;
-  }
-  buildWithCTE(e) {
-    if (!e?.length)
-      return;
-    const t = [A`with `];
-    for (const [r, i] of e.entries())
-      t.push(A`${A.identifier(i._.alias)} as (${i._.sql})`), r < e.length - 1 && t.push(A`, `);
-    return t.push(A` `), A.join(t);
-  }
-  buildDeleteQuery({ table: e, where: t, returning: r, withList: i }) {
-    const s = this.buildWithCTE(i), u = r ? A` returning ${this.buildSelection(r, { isSingleTable: !0 })}` : void 0, a = t ? A` where ${t}` : void 0;
-    return A`${s}delete from ${e}${a}${u}`;
-  }
-  buildUpdateSet(e, t) {
-    const r = e[U.Symbol.Columns], i = Object.keys(r).filter(
-      (u) => t[u] !== void 0 || r[u]?.onUpdateFn !== void 0
-    ), s = i.length;
-    return A.join(i.flatMap((u, a) => {
-      const d = r[u], y = t[u] ?? A.param(d.onUpdateFn(), d), f = A`${A.identifier(this.casing.getColumnCasing(d))} = ${y}`;
-      return a < s - 1 ? [f, A.raw(", ")] : [f];
-    }));
-  }
-  buildUpdateQuery({ table: e, set: t, where: r, returning: i, withList: s, from: u, joins: a }) {
-    const d = this.buildWithCTE(s), y = e[ve.Symbol.Name], f = e[ve.Symbol.Schema], b = e[ve.Symbol.OriginalName], m = y === b ? void 0 : y, v = A`${f ? A`${A.identifier(f)}.` : void 0}${A.identifier(b)}${m && A` ${A.identifier(m)}`}`, c = this.buildUpdateSet(e, t), h = u && A.join([A.raw(" from "), this.buildFromTable(u)]), w = this.buildJoins(a), S = i ? A` returning ${this.buildSelection(i, { isSingleTable: !u })}` : void 0, _ = r ? A` where ${r}` : void 0;
-    return A`${d}update ${v} set ${c}${h}${w}${_}${S}`;
-  }
-  /**
-   * Builds selection SQL with provided fields/expressions
-   *
-   * Examples:
-   *
-   * `select <selection> from`
-   *
-   * `insert ... returning <selection>`
-   *
-   * If `isSingleTable` is true, then columns won't be prefixed with table name
-   */
-  buildSelection(e, { isSingleTable: t = !1 } = {}) {
-    const r = e.length, i = e.flatMap(({ field: s }, u) => {
-      const a = [];
-      if (Q(s, z.Aliased) && s.isSelectionField)
-        a.push(A.identifier(s.fieldAlias));
-      else if (Q(s, z.Aliased) || Q(s, z)) {
-        const d = Q(s, z.Aliased) ? s.sql : s;
-        t ? a.push(
-          new z(
-            d.queryChunks.map((y) => Q(y, Y) ? A.identifier(this.casing.getColumnCasing(y)) : y)
-          )
-        ) : a.push(d), Q(s, z.Aliased) && a.push(A` as ${A.identifier(s.fieldAlias)}`);
-      } else
-        Q(s, ce) && (t ? a.push(A.identifier(this.casing.getColumnCasing(s))) : a.push(s));
-      return u < r - 1 && a.push(A`, `), a;
-    });
-    return A.join(i);
-  }
-  buildJoins(e) {
-    if (!e || e.length === 0)
-      return;
-    const t = [];
-    for (const [r, i] of e.entries()) {
-      r === 0 && t.push(A` `);
-      const s = i.table, u = i.lateral ? A` lateral` : void 0, a = i.on ? A` on ${i.on}` : void 0;
-      if (Q(s, ve)) {
-        const d = s[ve.Symbol.Name], y = s[ve.Symbol.Schema], f = s[ve.Symbol.OriginalName], b = d === f ? void 0 : i.alias;
-        t.push(
-          A`${A.raw(i.joinType)} join${u} ${y ? A`${A.identifier(y)}.` : void 0}${A.identifier(f)}${b && A` ${A.identifier(b)}`}${a}`
-        );
-      } else if (Q(s, Fe)) {
-        const d = s[ue].name, y = s[ue].schema, f = s[ue].originalName, b = d === f ? void 0 : i.alias;
-        t.push(
-          A`${A.raw(i.joinType)} join${u} ${y ? A`${A.identifier(y)}.` : void 0}${A.identifier(f)}${b && A` ${A.identifier(b)}`}${a}`
-        );
-      } else
-        t.push(
-          A`${A.raw(i.joinType)} join${u} ${s}${a}`
-        );
-      r < e.length - 1 && t.push(A` `);
-    }
-    return A.join(t);
-  }
-  buildFromTable(e) {
-    if (Q(e, U) && e[U.Symbol.IsAlias]) {
-      let t = A`${A.identifier(e[U.Symbol.OriginalName])}`;
-      return e[U.Symbol.Schema] && (t = A`${A.identifier(e[U.Symbol.Schema])}.${t}`), A`${t} ${A.identifier(e[U.Symbol.Name])}`;
-    }
-    return e;
-  }
-  buildSelectQuery({
-    withList: e,
-    fields: t,
-    fieldsFlat: r,
-    where: i,
-    having: s,
-    table: u,
-    joins: a,
-    orderBy: d,
-    groupBy: y,
-    limit: f,
-    offset: b,
-    lockingClause: m,
-    distinct: v,
-    setOperators: c
-  }) {
-    const h = r ?? Me(t);
-    for (const O of h)
-      if (Q(O.field, ce) && Ne(O.field.table) !== (Q(u, _e) ? u._.alias : Q(u, hs) ? u[ue].name : Q(u, z) ? void 0 : Ne(u)) && !((q) => a?.some(
-        ({ alias: W }) => W === (q[U.Symbol.IsAlias] ? Ne(q) : q[U.Symbol.BaseName])
-      ))(O.field.table)) {
-        const q = Ne(O.field.table);
-        throw new Error(
-          `Your "${O.path.join("->")}" field references a column "${q}"."${O.field.name}", but the table "${q}" is not part of the query! Did you forget to join it?`
-        );
-      }
-    const w = !a || a.length === 0, S = this.buildWithCTE(e);
-    let _;
-    v && (_ = v === !0 ? A` distinct` : A` distinct on (${A.join(v.on, A`, `)})`);
-    const T = this.buildSelection(h, { isSingleTable: w }), L = this.buildFromTable(u), M = this.buildJoins(a), P = i ? A` where ${i}` : void 0, B = s ? A` having ${s}` : void 0;
-    let x;
-    d && d.length > 0 && (x = A` order by ${A.join(d, A`, `)}`);
-    let E;
-    y && y.length > 0 && (E = A` group by ${A.join(y, A`, `)}`);
-    const D = typeof f == "object" || typeof f == "number" && f >= 0 ? A` limit ${f}` : void 0, R = b ? A` offset ${b}` : void 0, F = A.empty();
-    if (m) {
-      const O = A` for ${A.raw(m.strength)}`;
-      m.config.of && O.append(
-        A` of ${A.join(
-          Array.isArray(m.config.of) ? m.config.of : [m.config.of],
-          A`, `
-        )}`
-      ), m.config.noWait ? O.append(A` nowait`) : m.config.skipLocked && O.append(A` skip locked`), F.append(O);
-    }
-    const j = A`${S}select${_} ${T} from ${L}${M}${P}${E}${B}${x}${D}${R}${F}`;
-    return c.length > 0 ? this.buildSetOperations(j, c) : j;
-  }
-  buildSetOperations(e, t) {
-    const [r, ...i] = t;
-    if (!r)
-      throw new Error("Cannot pass undefined values to any set operator");
-    return i.length === 0 ? this.buildSetOperationQuery({ leftSelect: e, setOperator: r }) : this.buildSetOperations(
-      this.buildSetOperationQuery({ leftSelect: e, setOperator: r }),
-      i
-    );
-  }
-  buildSetOperationQuery({
-    leftSelect: e,
-    setOperator: { type: t, isAll: r, rightSelect: i, limit: s, orderBy: u, offset: a }
-  }) {
-    const d = A`(${e.getSQL()}) `, y = A`(${i.getSQL()})`;
-    let f;
-    if (u && u.length > 0) {
-      const c = [];
-      for (const h of u)
-        if (Q(h, Y))
-          c.push(A.identifier(h.name));
-        else if (Q(h, z)) {
-          for (let w = 0; w < h.queryChunks.length; w++) {
-            const S = h.queryChunks[w];
-            Q(S, Y) && (h.queryChunks[w] = A.identifier(S.name));
-          }
-          c.push(A`${h}`);
-        } else
-          c.push(A`${h}`);
-      f = A` order by ${A.join(c, A`, `)} `;
-    }
-    const b = typeof s == "object" || typeof s == "number" && s >= 0 ? A` limit ${s}` : void 0, m = A.raw(`${t} ${r ? "all " : ""}`), v = a ? A` offset ${a}` : void 0;
-    return A`${d}${m}${y}${f}${b}${v}`;
-  }
-  buildInsertQuery({ table: e, values: t, onConflict: r, returning: i, withList: s, select: u, overridingSystemValue_: a }) {
-    const d = [], y = e[U.Symbol.Columns], f = Object.entries(y).filter(([S, _]) => !_.shouldDisableInsert()), b = f.map(
-      ([, S]) => A.identifier(this.casing.getColumnCasing(S))
-    );
-    if (u) {
-      const S = t;
-      Q(S, z) ? d.push(S) : d.push(S.getSQL());
-    } else {
-      const S = t;
-      d.push(A.raw("values "));
-      for (const [_, T] of S.entries()) {
-        const L = [];
-        for (const [M, P] of f) {
-          const B = T[M];
-          if (B === void 0 || Q(B, Le) && B.value === void 0)
-            if (P.defaultFn !== void 0) {
-              const x = P.defaultFn(), E = Q(x, z) ? x : A.param(x, P);
-              L.push(E);
-            } else if (!P.default && P.onUpdateFn !== void 0) {
-              const x = P.onUpdateFn(), E = Q(x, z) ? x : A.param(x, P);
-              L.push(E);
-            } else
-              L.push(A`default`);
-          else
-            L.push(B);
-        }
-        d.push(L), _ < S.length - 1 && d.push(A`, `);
-      }
-    }
-    const m = this.buildWithCTE(s), v = A.join(d), c = i ? A` returning ${this.buildSelection(i, { isSingleTable: !0 })}` : void 0, h = r ? A` on conflict ${r}` : void 0, w = a === !0 ? A`overriding system value ` : void 0;
-    return A`${m}insert into ${e} ${b} ${w}${v}${h}${c}`;
-  }
-  buildRefreshMaterializedViewQuery({ view: e, concurrently: t, withNoData: r }) {
-    const i = t ? A` concurrently` : void 0, s = r ? A` with no data` : void 0;
-    return A`refresh materialized view${i} ${e}${s}`;
-  }
-  prepareTyping(e) {
-    return Q(e, ts) || Q(e, es) ? "json" : Q(e, rs) ? "decimal" : Q(e, ss) ? "time" : Q(e, is) || Q(e, os) ? "timestamp" : Q(e, Yn) || Q(e, Zn) ? "date" : Q(e, as) ? "uuid" : "none";
-  }
-  sqlToQuery(e, t) {
-    return e.toQuery({
-      casing: this.casing,
-      escapeName: this.escapeName,
-      escapeParam: this.escapeParam,
-      escapeString: this.escapeString,
-      prepareTyping: this.prepareTyping,
-      invokeSource: t
-    });
-  }
-  // buildRelationalQueryWithPK({
-  // 	fullSchema,
-  // 	schema,
-  // 	tableNamesMap,
-  // 	table,
-  // 	tableConfig,
-  // 	queryConfig: config,
-  // 	tableAlias,
-  // 	isRoot = false,
-  // 	joinOn,
-  // }: {
-  // 	fullSchema: Record<string, unknown>;
-  // 	schema: TablesRelationalConfig;
-  // 	tableNamesMap: Record<string, string>;
-  // 	table: PgTable;
-  // 	tableConfig: TableRelationalConfig;
-  // 	queryConfig: true | DBQueryConfig<'many', true>;
-  // 	tableAlias: string;
-  // 	isRoot?: boolean;
-  // 	joinOn?: SQL;
-  // }): BuildRelationalQueryResult<PgTable, PgColumn> {
-  // 	// For { "<relation>": true }, return a table with selection of all columns
-  // 	if (config === true) {
-  // 		const selectionEntries = Object.entries(tableConfig.columns);
-  // 		const selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = selectionEntries.map((
-  // 			[key, value],
-  // 		) => ({
-  // 			dbKey: value.name,
-  // 			tsKey: key,
-  // 			field: value as PgColumn,
-  // 			relationTableTsKey: undefined,
-  // 			isJson: false,
-  // 			selection: [],
-  // 		}));
-  // 		return {
-  // 			tableTsKey: tableConfig.tsName,
-  // 			sql: table,
-  // 			selection,
-  // 		};
-  // 	}
-  // 	// let selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = [];
-  // 	// let selectionForBuild = selection;
-  // 	const aliasedColumns = Object.fromEntries(
-  // 		Object.entries(tableConfig.columns).map(([key, value]) => [key, aliasedTableColumn(value, tableAlias)]),
-  // 	);
-  // 	const aliasedRelations = Object.fromEntries(
-  // 		Object.entries(tableConfig.relations).map(([key, value]) => [key, aliasedRelation(value, tableAlias)]),
-  // 	);
-  // 	const aliasedFields = Object.assign({}, aliasedColumns, aliasedRelations);
-  // 	let where, hasUserDefinedWhere;
-  // 	if (config.where) {
-  // 		const whereSql = typeof config.where === 'function' ? config.where(aliasedFields, operators) : config.where;
-  // 		where = whereSql && mapColumnsInSQLToAlias(whereSql, tableAlias);
-  // 		hasUserDefinedWhere = !!where;
-  // 	}
-  // 	where = and(joinOn, where);
-  // 	// const fieldsSelection: { tsKey: string; value: PgColumn | SQL.Aliased; isExtra?: boolean }[] = [];
-  // 	let joins: Join[] = [];
-  // 	let selectedColumns: string[] = [];
-  // 	// Figure out which columns to select
-  // 	if (config.columns) {
-  // 		let isIncludeMode = false;
-  // 		for (const [field, value] of Object.entries(config.columns)) {
-  // 			if (value === undefined) {
-  // 				continue;
-  // 			}
-  // 			if (field in tableConfig.columns) {
-  // 				if (!isIncludeMode && value === true) {
-  // 					isIncludeMode = true;
-  // 				}
-  // 				selectedColumns.push(field);
-  // 			}
-  // 		}
-  // 		if (selectedColumns.length > 0) {
-  // 			selectedColumns = isIncludeMode
-  // 				? selectedColumns.filter((c) => config.columns?.[c] === true)
-  // 				: Object.keys(tableConfig.columns).filter((key) => !selectedColumns.includes(key));
-  // 		}
-  // 	} else {
-  // 		// Select all columns if selection is not specified
-  // 		selectedColumns = Object.keys(tableConfig.columns);
-  // 	}
-  // 	// for (const field of selectedColumns) {
-  // 	// 	const column = tableConfig.columns[field]! as PgColumn;
-  // 	// 	fieldsSelection.push({ tsKey: field, value: column });
-  // 	// }
-  // 	let initiallySelectedRelations: {
-  // 		tsKey: string;
-  // 		queryConfig: true | DBQueryConfig<'many', false>;
-  // 		relation: Relation;
-  // 	}[] = [];
-  // 	// let selectedRelations: BuildRelationalQueryResult<PgTable, PgColumn>['selection'] = [];
-  // 	// Figure out which relations to select
-  // 	if (config.with) {
-  // 		initiallySelectedRelations = Object.entries(config.with)
-  // 			.filter((entry): entry is [typeof entry[0], NonNullable<typeof entry[1]>] => !!entry[1])
-  // 			.map(([tsKey, queryConfig]) => ({ tsKey, queryConfig, relation: tableConfig.relations[tsKey]! }));
-  // 	}
-  // 	const manyRelations = initiallySelectedRelations.filter((r) =>
-  // 		is(r.relation, Many)
-  // 		&& (schema[tableNamesMap[r.relation.referencedTable[Table.Symbol.Name]]!]?.primaryKey.length ?? 0) > 0
-  // 	);
-  // 	// If this is the last Many relation (or there are no Many relations), we are on the innermost subquery level
-  // 	const isInnermostQuery = manyRelations.length < 2;
-  // 	const selectedExtras: {
-  // 		tsKey: string;
-  // 		value: SQL.Aliased;
-  // 	}[] = [];
-  // 	// Figure out which extras to select
-  // 	if (isInnermostQuery && config.extras) {
-  // 		const extras = typeof config.extras === 'function'
-  // 			? config.extras(aliasedFields, { sql })
-  // 			: config.extras;
-  // 		for (const [tsKey, value] of Object.entries(extras)) {
-  // 			selectedExtras.push({
-  // 				tsKey,
-  // 				value: mapColumnsInAliasedSQLToAlias(value, tableAlias),
-  // 			});
-  // 		}
-  // 	}
-  // 	// Transform `fieldsSelection` into `selection`
-  // 	// `fieldsSelection` shouldn't be used after this point
-  // 	// for (const { tsKey, value, isExtra } of fieldsSelection) {
-  // 	// 	selection.push({
-  // 	// 		dbKey: is(value, SQL.Aliased) ? value.fieldAlias : tableConfig.columns[tsKey]!.name,
-  // 	// 		tsKey,
-  // 	// 		field: is(value, Column) ? aliasedTableColumn(value, tableAlias) : value,
-  // 	// 		relationTableTsKey: undefined,
-  // 	// 		isJson: false,
-  // 	// 		isExtra,
-  // 	// 		selection: [],
-  // 	// 	});
-  // 	// }
-  // 	let orderByOrig = typeof config.orderBy === 'function'
-  // 		? config.orderBy(aliasedFields, orderByOperators)
-  // 		: config.orderBy ?? [];
-  // 	if (!Array.isArray(orderByOrig)) {
-  // 		orderByOrig = [orderByOrig];
-  // 	}
-  // 	const orderBy = orderByOrig.map((orderByValue) => {
-  // 		if (is(orderByValue, Column)) {
-  // 			return aliasedTableColumn(orderByValue, tableAlias) as PgColumn;
-  // 		}
-  // 		return mapColumnsInSQLToAlias(orderByValue, tableAlias);
-  // 	});
-  // 	const limit = isInnermostQuery ? config.limit : undefined;
-  // 	const offset = isInnermostQuery ? config.offset : undefined;
-  // 	// For non-root queries without additional config except columns, return a table with selection
-  // 	if (
-  // 		!isRoot
-  // 		&& initiallySelectedRelations.length === 0
-  // 		&& selectedExtras.length === 0
-  // 		&& !where
-  // 		&& orderBy.length === 0
-  // 		&& limit === undefined
-  // 		&& offset === undefined
-  // 	) {
-  // 		return {
-  // 			tableTsKey: tableConfig.tsName,
-  // 			sql: table,
-  // 			selection: selectedColumns.map((key) => ({
-  // 				dbKey: tableConfig.columns[key]!.name,
-  // 				tsKey: key,
-  // 				field: tableConfig.columns[key] as PgColumn,
-  // 				relationTableTsKey: undefined,
-  // 				isJson: false,
-  // 				selection: [],
-  // 			})),
-  // 		};
-  // 	}
-  // 	const selectedRelationsWithoutPK:
-  // 	// Process all relations without primary keys, because they need to be joined differently and will all be on the same query level
-  // 	for (
-  // 		const {
-  // 			tsKey: selectedRelationTsKey,
-  // 			queryConfig: selectedRelationConfigValue,
-  // 			relation,
-  // 		} of initiallySelectedRelations
-  // 	) {
-  // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
-  // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
-  // 		const relationTableTsName = tableNamesMap[relationTableName]!;
-  // 		const relationTable = schema[relationTableTsName]!;
-  // 		if (relationTable.primaryKey.length > 0) {
-  // 			continue;
-  // 		}
-  // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
-  // 		const joinOn = and(
-  // 			...normalizedRelation.fields.map((field, i) =>
-  // 				eq(
-  // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
-  // 					aliasedTableColumn(field, tableAlias),
-  // 				)
-  // 			),
-  // 		);
-  // 		const builtRelation = this.buildRelationalQueryWithoutPK({
-  // 			fullSchema,
-  // 			schema,
-  // 			tableNamesMap,
-  // 			table: fullSchema[relationTableTsName] as PgTable,
-  // 			tableConfig: schema[relationTableTsName]!,
-  // 			queryConfig: selectedRelationConfigValue,
-  // 			tableAlias: relationTableAlias,
-  // 			joinOn,
-  // 			nestedQueryRelation: relation,
-  // 		});
-  // 		const field = sql`${sql.identifier(relationTableAlias)}.${sql.identifier('data')}`.as(selectedRelationTsKey);
-  // 		joins.push({
-  // 			on: sql`true`,
-  // 			table: new Subquery(builtRelation.sql as SQL, {}, relationTableAlias),
-  // 			alias: relationTableAlias,
-  // 			joinType: 'left',
-  // 			lateral: true,
-  // 		});
-  // 		selectedRelations.push({
-  // 			dbKey: selectedRelationTsKey,
-  // 			tsKey: selectedRelationTsKey,
-  // 			field,
-  // 			relationTableTsKey: relationTableTsName,
-  // 			isJson: true,
-  // 			selection: builtRelation.selection,
-  // 		});
-  // 	}
-  // 	const oneRelations = initiallySelectedRelations.filter((r): r is typeof r & { relation: One } =>
-  // 		is(r.relation, One)
-  // 	);
-  // 	// Process all One relations with PKs, because they can all be joined on the same level
-  // 	for (
-  // 		const {
-  // 			tsKey: selectedRelationTsKey,
-  // 			queryConfig: selectedRelationConfigValue,
-  // 			relation,
-  // 		} of oneRelations
-  // 	) {
-  // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
-  // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
-  // 		const relationTableTsName = tableNamesMap[relationTableName]!;
-  // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
-  // 		const relationTable = schema[relationTableTsName]!;
-  // 		if (relationTable.primaryKey.length === 0) {
-  // 			continue;
-  // 		}
-  // 		const joinOn = and(
-  // 			...normalizedRelation.fields.map((field, i) =>
-  // 				eq(
-  // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
-  // 					aliasedTableColumn(field, tableAlias),
-  // 				)
-  // 			),
-  // 		);
-  // 		const builtRelation = this.buildRelationalQueryWithPK({
-  // 			fullSchema,
-  // 			schema,
-  // 			tableNamesMap,
-  // 			table: fullSchema[relationTableTsName] as PgTable,
-  // 			tableConfig: schema[relationTableTsName]!,
-  // 			queryConfig: selectedRelationConfigValue,
-  // 			tableAlias: relationTableAlias,
-  // 			joinOn,
-  // 		});
-  // 		const field = sql`case when ${sql.identifier(relationTableAlias)} is null then null else json_build_array(${
-  // 			sql.join(
-  // 				builtRelation.selection.map(({ field }) =>
-  // 					is(field, SQL.Aliased)
-  // 						? sql`${sql.identifier(relationTableAlias)}.${sql.identifier(field.fieldAlias)}`
-  // 						: is(field, Column)
-  // 						? aliasedTableColumn(field, relationTableAlias)
-  // 						: field
-  // 				),
-  // 				sql`, `,
-  // 			)
-  // 		}) end`.as(selectedRelationTsKey);
-  // 		const isLateralJoin = is(builtRelation.sql, SQL);
-  // 		joins.push({
-  // 			on: isLateralJoin ? sql`true` : joinOn,
-  // 			table: is(builtRelation.sql, SQL)
-  // 				? new Subquery(builtRelation.sql, {}, relationTableAlias)
-  // 				: aliasedTable(builtRelation.sql, relationTableAlias),
-  // 			alias: relationTableAlias,
-  // 			joinType: 'left',
-  // 			lateral: is(builtRelation.sql, SQL),
-  // 		});
-  // 		selectedRelations.push({
-  // 			dbKey: selectedRelationTsKey,
-  // 			tsKey: selectedRelationTsKey,
-  // 			field,
-  // 			relationTableTsKey: relationTableTsName,
-  // 			isJson: true,
-  // 			selection: builtRelation.selection,
-  // 		});
-  // 	}
-  // 	let distinct: PgSelectConfig['distinct'];
-  // 	let tableFrom: PgTable | Subquery = table;
-  // 	// Process first Many relation - each one requires a nested subquery
-  // 	const manyRelation = manyRelations[0];
-  // 	if (manyRelation) {
-  // 		const {
-  // 			tsKey: selectedRelationTsKey,
-  // 			queryConfig: selectedRelationQueryConfig,
-  // 			relation,
-  // 		} = manyRelation;
-  // 		distinct = {
-  // 			on: tableConfig.primaryKey.map((c) => aliasedTableColumn(c as PgColumn, tableAlias)),
-  // 		};
-  // 		const normalizedRelation = normalizeRelation(schema, tableNamesMap, relation);
-  // 		const relationTableName = relation.referencedTable[Table.Symbol.Name];
-  // 		const relationTableTsName = tableNamesMap[relationTableName]!;
-  // 		const relationTableAlias = `${tableAlias}_${selectedRelationTsKey}`;
-  // 		const joinOn = and(
-  // 			...normalizedRelation.fields.map((field, i) =>
-  // 				eq(
-  // 					aliasedTableColumn(normalizedRelation.references[i]!, relationTableAlias),
-  // 					aliasedTableColumn(field, tableAlias),
-  // 				)
-  // 			),
-  // 		);
-  // 		const builtRelationJoin = this.buildRelationalQueryWithPK({
-  // 			fullSchema,
-  // 			schema,
-  // 			tableNamesMap,
-  // 			table: fullSchema[relationTableTsName] as PgTable,
-  // 			tableConfig: schema[relationTableTsName]!,
-  // 			queryConfig: selectedRelationQueryConfig,
-  // 			tableAlias: relationTableAlias,
-  // 			joinOn,
-  // 		});
-  // 		const builtRelationSelectionField = sql`case when ${
-  // 			sql.identifier(relationTableAlias)
-  // 		} is null then '[]' else json_agg(json_build_array(${
-  // 			sql.join(
-  // 				builtRelationJoin.selection.map(({ field }) =>
-  // 					is(field, SQL.Aliased)
-  // 						? sql`${sql.identifier(relationTableAlias)}.${sql.identifier(field.fieldAlias)}`
-  // 						: is(field, Column)
-  // 						? aliasedTableColumn(field, relationTableAlias)
-  // 						: field
-  // 				),
-  // 				sql`, `,
-  // 			)
-  // 		})) over (partition by ${sql.join(distinct.on, sql`, `)}) end`.as(selectedRelationTsKey);
-  // 		const isLateralJoin = is(builtRelationJoin.sql, SQL);
-  // 		joins.push({
-  // 			on: isLateralJoin ? sql`true` : joinOn,
-  // 			table: isLateralJoin
-  // 				? new Subquery(builtRelationJoin.sql as SQL, {}, relationTableAlias)
-  // 				: aliasedTable(builtRelationJoin.sql as PgTable, relationTableAlias),
-  // 			alias: relationTableAlias,
-  // 			joinType: 'left',
-  // 			lateral: isLateralJoin,
-  // 		});
-  // 		// Build the "from" subquery with the remaining Many relations
-  // 		const builtTableFrom = this.buildRelationalQueryWithPK({
-  // 			fullSchema,
-  // 			schema,
-  // 			tableNamesMap,
-  // 			table,
-  // 			tableConfig,
-  // 			queryConfig: {
-  // 				...config,
-  // 				where: undefined,
-  // 				orderBy: undefined,
-  // 				limit: undefined,
-  // 				offset: undefined,
-  // 				with: manyRelations.slice(1).reduce<NonNullable<typeof config['with']>>(
-  // 					(result, { tsKey, queryConfig: configValue }) => {
-  // 						result[tsKey] = configValue;
-  // 						return result;
-  // 					},
-  // 					{},
-  // 				),
-  // 			},
-  // 			tableAlias,
-  // 		});
-  // 		selectedRelations.push({
-  // 			dbKey: selectedRelationTsKey,
-  // 			tsKey: selectedRelationTsKey,
-  // 			field: builtRelationSelectionField,
-  // 			relationTableTsKey: relationTableTsName,
-  // 			isJson: true,
-  // 			selection: builtRelationJoin.selection,
-  // 		});
-  // 		// selection = builtTableFrom.selection.map((item) =>
-  // 		// 	is(item.field, SQL.Aliased)
-  // 		// 		? { ...item, field: sql`${sql.identifier(tableAlias)}.${sql.identifier(item.field.fieldAlias)}` }
-  // 		// 		: item
-  // 		// );
-  // 		// selectionForBuild = [{
-  // 		// 	dbKey: '*',
-  // 		// 	tsKey: '*',
-  // 		// 	field: sql`${sql.identifier(tableAlias)}.*`,
-  // 		// 	selection: [],
-  // 		// 	isJson: false,
-  // 		// 	relationTableTsKey: undefined,
-  // 		// }];
-  // 		// const newSelectionItem: (typeof selection)[number] = {
-  // 		// 	dbKey: selectedRelationTsKey,
-  // 		// 	tsKey: selectedRelationTsKey,
-  // 		// 	field,
-  // 		// 	relationTableTsKey: relationTableTsName,
-  // 		// 	isJson: true,
-  // 		// 	selection: builtRelationJoin.selection,
-  // 		// };
-  // 		// selection.push(newSelectionItem);
-  // 		// selectionForBuild.push(newSelectionItem);
-  // 		tableFrom = is(builtTableFrom.sql, PgTable)
-  // 			? builtTableFrom.sql
-  // 			: new Subquery(builtTableFrom.sql, {}, tableAlias);
-  // 	}
-  // 	if (selectedColumns.length === 0 && selectedRelations.length === 0 && selectedExtras.length === 0) {
-  // 		throw new DrizzleError(`No fields selected for table "${tableConfig.tsName}" ("${tableAlias}")`);
-  // 	}
-  // 	let selection: BuildRelationalQueryResult<PgTable, PgColumn>['selection'];
-  // 	function prepareSelectedColumns() {
-  // 		return selectedColumns.map((key) => ({
-  // 			dbKey: tableConfig.columns[key]!.name,
-  // 			tsKey: key,
-  // 			field: tableConfig.columns[key] as PgColumn,
-  // 			relationTableTsKey: undefined,
-  // 			isJson: false,
-  // 			selection: [],
-  // 		}));
-  // 	}
-  // 	function prepareSelectedExtras() {
-  // 		return selectedExtras.map((item) => ({
-  // 			dbKey: item.value.fieldAlias,
-  // 			tsKey: item.tsKey,
-  // 			field: item.value,
-  // 			relationTableTsKey: undefined,
-  // 			isJson: false,
-  // 			selection: [],
-  // 		}));
-  // 	}
-  // 	if (isRoot) {
-  // 		selection = [
-  // 			...prepareSelectedColumns(),
-  // 			...prepareSelectedExtras(),
-  // 		];
-  // 	}
-  // 	if (hasUserDefinedWhere || orderBy.length > 0) {
-  // 		tableFrom = new Subquery(
-  // 			this.buildSelectQuery({
-  // 				table: is(tableFrom, PgTable) ? aliasedTable(tableFrom, tableAlias) : tableFrom,
-  // 				fields: {},
-  // 				fieldsFlat: selectionForBuild.map(({ field }) => ({
-  // 					path: [],
-  // 					field: is(field, Column) ? aliasedTableColumn(field, tableAlias) : field,
-  // 				})),
-  // 				joins,
-  // 				distinct,
-  // 			}),
-  // 			{},
-  // 			tableAlias,
-  // 		);
-  // 		selectionForBuild = selection.map((item) =>
-  // 			is(item.field, SQL.Aliased)
-  // 				? { ...item, field: sql`${sql.identifier(tableAlias)}.${sql.identifier(item.field.fieldAlias)}` }
-  // 				: item
-  // 		);
-  // 		joins = [];
-  // 		distinct = undefined;
-  // 	}
-  // 	const result = this.buildSelectQuery({
-  // 		table: is(tableFrom, PgTable) ? aliasedTable(tableFrom, tableAlias) : tableFrom,
-  // 		fields: {},
-  // 		fieldsFlat: selectionForBuild.map(({ field }) => ({
-  // 			path: [],
-  // 			field: is(field, Column) ? aliasedTableColumn(field, tableAlias) : field,
-  // 		})),
-  // 		where,
-  // 		limit,
-  // 		offset,
-  // 		joins,
-  // 		orderBy,
-  // 		distinct,
-  // 	});
-  // 	return {
-  // 		tableTsKey: tableConfig.tsName,
-  // 		sql: result,
-  // 		selection,
-  // 	};
-  // }
-  buildRelationalQueryWithoutPK({
-    fullSchema: e,
-    schema: t,
-    tableNamesMap: r,
-    table: i,
-    tableConfig: s,
-    queryConfig: u,
-    tableAlias: a,
-    nestedQueryRelation: d,
-    joinOn: y
-  }) {
-    let f = [], b, m, v = [], c;
-    const h = [];
-    if (u === !0)
-      f = Object.entries(s.columns).map(([_, T]) => ({
-        dbKey: T.name,
-        tsKey: _,
-        field: Be(T, a),
-        relationTableTsKey: void 0,
-        isJson: !1,
-        selection: []
-      }));
-    else {
-      const S = Object.fromEntries(
-        Object.entries(s.columns).map(([B, x]) => [B, Be(x, a)])
-      );
-      if (u.where) {
-        const B = typeof u.where == "function" ? u.where(S, du()) : u.where;
-        c = B && Tt(B, a);
-      }
-      const _ = [];
-      let T = [];
-      if (u.columns) {
-        let B = !1;
-        for (const [x, E] of Object.entries(u.columns))
-          E !== void 0 && x in s.columns && (!B && E === !0 && (B = !0), T.push(x));
-        T.length > 0 && (T = B ? T.filter((x) => u.columns?.[x] === !0) : Object.keys(s.columns).filter((x) => !T.includes(x)));
-      } else
-        T = Object.keys(s.columns);
-      for (const B of T) {
-        const x = s.columns[B];
-        _.push({ tsKey: B, value: x });
-      }
-      let L = [];
-      u.with && (L = Object.entries(u.with).filter((B) => !!B[1]).map(([B, x]) => ({ tsKey: B, queryConfig: x, relation: s.relations[B] })));
-      let M;
-      if (u.extras) {
-        M = typeof u.extras == "function" ? u.extras(S, { sql: A }) : u.extras;
-        for (const [B, x] of Object.entries(M))
-          _.push({
-            tsKey: B,
-            value: Gn(x, a)
-          });
-      }
-      for (const { tsKey: B, value: x } of _)
-        f.push({
-          dbKey: Q(x, z.Aliased) ? x.fieldAlias : s.columns[B].name,
-          tsKey: B,
-          field: Q(x, ce) ? Be(x, a) : x,
-          relationTableTsKey: void 0,
-          isJson: !1,
-          selection: []
-        });
-      let P = typeof u.orderBy == "function" ? u.orderBy(S, pu()) : u.orderBy ?? [];
-      Array.isArray(P) || (P = [P]), v = P.map((B) => Q(B, ce) ? Be(B, a) : Tt(B, a)), b = u.limit, m = u.offset;
-      for (const {
-        tsKey: B,
-        queryConfig: x,
-        relation: E
-      } of L) {
-        const D = wu(t, r, E), R = nt(E.referencedTable), F = r[R], j = `${a}_${B}`, O = At(
-          ...D.fields.map(
-            (H, ee) => He(
-              Be(D.references[ee], j),
-              Be(H, a)
-            )
-          )
-        ), q = this.buildRelationalQueryWithoutPK({
-          fullSchema: e,
-          schema: t,
-          tableNamesMap: r,
-          table: e[F],
-          tableConfig: t[F],
-          queryConfig: Q(E, $e) ? x === !0 ? { limit: 1 } : { ...x, limit: 1 } : x,
-          tableAlias: j,
-          joinOn: O,
-          nestedQueryRelation: E
-        }), W = A`${A.identifier(j)}.${A.identifier("data")}`.as(B);
-        h.push({
-          on: A`true`,
-          table: new _e(q.sql, {}, j),
-          alias: j,
-          joinType: "left",
-          lateral: !0
-        }), f.push({
-          dbKey: B,
-          tsKey: B,
-          field: W,
-          relationTableTsKey: F,
-          isJson: !0,
-          selection: q.selection
-        });
-      }
-    }
-    if (f.length === 0)
-      throw new Ki({ message: `No fields selected for table "${s.tsName}" ("${a}")` });
-    let w;
-    if (c = At(y, c), d) {
-      let S = A`json_build_array(${A.join(
-        f.map(
-          ({ field: L, tsKey: M, isJson: P }) => P ? A`${A.identifier(`${a}_${M}`)}.${A.identifier("data")}` : Q(L, z.Aliased) ? L.sql : L
-        ),
-        A`, `
-      )})`;
-      Q(d, qt) && (S = A`coalesce(json_agg(${S}${v.length > 0 ? A` order by ${A.join(v, A`, `)}` : void 0}), '[]'::json)`);
-      const _ = [{
-        dbKey: "data",
-        tsKey: "data",
-        field: S.as("data"),
-        isJson: !0,
-        relationTableTsKey: s.tsName,
-        selection: f
-      }];
-      b !== void 0 || m !== void 0 || v.length > 0 ? (w = this.buildSelectQuery({
-        table: er(i, a),
-        fields: {},
-        fieldsFlat: [{
-          path: [],
-          field: A.raw("*")
-        }],
-        where: c,
-        limit: b,
-        offset: m,
-        orderBy: v,
-        setOperators: []
-      }), c = void 0, b = void 0, m = void 0, v = []) : w = er(i, a), w = this.buildSelectQuery({
-        table: Q(w, ve) ? w : new _e(w, {}, a),
-        fields: {},
-        fieldsFlat: _.map(({ field: L }) => ({
-          path: [],
-          field: Q(L, ce) ? Be(L, a) : L
-        })),
-        joins: h,
-        where: c,
-        limit: b,
-        offset: m,
-        orderBy: v,
-        setOperators: []
-      });
-    } else
-      w = this.buildSelectQuery({
-        table: er(i, a),
-        fields: {},
-        fieldsFlat: f.map(({ field: S }) => ({
-          path: [],
-          field: Q(S, ce) ? Be(S, a) : S
-        })),
-        joins: h,
-        where: c,
-        limit: b,
-        offset: m,
-        orderBy: v,
-        setOperators: []
-      });
-    return {
-      tableTsKey: s.tsName,
-      sql: w,
-      selection: f
-    };
-  }
-}
-class vu {
-  static [I] = "TypedQueryBuilder";
-  /** @internal */
-  getSelectedFields() {
-    return this._.selectedFields;
-  }
-}
-class Ee {
-  static [I] = "PgSelectBuilder";
-  fields;
-  session;
-  dialect;
-  withList = [];
-  distinct;
-  constructor(e) {
-    this.fields = e.fields, this.session = e.session, this.dialect = e.dialect, e.withList && (this.withList = e.withList), this.distinct = e.distinct;
-  }
-  authToken;
-  /** @internal */
-  setToken(e) {
-    return this.authToken = e, this;
-  }
-  /**
-   * Specify the table, subquery, or other target that you're
-   * building a select query against.
-   *
-   * {@link https://www.postgresql.org/docs/current/sql-select.html#SQL-FROM | Postgres from documentation}
-   */
-  from(e) {
-    const t = !!this.fields, r = e;
-    let i;
-    return this.fields ? i = this.fields : Q(r, _e) ? i = Object.fromEntries(
-      Object.keys(r._.selectedFields).map((s) => [s, r[s]])
-    ) : Q(r, hs) ? i = r[ue].selectedFields : Q(r, z) ? i = {} : i = Fi(r), new fs({
-      table: r,
-      fields: i,
-      isPartialSelect: t,
-      session: this.session,
-      dialect: this.dialect,
-      withList: this.withList,
-      distinct: this.distinct
-    }).setToken(this.authToken);
-  }
-}
-class Su extends vu {
-  static [I] = "PgSelectQueryBuilder";
-  _;
-  config;
-  joinsNotNullableMap;
-  tableName;
-  isPartialSelect;
-  session;
-  dialect;
-  constructor({ table: e, fields: t, isPartialSelect: r, session: i, dialect: s, withList: u, distinct: a }) {
-    super(), this.config = {
-      withList: u,
-      table: e,
-      fields: { ...t },
-      distinct: a,
-      setOperators: []
-    }, this.isPartialSelect = r, this.session = i, this.dialect = s, this._ = {
-      selectedFields: t
-    }, this.tableName = Re(e), this.joinsNotNullableMap = typeof this.tableName == "string" ? { [this.tableName]: !0 } : {};
-  }
-  createJoin(e, t) {
-    return (r, i) => {
-      const s = this.tableName, u = Re(r);
-      if (typeof u == "string" && this.config.joins?.some((a) => a.alias === u))
-        throw new Error(`Alias "${u}" is already used in this query`);
-      if (!this.isPartialSelect && (Object.keys(this.joinsNotNullableMap).length === 1 && typeof s == "string" && (this.config.fields = {
-        [s]: this.config.fields
-      }), typeof u == "string" && !Q(r, z))) {
-        const a = Q(r, _e) ? r._.selectedFields : Q(r, Fe) ? r[ue].selectedFields : r[U.Symbol.Columns];
-        this.config.fields[u] = a;
-      }
-      if (typeof i == "function" && (i = i(
-        new Proxy(
-          this.config.fields,
-          new ge({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
-        )
-      )), this.config.joins || (this.config.joins = []), this.config.joins.push({ on: i, table: r, joinType: e, alias: u, lateral: t }), typeof u == "string")
-        switch (e) {
-          case "left": {
-            this.joinsNotNullableMap[u] = !1;
-            break;
-          }
-          case "right": {
-            this.joinsNotNullableMap = Object.fromEntries(
-              Object.entries(this.joinsNotNullableMap).map(([a]) => [a, !1])
-            ), this.joinsNotNullableMap[u] = !0;
-            break;
-          }
-          case "cross":
-          case "inner": {
-            this.joinsNotNullableMap[u] = !0;
-            break;
-          }
-          case "full": {
-            this.joinsNotNullableMap = Object.fromEntries(
-              Object.entries(this.joinsNotNullableMap).map(([a]) => [a, !1])
-            ), this.joinsNotNullableMap[u] = !1;
-            break;
-          }
-        }
-      return this;
-    };
-  }
-  /**
-   * Executes a `left join` operation by adding another table to the current query.
-   *
-   * Calling this method associates each row of the table with the corresponding row from the joined table, if a match is found. If no matching row exists, it sets all columns of the joined table to null.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#left-join}
-   *
-   * @param table the table to join.
-   * @param on the `on` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all users and their pets
-   * const usersWithPets: { user: User; pets: Pet | null; }[] = await db.select()
-   *   .from(users)
-   *   .leftJoin(pets, eq(users.id, pets.ownerId))
-   *
-   * // Select userId and petId
-   * const usersIdsAndPetIds: { userId: number; petId: number | null; }[] = await db.select({
-   *   userId: users.id,
-   *   petId: pets.id,
-   * })
-   *   .from(users)
-   *   .leftJoin(pets, eq(users.id, pets.ownerId))
-   * ```
-   */
-  leftJoin = this.createJoin("left", !1);
-  /**
-   * Executes a `left join lateral` operation by adding subquery to the current query.
-   *
-   * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
-   *
-   * Calling this method associates each row of the table with the corresponding row from the joined table, if a match is found. If no matching row exists, it sets all columns of the joined table to null.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#left-join-lateral}
-   *
-   * @param table the subquery to join.
-   * @param on the `on` clause.
-   */
-  leftJoinLateral = this.createJoin("left", !0);
-  /**
-   * Executes a `right join` operation by adding another table to the current query.
-   *
-   * Calling this method associates each row of the joined table with the corresponding row from the main table, if a match is found. If no matching row exists, it sets all columns of the main table to null.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#right-join}
-   *
-   * @param table the table to join.
-   * @param on the `on` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all users and their pets
-   * const usersWithPets: { user: User | null; pets: Pet; }[] = await db.select()
-   *   .from(users)
-   *   .rightJoin(pets, eq(users.id, pets.ownerId))
-   *
-   * // Select userId and petId
-   * const usersIdsAndPetIds: { userId: number | null; petId: number; }[] = await db.select({
-   *   userId: users.id,
-   *   petId: pets.id,
-   * })
-   *   .from(users)
-   *   .rightJoin(pets, eq(users.id, pets.ownerId))
-   * ```
-   */
-  rightJoin = this.createJoin("right", !1);
-  /**
-   * Executes an `inner join` operation, creating a new table by combining rows from two tables that have matching values.
-   *
-   * Calling this method retrieves rows that have corresponding entries in both joined tables. Rows without matching entries in either table are excluded, resulting in a table that includes only matching pairs.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#inner-join}
-   *
-   * @param table the table to join.
-   * @param on the `on` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all users and their pets
-   * const usersWithPets: { user: User; pets: Pet; }[] = await db.select()
-   *   .from(users)
-   *   .innerJoin(pets, eq(users.id, pets.ownerId))
-   *
-   * // Select userId and petId
-   * const usersIdsAndPetIds: { userId: number; petId: number; }[] = await db.select({
-   *   userId: users.id,
-   *   petId: pets.id,
-   * })
-   *   .from(users)
-   *   .innerJoin(pets, eq(users.id, pets.ownerId))
-   * ```
-   */
-  innerJoin = this.createJoin("inner", !1);
-  /**
-   * Executes an `inner join lateral` operation, creating a new table by combining rows from two queries that have matching values.
-   *
-   * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
-   *
-   * Calling this method retrieves rows that have corresponding entries in both joined tables. Rows without matching entries in either table are excluded, resulting in a table that includes only matching pairs.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#inner-join-lateral}
-   *
-   * @param table the subquery to join.
-   * @param on the `on` clause.
-   */
-  innerJoinLateral = this.createJoin("inner", !0);
-  /**
-   * Executes a `full join` operation by combining rows from two tables into a new table.
-   *
-   * Calling this method retrieves all rows from both main and joined tables, merging rows with matching values and filling in `null` for non-matching columns.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#full-join}
-   *
-   * @param table the table to join.
-   * @param on the `on` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all users and their pets
-   * const usersWithPets: { user: User | null; pets: Pet | null; }[] = await db.select()
-   *   .from(users)
-   *   .fullJoin(pets, eq(users.id, pets.ownerId))
-   *
-   * // Select userId and petId
-   * const usersIdsAndPetIds: { userId: number | null; petId: number | null; }[] = await db.select({
-   *   userId: users.id,
-   *   petId: pets.id,
-   * })
-   *   .from(users)
-   *   .fullJoin(pets, eq(users.id, pets.ownerId))
-   * ```
-   */
-  fullJoin = this.createJoin("full", !1);
-  /**
-   * Executes a `cross join` operation by combining rows from two tables into a new table.
-   *
-   * Calling this method retrieves all rows from both main and joined tables, merging all rows from each table.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#cross-join}
-   *
-   * @param table the table to join.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all users, each user with every pet
-   * const usersWithPets: { user: User; pets: Pet; }[] = await db.select()
-   *   .from(users)
-   *   .crossJoin(pets)
-   *
-   * // Select userId and petId
-   * const usersIdsAndPetIds: { userId: number; petId: number; }[] = await db.select({
-   *   userId: users.id,
-   *   petId: pets.id,
-   * })
-   *   .from(users)
-   *   .crossJoin(pets)
-   * ```
-   */
-  crossJoin = this.createJoin("cross", !1);
-  /**
-   * Executes a `cross join lateral` operation by combining rows from two queries into a new table.
-   *
-   * A `lateral` join allows the right-hand expression to refer to columns from the left-hand side.
-   *
-   * Calling this method retrieves all rows from both main and joined queries, merging all rows from each query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/joins#cross-join-lateral}
-   *
-   * @param table the query to join.
-   */
-  crossJoinLateral = this.createJoin("cross", !0);
-  createSetOperator(e, t) {
-    return (r) => {
-      const i = typeof r == "function" ? r(Pu()) : r;
-      if (!Tr(this.getSelectedFields(), i.getSelectedFields()))
-        throw new Error(
-          "Set operator error (union / intersect / except): selected fields are not the same or are in a different order"
-        );
-      return this.config.setOperators.push({ type: e, isAll: t, rightSelect: i }), this;
-    };
-  }
-  /**
-   * Adds `union` set operator to the query.
-   *
-   * Calling this method will combine the result sets of the `select` statements and remove any duplicate rows that appear across them.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#union}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all unique names from customers and users tables
-   * await db.select({ name: users.name })
-   *   .from(users)
-   *   .union(
-   *     db.select({ name: customers.name }).from(customers)
-   *   );
-   * // or
-   * import { union } from 'drizzle-orm/pg-core'
-   *
-   * await union(
-   *   db.select({ name: users.name }).from(users),
-   *   db.select({ name: customers.name }).from(customers)
-   * );
-   * ```
-   */
-  union = this.createSetOperator("union", !1);
-  /**
-   * Adds `union all` set operator to the query.
-   *
-   * Calling this method will combine the result-set of the `select` statements and keep all duplicate rows that appear across them.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#union-all}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all transaction ids from both online and in-store sales
-   * await db.select({ transaction: onlineSales.transactionId })
-   *   .from(onlineSales)
-   *   .unionAll(
-   *     db.select({ transaction: inStoreSales.transactionId }).from(inStoreSales)
-   *   );
-   * // or
-   * import { unionAll } from 'drizzle-orm/pg-core'
-   *
-   * await unionAll(
-   *   db.select({ transaction: onlineSales.transactionId }).from(onlineSales),
-   *   db.select({ transaction: inStoreSales.transactionId }).from(inStoreSales)
-   * );
-   * ```
-   */
-  unionAll = this.createSetOperator("union", !0);
-  /**
-   * Adds `intersect` set operator to the query.
-   *
-   * Calling this method will retain only the rows that are present in both result sets and eliminate duplicates.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#intersect}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select course names that are offered in both departments A and B
-   * await db.select({ courseName: depA.courseName })
-   *   .from(depA)
-   *   .intersect(
-   *     db.select({ courseName: depB.courseName }).from(depB)
-   *   );
-   * // or
-   * import { intersect } from 'drizzle-orm/pg-core'
-   *
-   * await intersect(
-   *   db.select({ courseName: depA.courseName }).from(depA),
-   *   db.select({ courseName: depB.courseName }).from(depB)
-   * );
-   * ```
-   */
-  intersect = this.createSetOperator("intersect", !1);
-  /**
-   * Adds `intersect all` set operator to the query.
-   *
-   * Calling this method will retain only the rows that are present in both result sets including all duplicates.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#intersect-all}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all products and quantities that are ordered by both regular and VIP customers
-   * await db.select({
-   *   productId: regularCustomerOrders.productId,
-   *   quantityOrdered: regularCustomerOrders.quantityOrdered
-   * })
-   * .from(regularCustomerOrders)
-   * .intersectAll(
-   *   db.select({
-   *     productId: vipCustomerOrders.productId,
-   *     quantityOrdered: vipCustomerOrders.quantityOrdered
-   *   })
-   *   .from(vipCustomerOrders)
-   * );
-   * // or
-   * import { intersectAll } from 'drizzle-orm/pg-core'
-   *
-   * await intersectAll(
-   *   db.select({
-   *     productId: regularCustomerOrders.productId,
-   *     quantityOrdered: regularCustomerOrders.quantityOrdered
-   *   })
-   *   .from(regularCustomerOrders),
-   *   db.select({
-   *     productId: vipCustomerOrders.productId,
-   *     quantityOrdered: vipCustomerOrders.quantityOrdered
-   *   })
-   *   .from(vipCustomerOrders)
-   * );
-   * ```
-   */
-  intersectAll = this.createSetOperator("intersect", !0);
-  /**
-   * Adds `except` set operator to the query.
-   *
-   * Calling this method will retrieve all unique rows from the left query, except for the rows that are present in the result set of the right query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#except}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all courses offered in department A but not in department B
-   * await db.select({ courseName: depA.courseName })
-   *   .from(depA)
-   *   .except(
-   *     db.select({ courseName: depB.courseName }).from(depB)
-   *   );
-   * // or
-   * import { except } from 'drizzle-orm/pg-core'
-   *
-   * await except(
-   *   db.select({ courseName: depA.courseName }).from(depA),
-   *   db.select({ courseName: depB.courseName }).from(depB)
-   * );
-   * ```
-   */
-  except = this.createSetOperator("except", !1);
-  /**
-   * Adds `except all` set operator to the query.
-   *
-   * Calling this method will retrieve all rows from the left query, except for the rows that are present in the result set of the right query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/set-operations#except-all}
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all products that are ordered by regular customers but not by VIP customers
-   * await db.select({
-   *   productId: regularCustomerOrders.productId,
-   *   quantityOrdered: regularCustomerOrders.quantityOrdered,
-   * })
-   * .from(regularCustomerOrders)
-   * .exceptAll(
-   *   db.select({
-   *     productId: vipCustomerOrders.productId,
-   *     quantityOrdered: vipCustomerOrders.quantityOrdered,
-   *   })
-   *   .from(vipCustomerOrders)
-   * );
-   * // or
-   * import { exceptAll } from 'drizzle-orm/pg-core'
-   *
-   * await exceptAll(
-   *   db.select({
-   *     productId: regularCustomerOrders.productId,
-   *     quantityOrdered: regularCustomerOrders.quantityOrdered
-   *   })
-   *   .from(regularCustomerOrders),
-   *   db.select({
-   *     productId: vipCustomerOrders.productId,
-   *     quantityOrdered: vipCustomerOrders.quantityOrdered
-   *   })
-   *   .from(vipCustomerOrders)
-   * );
-   * ```
-   */
-  exceptAll = this.createSetOperator("except", !0);
-  /** @internal */
-  addSetOperators(e) {
-    return this.config.setOperators.push(...e), this;
-  }
-  /**
-   * Adds a `where` clause to the query.
-   *
-   * Calling this method will select only those rows that fulfill a specified condition.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#filtering}
-   *
-   * @param where the `where` clause.
-   *
-   * @example
-   * You can use conditional operators and `sql function` to filter the rows to be selected.
-   *
-   * ```ts
-   * // Select all cars with green color
-   * await db.select().from(cars).where(eq(cars.color, 'green'));
-   * // or
-   * await db.select().from(cars).where(sql`${cars.color} = 'green'`)
-   * ```
-   *
-   * You can logically combine conditional operators with `and()` and `or()` operators:
-   *
-   * ```ts
-   * // Select all BMW cars with a green color
-   * await db.select().from(cars).where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
-   *
-   * // Select all cars with the green or blue color
-   * await db.select().from(cars).where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
-   * ```
-   */
-  where(e) {
-    return typeof e == "function" && (e = e(
-      new Proxy(
-        this.config.fields,
-        new ge({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
-      )
-    )), this.config.where = e, this;
-  }
-  /**
-   * Adds a `having` clause to the query.
-   *
-   * Calling this method will select only those rows that fulfill a specified condition. It is typically used with aggregate functions to filter the aggregated data based on a specified condition.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#aggregations}
-   *
-   * @param having the `having` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Select all brands with more than one car
-   * await db.select({
-   * 	brand: cars.brand,
-   * 	count: sql<number>`cast(count(${cars.id}) as int)`,
-   * })
-   *   .from(cars)
-   *   .groupBy(cars.brand)
-   *   .having(({ count }) => gt(count, 1));
-   * ```
-   */
-  having(e) {
-    return typeof e == "function" && (e = e(
-      new Proxy(
-        this.config.fields,
-        new ge({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
-      )
-    )), this.config.having = e, this;
-  }
-  groupBy(...e) {
-    if (typeof e[0] == "function") {
-      const t = e[0](
-        new Proxy(
-          this.config.fields,
-          new ge({ sqlAliasedBehavior: "alias", sqlBehavior: "sql" })
-        )
-      );
-      this.config.groupBy = Array.isArray(t) ? t : [t];
-    } else
-      this.config.groupBy = e;
-    return this;
-  }
-  orderBy(...e) {
-    if (typeof e[0] == "function") {
-      const t = e[0](
-        new Proxy(
-          this.config.fields,
-          new ge({ sqlAliasedBehavior: "alias", sqlBehavior: "sql" })
-        )
-      ), r = Array.isArray(t) ? t : [t];
-      this.config.setOperators.length > 0 ? this.config.setOperators.at(-1).orderBy = r : this.config.orderBy = r;
-    } else {
-      const t = e;
-      this.config.setOperators.length > 0 ? this.config.setOperators.at(-1).orderBy = t : this.config.orderBy = t;
-    }
-    return this;
-  }
-  /**
-   * Adds a `limit` clause to the query.
-   *
-   * Calling this method will set the maximum number of rows that will be returned by this query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#limit--offset}
-   *
-   * @param limit the `limit` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Get the first 10 people from this query.
-   * await db.select().from(people).limit(10);
-   * ```
-   */
-  limit(e) {
-    return this.config.setOperators.length > 0 ? this.config.setOperators.at(-1).limit = e : this.config.limit = e, this;
-  }
-  /**
-   * Adds an `offset` clause to the query.
-   *
-   * Calling this method will skip a number of rows when returning results from this query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#limit--offset}
-   *
-   * @param offset the `offset` clause.
-   *
-   * @example
-   *
-   * ```ts
-   * // Get the 10th-20th people from this query.
-   * await db.select().from(people).offset(10).limit(10);
-   * ```
-   */
-  offset(e) {
-    return this.config.setOperators.length > 0 ? this.config.setOperators.at(-1).offset = e : this.config.offset = e, this;
-  }
-  /**
-   * Adds a `for` clause to the query.
-   *
-   * Calling this method will specify a lock strength for this query that controls how strictly it acquires exclusive access to the rows being queried.
-   *
-   * See docs: {@link https://www.postgresql.org/docs/current/sql-select.html#SQL-FOR-UPDATE-SHARE}
-   *
-   * @param strength the lock strength.
-   * @param config the lock configuration.
-   */
-  for(e, t = {}) {
-    return this.config.lockingClause = { strength: e, config: t }, this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildSelectQuery(this.config);
-  }
-  toSQL() {
-    const { typings: e, ...t } = this.dialect.sqlToQuery(this.getSQL());
-    return t;
-  }
-  as(e) {
-    return new Proxy(
-      new _e(this.getSQL(), this.config.fields, e),
-      new ge({ alias: e, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
-    );
-  }
-  /** @internal */
-  getSelectedFields() {
-    return new Proxy(
-      this.config.fields,
-      new ge({ alias: this.tableName, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
-    );
-  }
-  $dynamic() {
-    return this;
-  }
-}
-class fs extends Su {
-  static [I] = "PgSelect";
-  /** @internal */
-  _prepare(e) {
-    const { session: t, config: r, dialect: i, joinsNotNullableMap: s, authToken: u } = this;
-    if (!t)
-      throw new Error("Cannot execute a query on a query builder. Please use a database instance instead.");
-    return Se.startActiveSpan("drizzle.prepareQuery", () => {
-      const a = Me(r.fields), d = t.prepareQuery(i.sqlToQuery(this.getSQL()), a, e, !0);
-      return d.joinsNotNullableMap = s, d.setToken(u);
-    });
-  }
-  /**
-   * Create a prepared statement for this query. This allows
-   * the database to remember this query for the given session
-   * and call it by name, rather than specifying the full query.
-   *
-   * {@link https://www.postgresql.org/docs/current/sql-prepare.html | Postgres prepare documentation}
-   */
-  prepare(e) {
-    return this._prepare(e);
-  }
-  authToken;
-  /** @internal */
-  setToken(e) {
-    return this.authToken = e, this;
-  }
-  execute = (e) => Se.startActiveSpan("drizzle.operation", () => this._prepare().execute(e, this.authToken));
-}
-qi(fs, [qe]);
-function Je(n, e) {
-  return (t, r, ...i) => {
-    const s = [r, ...i].map((u) => ({
-      type: n,
-      isAll: e,
-      rightSelect: u
-    }));
-    for (const u of s)
-      if (!Tr(t.getSelectedFields(), u.rightSelect.getSelectedFields()))
-        throw new Error(
-          "Set operator error (union / intersect / except): selected fields are not the same or are in a different order"
-        );
-    return t.addSetOperators(s);
-  };
-}
-const Pu = () => ({
-  union: Eu,
-  unionAll: _u,
-  intersect: Cu,
-  intersectAll: Tu,
-  except: Au,
-  exceptAll: xu
-}), Eu = Je("union", !1), _u = Je("union", !0), Cu = Je("intersect", !1), Tu = Je("intersect", !0), Au = Je("except", !1), xu = Je("except", !0);
-class ds {
-  static [I] = "PgQueryBuilder";
-  dialect;
-  dialectConfig;
-  constructor(e) {
-    this.dialect = Q(e, Et) ? e : void 0, this.dialectConfig = Q(e, Et) ? void 0 : e;
-  }
-  $with = (e, t) => {
-    const r = this;
-    return { as: (s) => (typeof s == "function" && (s = s(r)), new Proxy(
-      new Vn(
-        s.getSQL(),
-        t ?? ("getSelectedFields" in s ? s.getSelectedFields() ?? {} : {}),
-        e,
-        !0
-      ),
-      new ge({ alias: e, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
-    )) };
-  };
-  with(...e) {
-    const t = this;
-    function r(u) {
-      return new Ee({
-        fields: u ?? void 0,
-        session: void 0,
-        dialect: t.getDialect(),
-        withList: e
-      });
-    }
-    function i(u) {
-      return new Ee({
-        fields: u ?? void 0,
-        session: void 0,
-        dialect: t.getDialect(),
-        distinct: !0
-      });
-    }
-    function s(u, a) {
-      return new Ee({
-        fields: a ?? void 0,
-        session: void 0,
-        dialect: t.getDialect(),
-        distinct: { on: u }
-      });
-    }
-    return { select: r, selectDistinct: i, selectDistinctOn: s };
-  }
-  select(e) {
-    return new Ee({
-      fields: e ?? void 0,
-      session: void 0,
-      dialect: this.getDialect()
-    });
-  }
-  selectDistinct(e) {
-    return new Ee({
-      fields: e ?? void 0,
-      session: void 0,
-      dialect: this.getDialect(),
-      distinct: !0
-    });
-  }
-  selectDistinctOn(e, t) {
-    return new Ee({
-      fields: t ?? void 0,
-      session: void 0,
-      dialect: this.getDialect(),
-      distinct: { on: e }
-    });
-  }
-  // Lazy load dialect to avoid circular dependency
-  getDialect() {
-    return this.dialect || (this.dialect = new Et(this.dialectConfig)), this.dialect;
-  }
-}
-class Wr {
-  constructor(e, t, r, i, s) {
-    this.table = e, this.session = t, this.dialect = r, this.withList = i, this.overridingSystemValue_ = s;
-  }
-  static [I] = "PgInsertBuilder";
-  authToken;
-  /** @internal */
-  setToken(e) {
-    return this.authToken = e, this;
-  }
-  overridingSystemValue() {
-    return this.overridingSystemValue_ = !0, this;
-  }
-  values(e) {
-    if (e = Array.isArray(e) ? e : [e], e.length === 0)
-      throw new Error("values() must be called with at least one value");
-    const t = e.map((r) => {
-      const i = {}, s = this.table[U.Symbol.Columns];
-      for (const u of Object.keys(r)) {
-        const a = r[u];
-        i[u] = Q(a, z) ? a : new Le(a, s[u]);
-      }
-      return i;
-    });
-    return new Kr(
-      this.table,
-      t,
-      this.session,
-      this.dialect,
-      this.withList,
-      !1,
-      this.overridingSystemValue_
-    ).setToken(this.authToken);
-  }
-  select(e) {
-    const t = typeof e == "function" ? e(new ds()) : e;
-    if (!Q(t, z) && !Tr(this.table[ar], t._.selectedFields))
-      throw new Error(
-        "Insert select error: selected fields are not the same or are in a different order compared to the table definition"
-      );
-    return new Kr(this.table, t, this.session, this.dialect, this.withList, !0);
-  }
-}
-class Kr extends qe {
-  constructor(e, t, r, i, s, u, a) {
-    super(), this.session = r, this.dialect = i, this.config = { table: e, values: t, withList: s, select: u, overridingSystemValue_: a };
-  }
-  static [I] = "PgInsert";
-  config;
-  returning(e = this.config.table[U.Symbol.Columns]) {
-    return this.config.returningFields = e, this.config.returning = Me(e), this;
-  }
-  /**
-   * Adds an `on conflict do nothing` clause to the query.
-   *
-   * Calling this method simply avoids inserting a row as its alternative action.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/insert#on-conflict-do-nothing}
-   *
-   * @param config The `target` and `where` clauses.
-   *
-   * @example
-   * ```ts
-   * // Insert one row and cancel the insert if there's a conflict
-   * await db.insert(cars)
-   *   .values({ id: 1, brand: 'BMW' })
-   *   .onConflictDoNothing();
-   *
-   * // Explicitly specify conflict target
-   * await db.insert(cars)
-   *   .values({ id: 1, brand: 'BMW' })
-   *   .onConflictDoNothing({ target: cars.id });
-   * ```
-   */
-  onConflictDoNothing(e = {}) {
-    if (e.target === void 0)
-      this.config.onConflict = A`do nothing`;
-    else {
-      let t = "";
-      t = Array.isArray(e.target) ? e.target.map((i) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(i))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(e.target));
-      const r = e.where ? A` where ${e.where}` : void 0;
-      this.config.onConflict = A`(${A.raw(t)})${r} do nothing`;
-    }
-    return this;
-  }
-  /**
-   * Adds an `on conflict do update` clause to the query.
-   *
-   * Calling this method will update the existing row that conflicts with the row proposed for insertion as its alternative action.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/insert#upserts-and-conflicts}
-   *
-   * @param config The `target`, `set` and `where` clauses.
-   *
-   * @example
-   * ```ts
-   * // Update the row if there's a conflict
-   * await db.insert(cars)
-   *   .values({ id: 1, brand: 'BMW' })
-   *   .onConflictDoUpdate({
-   *     target: cars.id,
-   *     set: { brand: 'Porsche' }
-   *   });
-   *
-   * // Upsert with 'where' clause
-   * await db.insert(cars)
-   *   .values({ id: 1, brand: 'BMW' })
-   *   .onConflictDoUpdate({
-   *     target: cars.id,
-   *     set: { brand: 'newBMW' },
-   *     targetWhere: sql`${cars.createdAt} > '2023-01-01'::date`,
-   *   });
-   * ```
-   */
-  onConflictDoUpdate(e) {
-    if (e.where && (e.targetWhere || e.setWhere))
-      throw new Error(
-        'You cannot use both "where" and "targetWhere"/"setWhere" at the same time - "where" is deprecated, use "targetWhere" or "setWhere" instead.'
-      );
-    const t = e.where ? A` where ${e.where}` : void 0, r = e.targetWhere ? A` where ${e.targetWhere}` : void 0, i = e.setWhere ? A` where ${e.setWhere}` : void 0, s = this.dialect.buildUpdateSet(this.config.table, Jn(this.config.table, e.set));
-    let u = "";
-    return u = Array.isArray(e.target) ? e.target.map((a) => this.dialect.escapeName(this.dialect.casing.getColumnCasing(a))).join(",") : this.dialect.escapeName(this.dialect.casing.getColumnCasing(e.target)), this.config.onConflict = A`(${A.raw(u)})${r} do update set ${s}${t}${i}`, this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildInsertQuery(this.config);
-  }
-  toSQL() {
-    const { typings: e, ...t } = this.dialect.sqlToQuery(this.getSQL());
-    return t;
-  }
-  /** @internal */
-  _prepare(e) {
-    return Se.startActiveSpan("drizzle.prepareQuery", () => this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, e, !0));
-  }
-  prepare(e) {
-    return this._prepare(e);
-  }
-  authToken;
-  /** @internal */
-  setToken(e) {
-    return this.authToken = e, this;
-  }
-  execute = (e) => Se.startActiveSpan("drizzle.operation", () => this._prepare().execute(e, this.authToken));
-  /** @internal */
-  getSelectedFields() {
-    return this.config.returningFields ? new Proxy(
-      this.config.returningFields,
-      new ge({
-        alias: Ne(this.config.table),
-        sqlAliasedBehavior: "alias",
-        sqlBehavior: "error"
-      })
-    ) : void 0;
-  }
-  $dynamic() {
-    return this;
-  }
-}
-class Bu extends qe {
-  constructor(e, t, r) {
-    super(), this.session = t, this.dialect = r, this.config = { view: e };
-  }
-  static [I] = "PgRefreshMaterializedView";
-  config;
-  concurrently() {
-    if (this.config.withNoData !== void 0)
-      throw new Error("Cannot use concurrently and withNoData together");
-    return this.config.concurrently = !0, this;
-  }
-  withNoData() {
-    if (this.config.concurrently !== void 0)
-      throw new Error("Cannot use concurrently and withNoData together");
-    return this.config.withNoData = !0, this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildRefreshMaterializedViewQuery(this.config);
-  }
-  toSQL() {
-    const { typings: e, ...t } = this.dialect.sqlToQuery(this.getSQL());
-    return t;
-  }
-  /** @internal */
-  _prepare(e) {
-    return Se.startActiveSpan("drizzle.prepareQuery", () => this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), void 0, e, !0));
-  }
-  prepare(e) {
-    return this._prepare(e);
-  }
-  authToken;
-  /** @internal */
-  setToken(e) {
-    return this.authToken = e, this;
-  }
-  execute = (e) => Se.startActiveSpan("drizzle.operation", () => this._prepare().execute(e, this.authToken));
-}
-class Hr {
-  constructor(e, t, r, i) {
-    this.table = e, this.session = t, this.dialect = r, this.withList = i;
-  }
-  static [I] = "PgUpdateBuilder";
-  authToken;
-  setToken(e) {
-    return this.authToken = e, this;
-  }
-  set(e) {
-    return new Nu(
-      this.table,
-      Jn(this.table, e),
-      this.session,
-      this.dialect,
-      this.withList
-    ).setToken(this.authToken);
-  }
-}
-class Nu extends qe {
-  constructor(e, t, r, i, s) {
-    super(), this.session = r, this.dialect = i, this.config = { set: t, table: e, withList: s, joins: [] }, this.tableName = Re(e), this.joinsNotNullableMap = typeof this.tableName == "string" ? { [this.tableName]: !0 } : {};
-  }
-  static [I] = "PgUpdate";
-  config;
-  tableName;
-  joinsNotNullableMap;
-  from(e) {
-    const t = e, r = Re(t);
-    return typeof r == "string" && (this.joinsNotNullableMap[r] = !0), this.config.from = t, this;
-  }
-  getTableLikeFields(e) {
-    return Q(e, ve) ? e[U.Symbol.Columns] : Q(e, _e) ? e._.selectedFields : e[ue].selectedFields;
-  }
-  createJoin(e) {
-    return (t, r) => {
-      const i = Re(t);
-      if (typeof i == "string" && this.config.joins.some((s) => s.alias === i))
-        throw new Error(`Alias "${i}" is already used in this query`);
-      if (typeof r == "function") {
-        const s = this.config.from && !Q(this.config.from, z) ? this.getTableLikeFields(this.config.from) : void 0;
-        r = r(
-          new Proxy(
-            this.config.table[U.Symbol.Columns],
-            new ge({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
-          ),
-          s && new Proxy(
-            s,
-            new ge({ sqlAliasedBehavior: "sql", sqlBehavior: "sql" })
-          )
-        );
-      }
-      if (this.config.joins.push({ on: r, table: t, joinType: e, alias: i }), typeof i == "string")
-        switch (e) {
-          case "left": {
-            this.joinsNotNullableMap[i] = !1;
-            break;
-          }
-          case "right": {
-            this.joinsNotNullableMap = Object.fromEntries(
-              Object.entries(this.joinsNotNullableMap).map(([s]) => [s, !1])
-            ), this.joinsNotNullableMap[i] = !0;
-            break;
-          }
-          case "inner": {
-            this.joinsNotNullableMap[i] = !0;
-            break;
-          }
-          case "full": {
-            this.joinsNotNullableMap = Object.fromEntries(
-              Object.entries(this.joinsNotNullableMap).map(([s]) => [s, !1])
-            ), this.joinsNotNullableMap[i] = !1;
-            break;
-          }
-        }
-      return this;
-    };
-  }
-  leftJoin = this.createJoin("left");
-  rightJoin = this.createJoin("right");
-  innerJoin = this.createJoin("inner");
-  fullJoin = this.createJoin("full");
-  /**
-   * Adds a 'where' clause to the query.
-   *
-   * Calling this method will update only those rows that fulfill a specified condition.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/update}
-   *
-   * @param where the 'where' clause.
-   *
-   * @example
-   * You can use conditional operators and `sql function` to filter the rows to be updated.
-   *
-   * ```ts
-   * // Update all cars with green color
-   * await db.update(cars).set({ color: 'red' })
-   *   .where(eq(cars.color, 'green'));
-   * // or
-   * await db.update(cars).set({ color: 'red' })
-   *   .where(sql`${cars.color} = 'green'`)
-   * ```
-   *
-   * You can logically combine conditional operators with `and()` and `or()` operators:
-   *
-   * ```ts
-   * // Update all BMW cars with a green color
-   * await db.update(cars).set({ color: 'red' })
-   *   .where(and(eq(cars.color, 'green'), eq(cars.brand, 'BMW')));
-   *
-   * // Update all cars with the green or blue color
-   * await db.update(cars).set({ color: 'red' })
-   *   .where(or(eq(cars.color, 'green'), eq(cars.color, 'blue')));
-   * ```
-   */
-  where(e) {
-    return this.config.where = e, this;
-  }
-  returning(e) {
-    if (!e && (e = Object.assign({}, this.config.table[U.Symbol.Columns]), this.config.from)) {
-      const t = Re(this.config.from);
-      if (typeof t == "string" && this.config.from && !Q(this.config.from, z)) {
-        const r = this.getTableLikeFields(this.config.from);
-        e[t] = r;
-      }
-      for (const r of this.config.joins) {
-        const i = Re(r.table);
-        if (typeof i == "string" && !Q(r.table, z)) {
-          const s = this.getTableLikeFields(r.table);
-          e[i] = s;
-        }
-      }
-    }
-    return this.config.returningFields = e, this.config.returning = Me(e), this;
-  }
-  /** @internal */
-  getSQL() {
-    return this.dialect.buildUpdateQuery(this.config);
-  }
-  toSQL() {
-    const { typings: e, ...t } = this.dialect.sqlToQuery(this.getSQL());
-    return t;
-  }
-  /** @internal */
-  _prepare(e) {
-    const t = this.session.prepareQuery(this.dialect.sqlToQuery(this.getSQL()), this.config.returning, e, !0);
-    return t.joinsNotNullableMap = this.joinsNotNullableMap, t;
-  }
-  prepare(e) {
-    return this._prepare(e);
-  }
-  authToken;
-  /** @internal */
-  setToken(e) {
-    return this.authToken = e, this;
-  }
-  execute = (e) => this._prepare().execute(e, this.authToken);
-  /** @internal */
-  getSelectedFields() {
-    return this.config.returningFields ? new Proxy(
-      this.config.returningFields,
-      new ge({
-        alias: Ne(this.config.table),
-        sqlAliasedBehavior: "alias",
-        sqlBehavior: "error"
-      })
-    ) : void 0;
-  }
-  $dynamic() {
-    return this;
-  }
-}
-class xt extends z {
-  constructor(e) {
-    super(xt.buildEmbeddedCount(e.source, e.filters).queryChunks), this.params = e, this.mapWith(Number), this.session = e.session, this.sql = xt.buildCount(
-      e.source,
-      e.filters
-    );
-  }
-  sql;
-  token;
-  static [I] = "PgCountBuilder";
-  [Symbol.toStringTag] = "PgCountBuilder";
-  session;
-  static buildEmbeddedCount(e, t) {
-    return A`(select count(*) from ${e}${A.raw(" where ").if(t)}${t})`;
-  }
-  static buildCount(e, t) {
-    return A`select count(*) as count from ${e}${A.raw(" where ").if(t)}${t};`;
-  }
-  /** @intrnal */
-  setToken(e) {
-    return this.token = e, this;
-  }
-  then(e, t) {
-    return Promise.resolve(this.session.count(this.sql, this.token)).then(
-      e,
-      t
-    );
-  }
-  catch(e) {
-    return this.then(void 0, e);
-  }
-  finally(e) {
-    return this.then(
-      (t) => (e?.(), t),
-      (t) => {
-        throw e?.(), t;
-      }
-    );
-  }
-}
-class Iu {
-  constructor(e, t, r, i, s, u, a) {
-    this.fullSchema = e, this.schema = t, this.tableNamesMap = r, this.table = i, this.tableConfig = s, this.dialect = u, this.session = a;
-  }
-  static [I] = "PgRelationalQueryBuilder";
-  findMany(e) {
-    return new Gr(
-      this.fullSchema,
-      this.schema,
-      this.tableNamesMap,
-      this.table,
-      this.tableConfig,
-      this.dialect,
-      this.session,
-      e || {},
-      "many"
-    );
-  }
-  findFirst(e) {
-    return new Gr(
-      this.fullSchema,
-      this.schema,
-      this.tableNamesMap,
-      this.table,
-      this.tableConfig,
-      this.dialect,
-      this.session,
-      e ? { ...e, limit: 1 } : { limit: 1 },
-      "first"
-    );
-  }
-}
-class Gr extends qe {
-  constructor(e, t, r, i, s, u, a, d, y) {
-    super(), this.fullSchema = e, this.schema = t, this.tableNamesMap = r, this.table = i, this.tableConfig = s, this.dialect = u, this.session = a, this.config = d, this.mode = y;
-  }
-  static [I] = "PgRelationalQuery";
-  /** @internal */
-  _prepare(e) {
-    return Se.startActiveSpan("drizzle.prepareQuery", () => {
-      const { query: t, builtQuery: r } = this._toSQL();
-      return this.session.prepareQuery(
-        r,
-        void 0,
-        e,
-        !0,
-        (i, s) => {
-          const u = i.map(
-            (a) => cr(this.schema, this.tableConfig, a, t.selection, s)
-          );
-          return this.mode === "first" ? u[0] : u;
-        }
-      );
-    });
-  }
-  prepare(e) {
-    return this._prepare(e);
-  }
-  _getQuery() {
-    return this.dialect.buildRelationalQueryWithoutPK({
-      fullSchema: this.fullSchema,
-      schema: this.schema,
-      tableNamesMap: this.tableNamesMap,
-      table: this.table,
-      tableConfig: this.tableConfig,
-      queryConfig: this.config,
-      tableAlias: this.tableConfig.tsName
-    });
-  }
-  /** @internal */
-  getSQL() {
-    return this._getQuery().sql;
-  }
-  _toSQL() {
-    const e = this._getQuery(), t = this.dialect.sqlToQuery(e.sql);
-    return { query: e, builtQuery: t };
-  }
-  toSQL() {
-    return this._toSQL().builtQuery;
-  }
-  authToken;
-  /** @internal */
-  setToken(e) {
-    return this.authToken = e, this;
-  }
-  execute() {
-    return Se.startActiveSpan("drizzle.operation", () => this._prepare().execute(void 0, this.authToken));
-  }
-}
-class Lu extends qe {
-  constructor(e, t, r, i) {
-    super(), this.execute = e, this.sql = t, this.query = r, this.mapBatchResult = i;
-  }
-  static [I] = "PgRaw";
-  /** @internal */
-  getSQL() {
-    return this.sql;
-  }
-  getQuery() {
-    return this.query;
-  }
-  mapResult(e, t) {
-    return t ? this.mapBatchResult(e) : e;
-  }
-  _prepare() {
-    return this;
-  }
-  /** @internal */
-  isResponseInArrayMode() {
-    return !1;
-  }
-}
-class Ou {
-  constructor(e, t, r) {
-    if (this.dialect = e, this.session = t, this._ = r ? {
-      schema: r.schema,
-      fullSchema: r.fullSchema,
-      tableNamesMap: r.tableNamesMap,
-      session: t
-    } : {
-      schema: void 0,
-      fullSchema: {},
-      tableNamesMap: {},
-      session: t
-    }, this.query = {}, this._.schema)
-      for (const [i, s] of Object.entries(this._.schema))
-        this.query[i] = new Iu(
-          r.fullSchema,
-          this._.schema,
-          this._.tableNamesMap,
-          r.fullSchema[i],
-          s,
-          e,
-          t
-        );
-  }
-  static [I] = "PgDatabase";
-  query;
-  /**
-   * Creates a subquery that defines a temporary named result set as a CTE.
-   *
-   * It is useful for breaking down complex queries into simpler parts and for reusing the result set in subsequent parts of the query.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#with-clause}
-   *
-   * @param alias The alias for the subquery.
-   *
-   * Failure to provide an alias will result in a DrizzleTypeError, preventing the subquery from being referenced in other queries.
-   *
-   * @example
-   *
-   * ```ts
-   * // Create a subquery with alias 'sq' and use it in the select query
-   * const sq = db.$with('sq').as(db.select().from(users).where(eq(users.id, 42)));
-   *
-   * const result = await db.with(sq).select().from(sq);
-   * ```
-   *
-   * To select arbitrary SQL values as fields in a CTE and reference them in other CTEs or in the main query, you need to add aliases to them:
-   *
-   * ```ts
-   * // Select an arbitrary SQL value as a field in a CTE and reference it in the main query
-   * const sq = db.$with('sq').as(db.select({
-   *   name: sql<string>`upper(${users.name})`.as('name'),
-   * })
-   * .from(users));
-   *
-   * const result = await db.with(sq).select({ name: sq.name }).from(sq);
-   * ```
-   */
-  $with = (e, t) => {
-    const r = this;
-    return { as: (s) => (typeof s == "function" && (s = s(new ds(r.dialect))), new Proxy(
-      new Vn(
-        s.getSQL(),
-        t ?? ("getSelectedFields" in s ? s.getSelectedFields() ?? {} : {}),
-        e,
-        !0
-      ),
-      new ge({ alias: e, sqlAliasedBehavior: "alias", sqlBehavior: "error" })
-    )) };
-  };
-  $count(e, t) {
-    return new xt({ source: e, filters: t, session: this.session });
-  }
-  /**
-   * Incorporates a previously defined CTE (using `$with`) into the main query.
-   *
-   * This method allows the main query to reference a temporary named result set.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/select#with-clause}
-   *
-   * @param queries The CTEs to incorporate into the main query.
-   *
-   * @example
-   *
-   * ```ts
-   * // Define a subquery 'sq' as a CTE using $with
-   * const sq = db.$with('sq').as(db.select().from(users).where(eq(users.id, 42)));
-   *
-   * // Incorporate the CTE 'sq' into the main query and select from it
-   * const result = await db.with(sq).select().from(sq);
-   * ```
-   */
-  with(...e) {
-    const t = this;
-    function r(y) {
-      return new Ee({
-        fields: y ?? void 0,
-        session: t.session,
-        dialect: t.dialect,
-        withList: e
-      });
-    }
-    function i(y) {
-      return new Ee({
-        fields: y ?? void 0,
-        session: t.session,
-        dialect: t.dialect,
-        withList: e,
-        distinct: !0
-      });
-    }
-    function s(y, f) {
-      return new Ee({
-        fields: f ?? void 0,
-        session: t.session,
-        dialect: t.dialect,
-        withList: e,
-        distinct: { on: y }
-      });
-    }
-    function u(y) {
-      return new Hr(y, t.session, t.dialect, e);
-    }
-    function a(y) {
-      return new Wr(y, t.session, t.dialect, e);
-    }
-    function d(y) {
-      return new Ur(y, t.session, t.dialect, e);
-    }
-    return { select: r, selectDistinct: i, selectDistinctOn: s, update: u, insert: a, delete: d };
-  }
-  select(e) {
-    return new Ee({
-      fields: e ?? void 0,
-      session: this.session,
-      dialect: this.dialect
-    });
-  }
-  selectDistinct(e) {
-    return new Ee({
-      fields: e ?? void 0,
-      session: this.session,
-      dialect: this.dialect,
-      distinct: !0
-    });
-  }
-  selectDistinctOn(e, t) {
-    return new Ee({
-      fields: t ?? void 0,
-      session: this.session,
-      dialect: this.dialect,
-      distinct: { on: e }
-    });
-  }
-  /**
-   * Creates an update query.
-   *
-   * Calling this method without `.where()` clause will update all rows in a table. The `.where()` clause specifies which rows should be updated.
-   *
-   * Use `.set()` method to specify which values to update.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/update}
-   *
-   * @param table The table to update.
-   *
-   * @example
-   *
-   * ```ts
-   * // Update all rows in the 'cars' table
-   * await db.update(cars).set({ color: 'red' });
-   *
-   * // Update rows with filters and conditions
-   * await db.update(cars).set({ color: 'red' }).where(eq(cars.brand, 'BMW'));
-   *
-   * // Update with returning clause
-   * const updatedCar: Car[] = await db.update(cars)
-   *   .set({ color: 'red' })
-   *   .where(eq(cars.id, 1))
-   *   .returning();
-   * ```
-   */
-  update(e) {
-    return new Hr(e, this.session, this.dialect);
-  }
-  /**
-   * Creates an insert query.
-   *
-   * Calling this method will create new rows in a table. Use `.values()` method to specify which values to insert.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/insert}
-   *
-   * @param table The table to insert into.
-   *
-   * @example
-   *
-   * ```ts
-   * // Insert one row
-   * await db.insert(cars).values({ brand: 'BMW' });
-   *
-   * // Insert multiple rows
-   * await db.insert(cars).values([{ brand: 'BMW' }, { brand: 'Porsche' }]);
-   *
-   * // Insert with returning clause
-   * const insertedCar: Car[] = await db.insert(cars)
-   *   .values({ brand: 'BMW' })
-   *   .returning();
-   * ```
-   */
-  insert(e) {
-    return new Wr(e, this.session, this.dialect);
-  }
-  /**
-   * Creates a delete query.
-   *
-   * Calling this method without `.where()` clause will delete all rows in a table. The `.where()` clause specifies which rows should be deleted.
-   *
-   * See docs: {@link https://orm.drizzle.team/docs/delete}
-   *
-   * @param table The table to delete from.
-   *
-   * @example
-   *
-   * ```ts
-   * // Delete all rows in the 'cars' table
-   * await db.delete(cars);
-   *
-   * // Delete rows with filters and conditions
-   * await db.delete(cars).where(eq(cars.color, 'green'));
-   *
-   * // Delete with returning clause
-   * const deletedCar: Car[] = await db.delete(cars)
-   *   .where(eq(cars.id, 1))
-   *   .returning();
-   * ```
-   */
-  delete(e) {
-    return new Ur(e, this.session, this.dialect);
-  }
-  refreshMaterializedView(e) {
-    return new Bu(e, this.session, this.dialect);
-  }
-  authToken;
-  execute(e) {
-    const t = typeof e == "string" ? A.raw(e) : e.getSQL(), r = this.dialect.sqlToQuery(t), i = this.session.prepareQuery(
-      r,
-      void 0,
-      void 0,
-      !1
-    );
-    return new Lu(
-      () => i.execute(void 0, this.authToken),
-      t,
-      r,
-      (s) => i.mapResult(s, !0)
-    );
-  }
-  transaction(e, t) {
-    return this.session.transaction(e, t);
-  }
-}
-class Ru {
-  constructor(e, t) {
-    this.name = e, this.value = t;
-  }
-  static [I] = "PgCheckBuilder";
-  brand;
-  /** @internal */
-  build(e) {
-    return new Mu(e, this);
-  }
-}
-class Mu {
-  constructor(e, t) {
-    this.table = e, this.name = t.name, this.value = t.value;
-  }
-  static [I] = "PgCheck";
-  name;
-  value;
-}
-function Du(n, e) {
-  return new Ru(n, e);
-}
-class ps {
-  constructor(e, t) {
-    this.unique = e, this.name = t;
-  }
-  static [I] = "PgIndexBuilderOn";
-  on(...e) {
-    return new tr(
-      e.map((t) => {
-        if (Q(t, z))
-          return t;
-        t = t;
-        const r = new Jt(t.name, !!t.keyAsName, t.columnType, t.indexConfig);
-        return t.indexConfig = JSON.parse(JSON.stringify(t.defaultConfig)), r;
-      }),
-      this.unique,
-      !1,
-      this.name
-    );
-  }
-  onOnly(...e) {
-    return new tr(
-      e.map((t) => {
-        if (Q(t, z))
-          return t;
-        t = t;
-        const r = new Jt(t.name, !!t.keyAsName, t.columnType, t.indexConfig);
-        return t.indexConfig = t.defaultConfig, r;
-      }),
-      this.unique,
-      !0,
-      this.name
-    );
-  }
-  /**
-   * Specify what index method to use. Choices are `btree`, `hash`, `gist`, `spgist`, `gin`, `brin`, or user-installed access methods like `bloom`. The default method is `btree.
-   *
-   * If you have the `pg_vector` extension installed in your database, you can use the `hnsw` and `ivfflat` options, which are predefined types.
-   *
-   * **You can always specify any string you want in the method, in case Drizzle doesn't have it natively in its types**
-   *
-   * @param method The name of the index method to be used
-   * @param columns
-   * @returns
-   */
-  using(e, ...t) {
-    return new tr(
-      t.map((r) => {
-        if (Q(r, z))
-          return r;
-        r = r;
-        const i = new Jt(r.name, !!r.keyAsName, r.columnType, r.indexConfig);
-        return r.indexConfig = JSON.parse(JSON.stringify(r.defaultConfig)), i;
-      }),
-      this.unique,
-      !0,
-      this.name,
-      e
-    );
-  }
-}
-class tr {
-  static [I] = "PgIndexBuilder";
-  /** @internal */
-  config;
-  constructor(e, t, r, i, s = "btree") {
-    this.config = {
-      name: i,
-      columns: e,
-      unique: t,
-      only: r,
-      method: s
-    };
-  }
-  concurrently() {
-    return this.config.concurrently = !0, this;
-  }
-  with(e) {
-    return this.config.with = e, this;
-  }
-  where(e) {
-    return this.config.where = e, this;
-  }
-  /** @internal */
-  build(e) {
-    return new $u(this.config, e);
-  }
-}
-class $u {
-  static [I] = "PgIndex";
-  config;
-  constructor(e, t) {
-    this.config = { ...e, table: t };
-  }
-}
-function it(n) {
-  return new ps(!1, n);
-}
-function gs(n) {
-  return new ps(!0, n);
-}
-class Qu {
-  constructor(e) {
-    this.query = e;
-  }
-  authToken;
-  getQuery() {
-    return this.query;
-  }
-  mapResult(e, t) {
-    return e;
-  }
-  /** @internal */
-  setToken(e) {
-    return this.authToken = e, this;
-  }
-  static [I] = "PgPreparedQuery";
-  /** @internal */
-  joinsNotNullableMap;
-}
-class ku {
-  constructor(e) {
-    this.dialect = e;
-  }
-  static [I] = "PgSession";
-  /** @internal */
-  execute(e, t) {
-    return Se.startActiveSpan("drizzle.operation", () => Se.startActiveSpan("drizzle.prepareQuery", () => this.prepareQuery(
-      this.dialect.sqlToQuery(e),
-      void 0,
-      void 0,
-      !1
-    )).setToken(t).execute(void 0, t));
-  }
-  all(e) {
-    return this.prepareQuery(
-      this.dialect.sqlToQuery(e),
-      void 0,
-      void 0,
-      !1
-    ).all();
-  }
-  /** @internal */
-  async count(e, t) {
-    const r = await this.execute(e, t);
-    return Number(
-      r[0].count
-    );
-  }
-}
-const wt = {
+const bt = {
   arrayMode: !1,
   fullResults: !0
-}, hr = {
+}, fr = {
   arrayMode: !0,
   fullResults: !0
 };
-class qu extends Qu {
+class sl extends Da {
   constructor(e, t, r, i, s, u) {
     super(t), this.client = e, this.logger = r, this.fields = i, this._isResponseInArrayMode = s, this.customResultMapper = u, this.clientQuery = e.query ?? e;
   }
@@ -10393,23 +10607,23 @@ class qu extends Qu {
   clientQuery;
   /** @internal */
   async execute(e = {}, t = this.authToken) {
-    const r = Xt(this.query.params, e);
+    const r = Yt(this.query.params, e);
     this.logger.logQuery(this.query.sql, r);
     const { fields: i, clientQuery: s, query: u, customResultMapper: a } = this;
     if (!i && !a)
       return s(
         u.sql,
         r,
-        t === void 0 ? wt : {
-          ...wt,
+        t === void 0 ? bt : {
+          ...bt,
           authToken: t
         }
       );
     const d = await s(
       u.sql,
       r,
-      t === void 0 ? hr : {
-        ...hr,
+      t === void 0 ? fr : {
+        ...fr,
         authToken: t
       }
     );
@@ -10419,22 +10633,22 @@ class qu extends Qu {
     if (!this.fields && !this.customResultMapper)
       return e;
     const t = e.rows;
-    return this.customResultMapper ? this.customResultMapper(t) : t.map((r) => ki(this.fields, r, this.joinsNotNullableMap));
+    return this.customResultMapper ? this.customResultMapper(t) : t.map((r) => Qs(this.fields, r, this.joinsNotNullableMap));
   }
   all(e = {}) {
-    const t = Xt(this.query.params, e);
+    const t = Yt(this.query.params, e);
     return this.logger.logQuery(this.query.sql, t), this.clientQuery(
       this.query.sql,
       t,
-      this.authToken === void 0 ? wt : {
-        ...wt,
+      this.authToken === void 0 ? bt : {
+        ...bt,
         authToken: this.authToken
       }
     ).then((r) => r.rows);
   }
   /** @internal */
   values(e = {}, t) {
-    const r = Xt(this.query.params, e);
+    const r = Yt(this.query.params, e);
     return this.logger.logQuery(this.query.sql, r), this.clientQuery(this.query.sql, r, { arrayMode: !0, fullResults: !0, authToken: t }).then((i) => i.rows);
   }
   /** @internal */
@@ -10442,15 +10656,15 @@ class qu extends Qu {
     return this._isResponseInArrayMode;
   }
 }
-class Fu extends ku {
+class il extends $a {
   constructor(e, t, r, i = {}) {
-    super(t), this.client = e, this.schema = r, this.options = i, this.clientQuery = e.query ?? e, this.logger = i.logger ?? new Ci();
+    super(t), this.client = e, this.schema = r, this.options = i, this.clientQuery = e.query ?? e, this.logger = i.logger ?? new $s();
   }
   static [I] = "NeonHttpSession";
   clientQuery;
   logger;
   prepareQuery(e, t, r, i, s) {
-    return new qu(
+    return new sl(
       this.client,
       e,
       this.logger,
@@ -10470,7 +10684,7 @@ class Fu extends ku {
         })
       );
     }
-    return (await this.client.transaction(r, hr)).map((s, u) => t[u].mapResult(s, !0));
+    return (await this.client.transaction(r, fr)).map((s, u) => t[u].mapResult(s, !0));
   }
   // change return type to QueryRows<true>
   async query(e, t) {
@@ -10491,23 +10705,23 @@ class Fu extends ku {
     throw new Error("No transactions support in neon-http driver");
   }
 }
-class ju {
+class ol {
   constructor(e, t, r = {}) {
     this.client = e, this.dialect = t, this.options = r, this.initMappers();
   }
   static [I] = "NeonHttpDriver";
   createSession(e) {
-    return new Fu(this.client, this.dialect, e, { logger: this.options.logger });
+    return new il(this.client, this.dialect, e, { logger: this.options.logger });
   }
   initMappers() {
     be.setTypeParser(be.builtins.TIMESTAMPTZ, (e) => e), be.setTypeParser(be.builtins.TIMESTAMP, (e) => e), be.setTypeParser(be.builtins.DATE, (e) => e), be.setTypeParser(be.builtins.INTERVAL, (e) => e), be.setTypeParser(1231, (e) => e), be.setTypeParser(1115, (e) => e), be.setTypeParser(1185, (e) => e), be.setTypeParser(1187, (e) => e), be.setTypeParser(1182, (e) => e);
   }
 }
-function Bt(n, e, t, r) {
+function Nt(n, e, t, r) {
   return new Proxy(n, {
     get(i, s) {
       const u = i[s];
-      return typeof u != "function" && (typeof u != "object" || u === null) ? u : r ? Bt(u, e, t) : s === "query" ? Bt(u, e, t, !0) : new Proxy(u, {
+      return typeof u != "function" && (typeof u != "object" || u === null) ? u : r ? Nt(u, e, t) : s === "query" ? Nt(u, e, t, !0) : new Proxy(u, {
         apply(a, d, y) {
           const f = a.call(d, ...y);
           return typeof f == "object" && f !== null && "setToken" in f && typeof f.setToken == "function" && f.setToken(e), t(a, s, f);
@@ -10516,24 +10730,24 @@ function Bt(n, e, t, r) {
     }
   });
 }
-class Uu extends Ou {
+class al extends Ra {
   static [I] = "NeonHttpDatabase";
   $withAuth(e) {
-    return this.authToken = e, Bt(this, e, (t, r, i) => r === "with" ? Bt(i, e, (s, u, a) => a) : i);
+    return this.authToken = e, Nt(this, e, (t, r, i) => r === "with" ? Nt(i, e, (s, u, a) => a) : i);
   }
   async batch(e) {
     return this.session.batch(e);
   }
 }
 function ze(n, e = {}) {
-  const t = new Et({ casing: e.casing });
+  const t = new Pt({ casing: e.casing });
   let r;
-  e.logger === !0 ? r = new _i() : e.logger !== !1 && (r = e.logger);
+  e.logger === !0 ? r = new Ds() : e.logger !== !1 && (r = e.logger);
   let i;
   if (e.schema) {
-    const d = gu(
+    const d = la(
       e.schema,
-      bu
+      da
     );
     i = {
       fullSchema: e.schema,
@@ -10541,19 +10755,19 @@ function ze(n, e = {}) {
       tableNamesMap: d.tableNamesMap
     };
   }
-  const u = new ju(n, t, { logger: r }).createSession(i), a = new Uu(
+  const u = new ol(n, t, { logger: r }).createSession(i), a = new al(
     t,
     u,
     i
   );
   return a.$client = n, a;
 }
-function fr(...n) {
+function dr(...n) {
   if (typeof n[0] == "string") {
     const e = We(n[0]);
     return ze(e, n[1]);
   }
-  if (ji(n[0])) {
+  if (Fs(n[0])) {
     const { connection: e, client: t, ...r } = n[0];
     if (t)
       return ze(t, r);
@@ -10571,222 +10785,20 @@ function fr(...n) {
     return ze({}, t);
   }
   n.mock = e;
-})(fr || (fr = {}));
-const ct = De().primaryKey().generatedAlwaysAsIdentity(), rr = { withTimezone: !0 }, ht = {
-  created_at: Pt(rr).defaultNow().notNull(),
-  updated_at: Pt(rr),
-  deleted_at: Pt(rr)
-}, Ar = lt(
-  "users",
-  {
-    id: ct,
-    uuid: us().defaultRandom().unique().notNull(),
-    ...ht
-  },
-  (n) => [gs("uuid_idx").on(n.uuid)]
-), zu = lt(
-  "adhoc_games",
-  {
-    id: ct,
-    solution: st().notNull(),
-    user_id: De().notNull().references(() => Ar.id),
-    ...ht
-  },
-  (n) => [it("adhoc_game_user_idx").on(n.user_id)]
-), Nt = lt(
-  "solutions",
-  {
-    id: ct,
-    value: st().notNull().unique(),
-    date: Xn().defaultNow().notNull().unique(),
-    ...ht
-  },
-  (n) => [gs("daily_game_solution_date_idx").on(n.date)]
-), rt = lt(
-  "daily_games",
-  {
-    id: ct,
-    user_id: De().notNull().references(() => Ar.id),
-    solution_id: De().notNull().references(() => Nt.id),
-    ...ht
-  },
-  (n) => [
-    it("daily_game_user_idx").on(n.user_id),
-    it("daily_game_solution_idx").on(n.solution_id)
-  ]
-), bt = lt(
-  "attempts",
-  {
-    id: ct,
-    value: st().notNull(),
-    feedback: st().notNull(),
-    daily_game_id: De().references(() => rt.id),
-    adhoc_game_id: De().references(() => zu.id),
-    ...ht
-  },
-  (n) => [
-    Du(
-      "game_type",
-      A`
-      (${n.daily_game_id} IS NOT NULL AND ${n.adhoc_game_id} IS NULL)
-      OR
-      (${n.daily_game_id} IS NULL AND ${n.adhoc_game_id} IS NOT NULL)
-    `
-    ),
-    it("daily_game_attempt_idx").on(n.daily_game_id),
-    it("adhoc_game_attempt_idx").on(n.adhoc_game_id)
-  ]
-);
-async function Vu({
-  db: n,
-  game: e
-}) {
-  console.info("get attempts");
-  const t = "solution_id" in e;
-  return await n.select().from(bt).where(
-    He(t ? bt.daily_game_id : bt.adhoc_game_id, e.id)
-  ).orderBy(ls(bt.created_at));
+})(dr || (dr = {}));
+function ul(n) {
+  const e = We(n.connectionString);
+  return dr({ client: e });
 }
-const ot = {
-  maxAttempts: 8,
-  solutionLength: 4
-};
-function Wu(n, e) {
-  const t = {};
-  for (let r = 0; r < n.length; r++) {
-    const i = n[r], s = i[e];
-    t[s] = i;
-  }
-  return t;
+function ll() {
+  const n = Netlify.env.get("VITE_APP_URL"), e = Netlify.env.get("DATABASE_URL");
+  if (!n)
+    throw Error("[getEnv] missing VITE_APP_URL");
+  if (!e)
+    throw Error("[getEnv] missing DATABASE_URL");
+  return { allowedOrigins: n, connectionString: e };
 }
-const dr = "var(--token-default)";
-new Array(ot.solutionLength).fill(
-  dr
-);
-new Array(ot.maxAttempts).fill(dr).map(() => new Array(ot.solutionLength).fill(dr));
-const Ku = [
-  "fairy",
-  "fire",
-  "lightning",
-  "grass",
-  "ice",
-  "water",
-  "rock"
-], Hu = Ku.map((n, e) => {
-  const t = e + 1;
-  return {
-    icon: n,
-    color: `var(--token-${t})`,
-    id: t
-  };
-}), ms = "X", Gu = [
-  {
-    value: "-",
-    label: "incorrect color",
-    key: "incorrect"
-  },
-  {
-    value: "O",
-    label: "correct color, incorrect position",
-    key: "halfCorrect"
-  },
-  {
-    value: ms,
-    label: "correct color, correct position",
-    key: "correct"
-  }
-], Ju = Gu.map((n, e) => ({
-  ...n,
-  id: e,
-  color: `var(--feedback-token-${n.key})`
-}));
-Wu(Ju, "value");
-new Array(ot.solutionLength).fill(ms).join("");
-function Yu(n) {
-  const e = new Uint32Array(1);
-  return crypto.getRandomValues(e), Math.floor(e[0] / (Math.pow(2, 32) - 1) * n);
-}
-function Zu(n) {
-  const e = Yu(n.length);
-  return n[e];
-}
-function Xu() {
-  const n = Hu.map((t) => t.id);
-  return new Array(ot.solutionLength).fill(0).map(() => Zu(n)).join("");
-}
-async function el({
-  db: n
-}) {
-  console.info("create new solution");
-  const e = Xu(), r = (await n.insert(Nt).values({
-    value: e
-  }).returning()).pop();
-  if (!r)
-    throw Error("failed to create new solution");
-  return r;
-}
-async function tl({
-  db: n
-}) {
-  return console.info("get daily solution"), (await n.select().from(Nt).where(A`${Nt.date} = CURRENT_DATE`)).pop();
-}
-async function ys({
-  db: n
-}) {
-  const e = await tl({ db: n });
-  e && console.info(`get solution '${e.id}'`);
-  const t = e || await el({ db: n });
-  return e || console.info(`create new solution '${t.id}'`), t;
-}
-async function rl({
-  db: n,
-  user: e
-}) {
-  console.info("create new daily solution");
-  const t = await ys({ db: n }), i = (await n.insert(rt).values({
-    user_id: e.id,
-    solution_id: t.id
-  }).returning()).pop();
-  if (!i)
-    throw Error("failed to create new daily solution");
-  return i;
-}
-async function nl({
-  db: n,
-  user: e
-}) {
-  console.info("get daily solution");
-  const t = await ys({ db: n });
-  return (await n.select().from(rt).where(
-    At(
-      He(rt.user_id, e.id),
-      He(rt.solution_id, t.id)
-    )
-  )).pop();
-}
-async function sl({
-  db: n,
-  user: e
-}) {
-  console.info("get or create daily game");
-  const t = await nl({ db: n, user: e });
-  t && console.info(`get daily game '${t.id}'`);
-  const r = t || await rl({ db: n, user: e });
-  return t || console.info(`create new daily game '${r.id}'`), r;
-}
-async function il({
-  db: n
-}) {
-  const t = (await n.insert(Ar).values({}).returning()).pop();
-  if (!t)
-    throw Error("failed to create new user");
-  return t;
-}
-async function ol({ db: n }) {
-  const e = await il({ db: n }), t = await sl({ db: n, user: e }), r = await Vu({ db: n, game: t });
-  return { user: e, attempts: r };
-}
-function al({
+function cl({
   user: n,
   attempts: e
 }) {
@@ -10798,32 +10810,45 @@ function al({
     }))
   };
 }
+const ws = (n) => ({
+  "Access-Control-Allow-Origin": n.allowedOrigins,
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization"
+}), hl = (n) => ({
+  ...ws(n),
+  "Content-Type": "application/json"
+});
 function nr(n, e) {
+  if (!e)
+    return new Response(null, {
+      status: 500
+    });
+  const { data: t, env: r } = e, i = ws(r), s = hl(r);
   return n === "options" ? new Response(null, {
     status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "https://kripple.github.io",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization"
-    }
-  }) : n === "data" && e !== void 0 ? new Response(JSON.stringify(e), {
+    headers: i
+  }) : n === "data" && t !== void 0 ? new Response(JSON.stringify(t), {
     status: 200,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "https://kripple.github.io"
-    }
-  }) : (n === "data" && e === void 0 && console.error("data is missing"), n !== "error" && console.error(`invalid key '${n}'`), new Response("Internal Server Error", { status: 500 }));
+    headers: s
+  }) : (n === "data" && t === void 0 && console.error("data is missing"), n !== "error" && console.error(`invalid key '${n}'`), new Response("Internal Server Error", {
+    status: 500,
+    headers: s
+  }));
 }
-async function Ql(n) {
+async function jl(n) {
   try {
+    const e = ll();
     if (n.method === "OPTIONS")
-      return nr("options");
-    const e = We(Netlify.env.get("DATABASE_URL")), t = fr({ client: e }), r = await ol({ db: t }), i = al(r);
-    return nr("data", i);
+      return nr("options", { env: e });
+    const t = ul(e), r = await eu({ db: t }), i = cl(r);
+    return nr("data", {
+      env: e,
+      data: i
+    });
   } catch (e) {
     return console.error("Unexpected error in /game/new", e), nr("error");
   }
 }
 export {
-  Ql as default
+  jl as default
 };
