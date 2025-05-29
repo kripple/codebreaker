@@ -11478,7 +11478,7 @@ function Wl(r, e) {
   }
   return t;
 }
-const Ar = "gray";
+const Ar = "var(--token-default)";
 new Array(mt.solutionLength).fill(
   Ar
 );

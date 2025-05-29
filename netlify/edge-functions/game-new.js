@@ -10659,7 +10659,7 @@ function Wu(n, e) {
   }
   return t;
 }
-const dr = "gray";
+const dr = "var(--token-default)";
 new Array(ot.solutionLength).fill(
   dr
 );

@@ -11484,7 +11484,7 @@ function Wl(r, e) {
   }
   return t;
 }
-const xr = "gray";
+const xr = "var(--token-default)";
 new Array(yt.solutionLength).fill(
   xr
 );
