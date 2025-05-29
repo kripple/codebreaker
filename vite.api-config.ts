@@ -22,12 +22,22 @@ for (const name of edgeFunctions) {
         formats: ['es'],
         name: 'handler',
       },
+      minify: false,
       modulePreload: { polyfill: false },
       outDir,
+      rollupOptions: {
+        output: {
+          inlineDynamicImports: true,
+          minifyInternalExports: false,
+        },
+      },
       ssr: false,
-      target: 'node22',
+      target: 'esnext',
     },
     clearScreen: false,
+    define: {
+      'process.env': '{}', 
+    },
     esbuild: {
       loader: 'ts',
     },

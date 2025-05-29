@@ -1,16 +1,16 @@
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
-import 'urlpattern-polyfill';
-
 import { makeAttempt } from '@/api/handlers/makeAttempt';
+import { getAllowedOrigins } from '@/api/helpers/getAllowedOrigins';
+import { getDb } from '@/api/helpers/getDb';
 import { respondWith } from '@/api/helpers/respondWith';
+
+import 'urlpattern-polyfill';
 
 export default async function handler(request: Request) {
   try {
-    if (request.method === 'OPTIONS') return respondWith('options');
-    const sql = neon(Netlify.env.get('DATABASE_URL')!);
-    const db = drizzle({ client: sql });
+    if (request.method === 'OPTIONS')
+      return respondWith('options', { allowedOrigins: getAllowedOrigins() });
 
+    const db = await getDb();
     const pattern = new URLPattern({ pathname: '/game/:id/try/:code' });
     const result = pattern.exec(request.url);
     const id = result?.pathname.groups?.id;
@@ -18,9 +18,9 @@ export default async function handler(request: Request) {
     if (!id || !code) throw Error('missing required params');
 
     const data = await makeAttempt({ db, id, attempt: code });
-    return respondWith('data', data);
+    return respondWith('data', { allowedOrigins: getAllowedOrigins(), data });
   } catch (error) {
     console.error('Unexpected error in /game/:id/try/:code', error);
-    return respondWith('error');
+    return respondWith('error', { allowedOrigins: getAllowedOrigins() });
   }
 }

@@ -1,4 +1,3 @@
-import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 import * as uuid from 'uuid';
 
 import { getAttempts } from '@/api/db/adapters/attempts';
@@ -9,7 +8,7 @@ export async function getGameById({
   db,
   id,
 }: {
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   id: string;
 }) {
   const currentUser = uuid.validate(id)

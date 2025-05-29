@@ -1,4 +1,3 @@
-import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
 import * as uuid from 'uuid';
 
 import { createNewAttempt } from '@/api/db/adapters/attempts';
@@ -13,7 +12,7 @@ export async function makeAttempt({
   id,
 }: {
   attempt: string;
-  db: PgDatabase<PgQueryResultHKT>;
+  db: AppDatabase;
   id: string;
 }) {
   const user = uuid.validate(id) ? await getUser({ db, uuid: id }) : undefined;
