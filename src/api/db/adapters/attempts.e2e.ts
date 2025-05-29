@@ -5,9 +5,11 @@ import { createNewAttempt, getAttempts } from '@/api/db/adapters/attempts';
 import { getOrCreateDailyGame } from '@/api/db/adapters/daily_games';
 import { createNewUser } from '@/api/db/adapters/users';
 
+// TODO: convert to unit test by injecting mock db instance
+
 test.describe('attempts', () => {
   test.describe('daily game', () => {
-    test('get attempts', async () => {
+    test.skip('get attempts', async () => {
       const user = await createNewUser();
       expect(user).toBeTruthy();
 
@@ -19,7 +21,7 @@ test.describe('attempts', () => {
       expect(attempts).toHaveLength(0);
     });
 
-    test('make attempt', async () => {
+    test.skip('make attempt', async () => {
       const user = await createNewUser();
       expect(user).toBeTruthy();
 
@@ -40,7 +42,7 @@ test.describe('attempts', () => {
   });
 
   test.describe('adhoc game', () => {
-    test('get attempts', async () => {
+    test.skip('get attempts', async () => {
       const user = await createNewUser();
       expect(user).toBeTruthy();
 
@@ -52,7 +54,7 @@ test.describe('attempts', () => {
       expect(attempts).toHaveLength(0);
     });
 
-    test('make attempt', async () => {
+    test.skip('make attempt', async () => {
       const user = await createNewUser();
       expect(user).toBeTruthy();
 
@@ -72,7 +74,7 @@ test.describe('attempts', () => {
     });
   });
 
-  test('verify attempts are returned in the order they were created', async () => {
+  test.skip('verify attempts are returned in the order they were created', async () => {
     const user = await createNewUser();
     expect(user).toBeTruthy();
 

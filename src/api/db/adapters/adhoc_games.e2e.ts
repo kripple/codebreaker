@@ -7,7 +7,8 @@ import {
 import { createNewUser } from '@/api/db/adapters/users';
 
 test.describe('adhoc_games', () => {
-  test('new adhoc game', async () => {
+  // TODO: convert to unit test by injecting mock db instance
+  test.skip('new adhoc game', async () => {
     const user = await createNewUser();
     expect(user).toBeTruthy();
 

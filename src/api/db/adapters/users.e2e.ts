@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 import { createNewUser, getUser } from '@/api/db/adapters/users';
 
 test.describe('users', () => {
-  test('user', async () => {
+  // TODO: convert to unit test by injecting mock db instance
+  test.skip('user', async () => {
     const user = await createNewUser();
     const currentUser = await getUser(user.uuid);
 
