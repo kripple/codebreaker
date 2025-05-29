@@ -43,8 +43,10 @@ export function SvgIcon({
   return (
     <svg
       className={`${key}-icon`}
-      color={color}
       fill="currentColor"
+      style={{
+        color,
+      }}
       viewBox={icon.viewBox}
       xmlns="http://www.w3.org/2000/svg"
     >
