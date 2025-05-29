@@ -1,4 +1,4 @@
-import type { StartOptions } from 'msw/browser';
+// import type { StartOptions } from 'msw/browser';
 import { createRoot } from 'react-dom/client';
 
 import { App } from '@/app/components/App';
