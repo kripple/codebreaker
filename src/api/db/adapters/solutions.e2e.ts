@@ -6,7 +6,6 @@ import {
   getSolutionById,
 } from '@/api/db/adapters/solutions';
 
-
 test.describe('solutions', () => {
   // TODO: convert to unit test by injecting mock db instance
   test.skip('get or create solution', async () => {
