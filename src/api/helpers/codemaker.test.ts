@@ -25,8 +25,4 @@ test.describe('codemaker', () => {
       expect(actual.feedback).toEqual(expected);
     });
   });
-
-  test('fail the pipeline!', () => {
-    expect(false).toBe(true);
-  });
 });
