@@ -2,3 +2,4 @@ package-lock.json
 docs
 netlify
 src/api/db/migrations
+public/mockServiceWorker.js
