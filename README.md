@@ -4,7 +4,7 @@ https://en.wikipedia.org/wiki/Mastermind_(board_game)
 
 ## Development
 
-This project uses `NPM Scripts` to execute repeatable tasks.
+This project uses `NPM Scripts` to execute repeatable tasks. GitHub Actions run linting and testing processes when a pull request is opened on the `main` branch.
 
 ### Installation & Setup
 
