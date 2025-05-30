@@ -3,10 +3,7 @@ import { expect, test } from '@playwright/test';
 import { createNewAdhocGame } from '@/api/db/adapters/adhoc_games';
 import { createNewAttempt, getAttempts } from '@/api/db/adapters/attempts';
 import { getOrCreateDailyGame } from '@/api/db/adapters/daily_games';
-import {
-  createNewGenericGame,
-  getGenericGame,
-} from '@/api/db/adapters/generic_games';
+import { createNewGenericGame } from '@/api/db/adapters/generic_games';
 import { createNewUser } from '@/api/db/adapters/users';
 import { getDb } from '@/api/helpers/getDb';
 
