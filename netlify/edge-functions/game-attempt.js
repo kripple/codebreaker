@@ -11736,7 +11736,9 @@ async function Kc(r) {
     const e = hc();
     if (r.method === "OPTIONS")
       return gr("options", { env: e });
-    const t = cc(e), s = new URLPattern({ pathname: "/game/:id/turn/:order/try/:code" }).exec(r.url), i = s?.pathname.groups?.id, u = s?.pathname.groups?.order, o = s?.pathname.groups?.code;
+    const t = cc(e), s = new URLPattern({
+      pathname: "/game/:id/turn/:order/try/:code"
+    }).exec(r.url), i = s?.pathname.groups?.id, u = s?.pathname.groups?.order, o = s?.pathname.groups?.code;
     if (!i || !u || !o)
       throw Error("missing required params");
     const h = await rl({ db: t, id: i, attempt: o, order: u });

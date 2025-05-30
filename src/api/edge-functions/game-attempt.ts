@@ -11,7 +11,9 @@ export default async function handler(request: Request) {
     if (request.method === 'OPTIONS') return respondWith('options', { env });
 
     const db = getDb(env);
-    const pattern = new URLPattern({ pathname: '/game/:id/turn/:order/try/:code', });
+    const pattern = new URLPattern({
+      pathname: '/game/:id/turn/:order/try/:code',
+    });
     const result = pattern.exec(request.url);
     const id = result?.pathname.groups?.id;
     const order = result?.pathname.groups?.order;
