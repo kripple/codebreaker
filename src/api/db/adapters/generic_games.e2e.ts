@@ -1,13 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-import {
-  createNewAdhocGame,
-  getAdhocGameById,
-} from '@/api/db/adapters/adhoc_games';
-import {
-  getDailyGameById,
-  getOrCreateDailyGame,
-} from '@/api/db/adapters/daily_games';
+import { createNewAdhocGame } from '@/api/db/adapters/adhoc_games';
+import { getOrCreateDailyGame } from '@/api/db/adapters/daily_games';
 import {
   createNewGenericGame,
   getGenericGame,
@@ -16,7 +10,7 @@ import { createNewUser } from '@/api/db/adapters/users';
 import { getDb } from '@/api/helpers/getDb';
 
 const allowedOrigins = process.env.VITE_APP_URL as string;
-const connectionString = process.env.VITE_DATABASE_URL as string;
+const connectionString = process.env.DATABASE_URL as string;
 const db = getDb({ allowedOrigins, connectionString });
 
 test.describe('generic_games', () => {

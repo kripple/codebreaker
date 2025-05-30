@@ -8,7 +8,7 @@ import { createNewUser } from '@/api/db/adapters/users';
 import { getDb } from '@/api/helpers/getDb';
 
 const allowedOrigins = process.env.VITE_APP_URL as string;
-const connectionString = process.env.VITE_DATABASE_URL as string;
+const connectionString = process.env.DATABASE_URL as string;
 const db = getDb({ allowedOrigins, connectionString });
 
 test.describe('adhoc_games', () => {
