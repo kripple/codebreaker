@@ -22,7 +22,7 @@
     "migrate:dev": "dotenvx run -f .env.development -- npm run migrate",
     "migrate": "drizzle-kit migrate --config config/drizzle.config.ts",
     "test": "playwright test --config config/playwright.config.ts",
-    "e2e": "playwright test --config config/playwright.e2e-config.ts",
+    "e2e": "dotenvx run -f .env.test -- playwright test --config config/playwright.e2e-config.ts",
     "test:report": "playwright show-report",
     "optimize": "svgo src/app/assets  --config config/svgo.config.mjs",
     "login": "netlify login",
