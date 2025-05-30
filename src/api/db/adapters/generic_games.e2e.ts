@@ -5,6 +5,7 @@ import { getOrCreateDailyGame } from '@/api/db/adapters/daily_games';
 import {
   createNewGenericGame,
   getGenericGame,
+  getOrCreateGenericGame,
 } from '@/api/db/adapters/generic_games';
 import { createNewUser } from '@/api/db/adapters/users';
 import { getDb } from '@/api/helpers/getDb';
@@ -46,5 +47,29 @@ test.describe('generic_games', () => {
     const currentGame = await getGenericGame({ db, game });
     expect(currentGame).toBeTruthy();
     expect(genericGame.id).toEqual(currentGame!.id);
+  });
+
+  test('get or create generic daily game', async () => {
+    const user = await createNewUser({ db });
+    expect(user).toBeTruthy();
+
+    const game = await getOrCreateDailyGame({ db, user });
+    expect(game).toBeTruthy();
+
+    const genericGame = await getOrCreateGenericGame({ db, game });
+    expect(genericGame).toBeTruthy();
+    expect(game.id).toEqual(genericGame.daily_game_id);
+  });
+
+  test('get or create generic adhoc game', async () => {
+    const user = await createNewUser({ db });
+    expect(user).toBeTruthy();
+
+    const game = await createNewAdhocGame({ db, user });
+    expect(game).toBeTruthy();
+
+    const genericGame = await getOrCreateGenericGame({ db, game });
+    expect(genericGame).toBeTruthy();
+    expect(game.id).toEqual(genericGame.adhoc_game_id);
   });
 });

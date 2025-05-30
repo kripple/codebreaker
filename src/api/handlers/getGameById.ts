@@ -2,7 +2,7 @@ import * as uuid from 'uuid';
 
 import { getAttempts } from '@/api/db/adapters/attempts';
 import { getOrCreateDailyGame } from '@/api/db/adapters/daily_games';
-import { getGenericGame } from '@/api/db/adapters/generic_games';
+import { getOrCreateGenericGame } from '@/api/db/adapters/generic_games';
 import { createNewUser, getUser } from '@/api/db/adapters/users';
 
 export async function getGameById({ db, id }: { db: AppDatabase; id: string }) {
@@ -11,10 +11,7 @@ export async function getGameById({ db, id }: { db: AppDatabase; id: string }) {
     : undefined;
   const user = currentUser || (await createNewUser({ db }));
   const dailyGame = await getOrCreateDailyGame({ db, user });
-
-  const game = await getGenericGame({ db, game: dailyGame });
-  if (!game) throw Error('missing game');
-
+  const game = await getOrCreateGenericGame({ db, game: dailyGame });
   const attempts = await getAttempts({ db, game });
   return { user, attempts };
 }

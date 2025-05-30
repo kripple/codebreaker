@@ -1,4 +1,4 @@
-import {  eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import type { AdhocGame } from '@/api/db/schema/adhoc_games';
 import type { DailyGame } from '@/api/db/schema/daily_games';
@@ -46,4 +46,21 @@ export async function getGenericGame({
     .where(eq(key, game.id));
   const generic_game = generic_games.pop();
   return generic_game;
+}
+
+export async function getOrCreateGenericGame({
+  db,
+  game,
+}: {
+  db: AppDatabase;
+  game: DailyGame | AdhocGame;
+}): Promise<GenericGame> {
+  console.info('get or create generic game');
+  const currentGame = await getGenericGame({ db, game });
+  if (currentGame) console.info(`get generic game '${currentGame.id}'`);
+
+  const genericGame = currentGame || (await createNewGenericGame({ db, game }));
+  if (!currentGame) console.info(`create new generic game '${game.id}'`);
+
+  return genericGame;
 }
