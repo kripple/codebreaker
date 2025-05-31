@@ -1,6 +1,6 @@
 import { Flex, Group } from '@mantine/core';
 
-import { HowToPlayModal } from '@/app/components/HowToPlayModal';
+import { Modal } from '@/app/components/Modal';
 import { Profiler } from '@/app/components/Profiler';
 
 import '@/app/components/Header.css';
@@ -23,7 +23,7 @@ export function Header() {
           {title}
         </Flex>
         <Flex h="inherit" justify="flex-end" p="md">
-          <HowToPlayModal />
+          <Modal />
         </Flex>
       </Group>
     </Profiler>
