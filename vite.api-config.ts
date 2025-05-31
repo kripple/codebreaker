@@ -22,7 +22,6 @@ for (const name of edgeFunctions) {
         formats: ['es'],
         name: 'handler',
       },
-      modulePreload: { polyfill: false },
       outDir,
       ssr: false,
       target: 'esnext',
