@@ -18,7 +18,7 @@ export function FeedbackToken({
   const key = value ? lookup[value].key : locked ? 'darker' : 'empty';
 
   return (
-    <Box pos="relative">
+    <Box component="span" pos="relative">
       <ColorSwatch
         color={`var(--feedback-token-${key})`}
         size="12px"

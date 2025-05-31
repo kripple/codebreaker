@@ -1,12 +1,40 @@
+[data-name='modal'] {
+  backface-visibility: hidden;
+  overflow-y: auto;
+  transition-duration: 200ms;
+  transition-property: opacity, transform;
+  transition-timing-function: ease;
+  will-change: transform, opacity;
+}
+[data-name='modal-provider'] {
+  height: 100%;
+}
+
 /* show modal when both are checked or both are unchecked */
 #modal-show:checked
   ~ #modal-hide:checked
   ~ [data-name='modal-provider']
   [data-name='modal'] {
-  display: flex;
+  opacity: 1;
+  pointer-events: initial;
+  transform: translateY(0px);
 }
 #modal-show ~ #modal-hide ~ [data-name='modal-provider'] [data-name='modal'] {
-  display: flex;
+  opacity: 1;
+  pointer-events: initial;
+  transform: translateY(0px);
+}
+#modal-show:checked
+  ~ #modal-hide:checked
+  ~ [data-name='modal-provider']
+  [data-name='modal-sibling'] {
+  overflow: clip;
+}
+#modal-show
+  ~ #modal-hide
+  ~ [data-name='modal-provider']
+  [data-name='modal-sibling'] {
+  overflow: clip;
 }
 
 /* hide modal when one is checked and the other is unchecked */
@@ -14,11 +42,27 @@
   ~ #modal-hide
   ~ [data-name='modal-provider']
   [data-name='modal'] {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
 }
 #modal-show
   ~ #modal-hide:checked
   ~ [data-name='modal-provider']
   [data-name='modal'] {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px);
+}
+#modal-show:checked
+  ~ #modal-hide
+  ~ [data-name='modal-provider']
+  [data-name='modal-sibling'] {
+  overflow: initial;
+}
+#modal-show
+  ~ #modal-hide:checked
+  ~ [data-name='modal-provider']
+  [data-name='modal-sibling'] {
+  overflow: initial;
 }

@@ -11,6 +11,11 @@
   --color-outline: rgb(0, 136, 255);
 }
 
+:root {
+  --modal-z-index: 200;
+  --modal-paper-z-index: 220;
+}
+
 .main {
   font-family: var(--body-font);
   font-weight: 300;
@@ -34,4 +39,28 @@ button.locked {
 
 svg {
   color: var(--mantine-color-text);
+}
+
+.close {
+  aspect-ratio: 1;
+  display: flex;
+  height: inherit;
+  padding-left: calc(50% - 1px);
+  position: relative;
+  width: inherit;
+}
+.close:before,
+.close:after {
+  background-color: var(--mantine-color-text);
+  border-radius: 1px;
+  content: ' ';
+  height: inherit;
+  position: absolute;
+  width: 2px;
+}
+.close:before {
+  transform: rotate(45deg);
+}
+.close:after {
+  transform: rotate(-45deg);
 }
