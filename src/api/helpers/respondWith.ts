@@ -1,9 +1,8 @@
 import type { EnvContext } from '@/api/helpers/getEnv';
 import { getHeaders, getOptionsHeaders } from '@/api/helpers/getHeaders';
 
-export function respondWith(key: 'error'): Response;
 export function respondWith(
-  key: 'options',
+  key: 'options' | 'error',
   options: { env: EnvContext },
 ): Response;
 export function respondWith<T extends object>(
@@ -12,12 +11,8 @@ export function respondWith<T extends object>(
 ): Response;
 export function respondWith<T extends object>(
   key: 'options' | 'error' | 'data',
-  options?: { env: EnvContext; data?: T },
-) {
-  if (!options)
-    return new Response(null, {
-      status: 500,
-    });
+  options: { env: EnvContext; data?: T },
+): Response {
   const { data, env } = options;
   const optionsHeaders = getOptionsHeaders(env);
   const headers = getHeaders(env);
@@ -36,7 +31,6 @@ export function respondWith<T extends object>(
       headers,
     });
   }
-
   if (key === 'data' && data === undefined) console.error('data is missing');
 
   if (key !== 'error') console.error(`invalid key '${key}'`);

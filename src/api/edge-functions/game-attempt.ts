@@ -24,7 +24,7 @@ export default async function handler(request: Request) {
     return respondWith('data', { env, data });
   } catch (error) {
     console.error('Unexpected error in /game/:id/turn/:order/try/:code', error);
-
-    return respondWith('error');
+    const env = getEnv({ allowUndefined: true });
+    return respondWith('error', { env });
   }
 }

@@ -26,6 +26,7 @@ export default async function handler(request: Request) {
     });
   } catch (error) {
     console.error('Unexpected error in /game/:id', error);
-    return respondWith('error');
+    const env = getEnv({ allowUndefined: true });
+    return respondWith('error', { env });
   }
 }
