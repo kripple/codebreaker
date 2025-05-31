@@ -49,14 +49,14 @@ test.describe('edge-functions', () => {
       path: `/game/${id}`,
     });
 
-    // /game/:id/try/:code
+    // /game/:id/turn/:order/try/:code
     await expectResponse({
       expectProps: {
         id: (e: Actual) => e.toEqual(id),
       },
       method: 'post',
       request,
-      path: `/game/${id}/try/1234`,
+      path: `/game/${id}/turn/1/try/1234`,
     });
 
     // /game/:id (again)

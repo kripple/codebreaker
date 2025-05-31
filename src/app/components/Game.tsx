@@ -80,6 +80,7 @@ export function Game() {
       console.error('user id is missing');
       return;
     }
+    const turnOrder = activeRowId + 1;
     const code = gameRow
       .map((_, i) => {
         const name = `${activeRowId}.${i}`;
@@ -89,7 +90,7 @@ export function Game() {
       })
       .join('');
 
-    makeAttempt({ id: currentId, attempt: code });
+    makeAttempt({ id: currentId, attempt: code, order: turnOrder });
   };
 
   const select = (event: ClickEvent) => {

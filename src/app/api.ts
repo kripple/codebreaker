@@ -14,11 +14,11 @@ export const api = createApi({
     }),
     makeAttempt: build.mutation<
       { id: string },
-      { id: string; attempt: string }
+      { id: string; attempt: string; order: number }
     >({
-      query: ({ id, attempt }) => ({
+      query: ({ id, attempt, order }) => ({
         method: 'POST',
-        url: `/game/${id}/try/${attempt}`,
+        url: `/game/${id}/turn/${order}/try/${attempt}`,
       }),
       invalidatesTags: ['Game'],
     }),

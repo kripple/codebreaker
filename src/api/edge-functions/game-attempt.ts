@@ -11,16 +11,19 @@ export default async function handler(request: Request) {
     if (request.method === 'OPTIONS') return respondWith('options', { env });
 
     const db = getDb(env);
-    const pattern = new URLPattern({ pathname: '/game/:id/try/:code' });
+    const pattern = new URLPattern({
+      pathname: '/game/:id/turn/:order/try/:code',
+    });
     const result = pattern.exec(request.url);
     const id = result?.pathname.groups?.id;
+    const order = result?.pathname.groups?.order;
     const code = result?.pathname.groups?.code;
-    if (!id || !code) throw Error('missing required params');
+    if (!id || !order || !code) throw Error('missing required params');
 
-    const data = await makeAttempt({ db, id, attempt: code });
+    const data = await makeAttempt({ db, id, attempt: code, order });
     return respondWith('data', { env, data });
   } catch (error) {
-    console.error('Unexpected error in /game/:id/try/:code', error);
+    console.error('Unexpected error in /game/:id/turn/:order/try/:code', error);
 
     return respondWith('error');
   }

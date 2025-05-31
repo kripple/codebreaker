@@ -5,17 +5,21 @@ import {
   getOrCreateDailyGame,
 } from '@/api/db/adapters/daily_games';
 import { createNewUser } from '@/api/db/adapters/users';
+import { getDb } from '@/api/helpers/getDb';
+
+const allowedOrigins = process.env.VITE_APP_URL as string;
+const connectionString = process.env.DATABASE_URL as string;
+const db = getDb({ allowedOrigins, connectionString });
 
 test.describe('daily_games', () => {
-  // TODO: convert to unit test by injecting mock db instance
-  test.skip('get or create daily game', async () => {
-    const user = await createNewUser();
+  test('get or create daily game', async () => {
+    const user = await createNewUser({ db });
     expect(user).toBeTruthy();
 
-    const game = await getOrCreateDailyGame(user);
+    const game = await getOrCreateDailyGame({ db, user });
     expect(game).toBeTruthy();
 
-    const gameById = await getDailyGameById(game.id);
+    const gameById = await getDailyGameById({ db, id: game.id });
     expect(gameById).toBeTruthy();
 
     expect(game).toEqual(gameById);

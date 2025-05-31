@@ -1,5 +1,5 @@
 {
-  "id": "b97a297a-75da-461e-8641-85a9a1661133",
+  "id": "f14317ad-1fd6-488f-8365-4ffe59b3cdcb",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -99,22 +99,17 @@
       "name": "attempts",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "game_id": {
+          "name": "game_id",
           "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "identity": {
-            "type": "always",
-            "name": "attempts_id_seq",
-            "schema": "public",
-            "increment": "1",
-            "startWith": "1",
-            "minValue": "1",
-            "maxValue": "2147483647",
-            "cache": "1",
-            "cycle": false
-          }
+          "primaryKey": false,
+          "notNull": true
+        },
+        "game_attempts_order": {
+          "name": "game_attempts_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         },
         "value": {
           "name": "value",
@@ -127,18 +122,6 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
-        },
-        "daily_game_id": {
-          "name": "daily_game_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "adhoc_game_id": {
-          "name": "adhoc_game_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -161,26 +144,11 @@
         }
       },
       "indexes": {
-        "daily_game_attempt_idx": {
-          "name": "daily_game_attempt_idx",
+        "game_attempts_idx": {
+          "name": "game_attempts_idx",
           "columns": [
             {
-              "expression": "daily_game_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "adhoc_game_attempt_idx": {
-          "name": "adhoc_game_attempt_idx",
-          "columns": [
-            {
-              "expression": "adhoc_game_id",
+              "expression": "game_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -193,25 +161,12 @@
         }
       },
       "foreignKeys": {
-        "attempts_daily_game_id_daily_games_id_fk": {
-          "name": "attempts_daily_game_id_daily_games_id_fk",
+        "attempts_game_id_generic_games_id_fk": {
+          "name": "attempts_game_id_generic_games_id_fk",
           "tableFrom": "attempts",
-          "tableTo": "daily_games",
+          "tableTo": "generic_games",
           "columnsFrom": [
-            "daily_game_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "attempts_adhoc_game_id_adhoc_games_id_fk": {
-          "name": "attempts_adhoc_game_id_adhoc_games_id_fk",
-          "tableFrom": "attempts",
-          "tableTo": "adhoc_games",
-          "columnsFrom": [
-            "adhoc_game_id"
+            "game_id"
           ],
           "columnsTo": [
             "id"
@@ -220,13 +175,21 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "id": {
+          "name": "id",
+          "columns": [
+            "game_id",
+            "game_attempts_order"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
-        "game_type": {
-          "name": "game_type",
-          "value": "\n      (\"attempts\".\"daily_game_id\" IS NOT NULL AND \"attempts\".\"adhoc_game_id\" IS NULL)\n      OR\n      (\"attempts\".\"daily_game_id\" IS NULL AND \"attempts\".\"adhoc_game_id\" IS NOT NULL)\n    "
+        "game_attempts_order_check": {
+          "name": "game_attempts_order_check",
+          "value": "\n      (\"attempts\".\"game_attempts_order\" > 0 AND \"attempts\".\"game_attempts_order\" < 17)\n    "
         }
       },
       "isRLSEnabled": false
@@ -348,6 +311,130 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.generic_games": {
+      "name": "generic_games",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "identity": {
+            "type": "always",
+            "name": "generic_games_id_seq",
+            "schema": "public",
+            "increment": "1",
+            "startWith": "1",
+            "minValue": "1",
+            "maxValue": "2147483647",
+            "cache": "1",
+            "cycle": false
+          }
+        },
+        "daily_game_id": {
+          "name": "daily_game_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "adhoc_game_id": {
+          "name": "adhoc_game_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "daily_game_idx": {
+          "name": "daily_game_idx",
+          "columns": [
+            {
+              "expression": "daily_game_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "adhoc_game_idx": {
+          "name": "adhoc_game_idx",
+          "columns": [
+            {
+              "expression": "adhoc_game_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "generic_games_daily_game_id_daily_games_id_fk": {
+          "name": "generic_games_daily_game_id_daily_games_id_fk",
+          "tableFrom": "generic_games",
+          "tableTo": "daily_games",
+          "columnsFrom": [
+            "daily_game_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "generic_games_adhoc_game_id_adhoc_games_id_fk": {
+          "name": "generic_games_adhoc_game_id_adhoc_games_id_fk",
+          "tableFrom": "generic_games",
+          "tableTo": "adhoc_games",
+          "columnsFrom": [
+            "adhoc_game_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "game_type": {
+          "name": "game_type",
+          "value": "\n      (\"generic_games\".\"daily_game_id\" IS NOT NULL AND \"generic_games\".\"adhoc_game_id\" IS NULL)\n      OR\n      (\"generic_games\".\"daily_game_id\" IS NULL AND \"generic_games\".\"adhoc_game_id\" IS NOT NULL)\n    "
+        }
+      },
       "isRLSEnabled": false
     },
     "public.solutions": {
