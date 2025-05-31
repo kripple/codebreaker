@@ -1,0 +1,5 @@
+.modal {
+  display: absolute;
+  position: fixed;
+  top: 0;
+}

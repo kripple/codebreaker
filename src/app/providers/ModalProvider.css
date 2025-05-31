@@ -1,0 +1,24 @@
+/* show modal when both are checked or both are unchecked */
+#modal-show:checked
+  ~ #modal-hide:checked
+  ~ [data-name='modal-provider']
+  [data-name='modal'] {
+  display: flex;
+}
+#modal-show ~ #modal-hide ~ [data-name='modal-provider'] [data-name='modal'] {
+  display: flex;
+}
+
+/* hide modal when one is checked and the other is unchecked */
+#modal-show:checked
+  ~ #modal-hide
+  ~ [data-name='modal-provider']
+  [data-name='modal'] {
+  display: none;
+}
+#modal-show
+  ~ #modal-hide:checked
+  ~ [data-name='modal-provider']
+  [data-name='modal'] {
+  display: none;
+}
