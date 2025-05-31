@@ -32,7 +32,7 @@ export async function makeAttempt({
   const parsed = parseInt(order);
   const gameAttemptOrder = Number.isNaN(parsed) ? undefined : parsed;
   if (!gameAttemptOrder) throw Error('failed to parse turn order');
-  if (attemptsCount !== gameAttemptOrder) throw Error('409 Conflict'); // TODO: return as http response code
+  if (attemptsCount !== gameAttemptOrder) throw Error('409');
 
   const { feedback } = evaluateAttempt(attempt, solution.value);
   await createNewAttempt({

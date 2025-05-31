@@ -10862,10 +10862,13 @@ function nr(n, e) {
   }) : n === "data" && t !== void 0 ? new Response(JSON.stringify(t), {
     status: 200,
     headers: s
-  }) : (n === "data" && t === void 0 && console.error("data is missing"), n !== "error" && console.error(`invalid key '${n}'`), new Response("Internal Server Error", {
+  }) : (n === "data" && t === void 0 && console.error("data is missing"), n === "conflict" ? new Response("Conflict", {
+    status: 409,
+    headers: s
+  }) : (n !== "error" && console.error(`invalid key '${n}'`), new Response("Internal Server Error", {
     status: 500,
     headers: s
-  }));
+  })));
 }
 async function Vl(n) {
   try {

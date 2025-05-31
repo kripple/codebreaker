@@ -23,8 +23,20 @@ export default async function handler(request: Request) {
     const data = await makeAttempt({ db, id, attempt: code, order });
     return respondWith('data', { env, data });
   } catch (error) {
-    console.error('Unexpected error in /game/:id/turn/:order/try/:code', error);
     const env = getEnv({ allowUndefined: true });
-    return respondWith('error', { env });
+    if (
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      error.message === '409'
+    ) {
+      return respondWith('conflict', { env });
+    } else {
+      console.error(
+        'Unexpected error in /game/:id/turn/:order/try/:code',
+        error,
+      );
+      return respondWith('error', { env });
+    }
   }
 }

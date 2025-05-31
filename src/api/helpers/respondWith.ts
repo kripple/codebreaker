@@ -2,7 +2,7 @@ import type { EnvContext } from '@/api/helpers/getEnv';
 import { getHeaders, getOptionsHeaders } from '@/api/helpers/getHeaders';
 
 export function respondWith(
-  key: 'options' | 'error',
+  key: 'options' | 'error' | 'conflict',
   options: { env: EnvContext },
 ): Response;
 export function respondWith<T extends object>(
@@ -10,7 +10,7 @@ export function respondWith<T extends object>(
   options: { env: EnvContext; data: T },
 ): Response;
 export function respondWith<T extends object>(
-  key: 'options' | 'error' | 'data',
+  key: 'options' | 'error' | 'data' | 'conflict',
   options: { env: EnvContext; data?: T },
 ): Response {
   const { data, env } = options;
@@ -32,6 +32,13 @@ export function respondWith<T extends object>(
     });
   }
   if (key === 'data' && data === undefined) console.error('data is missing');
+
+  if (key === 'conflict') {
+    return new Response('Conflict', {
+      status: 409,
+      headers,
+    });
+  }
 
   if (key !== 'error') console.error(`invalid key '${key}'`);
   return new Response('Internal Server Error', {

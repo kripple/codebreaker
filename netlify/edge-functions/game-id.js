@@ -10890,10 +10890,13 @@ function gr(r, e) {
   }) : r === "data" && t !== void 0 ? new Response(JSON.stringify(t), {
     status: 200,
     headers: s
-  }) : (r === "data" && t === void 0 && console.error("data is missing"), r !== "error" && console.error(`invalid key '${r}'`), new Response("Internal Server Error", {
+  }) : (r === "data" && t === void 0 && console.error("data is missing"), r === "conflict" ? new Response("Conflict", {
+    status: 409,
+    headers: s
+  }) : (r !== "error" && console.error(`invalid key '${r}'`), new Response("Internal Server Error", {
     status: 500,
     headers: s
-  }));
+  })));
 }
 var dc = Object.defineProperty, H = (r, e) => dc(r, "name", { value: e, configurable: !0 }), nt = class {
   type = 3;
