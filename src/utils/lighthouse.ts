@@ -4,7 +4,15 @@ import lighthouse, { type Flags } from 'lighthouse';
 const failureThreshold = 0.9 as const;
 const url = 'https://kripple.github.io/codebreaker/' as const;
 
-const chrome = await chromeLauncher.launch({ chromeFlags: ['--headless'] });
+const chrome = await chromeLauncher.launch({
+  // This combination fixes many common Chrome launch failures in CI environments like GitHub Actions.
+  chromeFlags: [
+    '--headless',
+    '--no-sandbox',
+    '--disable-gpu',
+    '--disable-dev-shm-usage',
+  ],
+});
 const options: Flags = {
   port: chrome.port,
 };
