@@ -44,7 +44,6 @@ export function HowToPlayModal({
           fontSize: '25px',
           lineHeight: '30px',
           fontWeight: 700,
-          fontFamily: 'var(--body-font)',
         }}
       >
         How To Play
@@ -55,7 +54,6 @@ export function HowToPlayModal({
           fontSize: '20px',
           lineHeight: '24px',
           fontWeight: 300,
-          fontFamily: 'var(--body-font)',
         }}
       >
         Break the Code in {config.maxAttempts} tries.

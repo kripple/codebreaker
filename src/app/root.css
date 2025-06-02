@@ -1,7 +1,9 @@
 :root {
-  --title-font: 'Tektur', sans-serif; /* 400-900 */
-  --body-font: 'Space Grotesk', sans-serif; /* 300-700 */
-  --stencil-font: 'Stardos Stencil'; /* 300, 700 */
+  /* Tektur 400-900 */
+  --title-font: 'Tektur';
+
+  /* Space Grotesk 300-700 */
+  /* --body-font: 'Space Grotesk'; */
 }
 
 html {
