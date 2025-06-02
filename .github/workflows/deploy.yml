@@ -15,20 +15,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.node-version'
+          cache: 'npm'
       - name: Lint and Test
         run: |
           npm ci
           npm run lint
           npm run test
           npm run build:ci
+
   upload:
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.node-version'
+          cache: 'npm'
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./docs
+
   deploy:
     needs: upload
     runs-on: ubuntu-latest
@@ -38,11 +48,16 @@ jobs:
     steps:
       - uses: actions/deploy-pages@v4
         id: pages-deployment
+
   post-deploy:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: '.node-version'
+          cache: 'npm'
       - name: Lighthouse Audit
         run: |
           npm ci
