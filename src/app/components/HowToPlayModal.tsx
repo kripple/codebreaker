@@ -19,18 +19,21 @@ export function HowToPlayModal({
       size="md"
       styles={{
         content: {
+          backfaceVisibility: 'unset',
+          display: 'flex',
+          flexDirection: 'column',
           padding: '10px',
         },
         body: {
           marginRight: '16px',
         },
         header: {
-          alignItems: 'flex-start',
+          alignSelf: 'flex-end',
           height: '28px',
-          justifySelf: 'flex-end',
           minHeight: '28px',
           padding: 0,
           paddingBottom: 0,
+          transition: 'none',
           width: '28px',
         },
       }}
