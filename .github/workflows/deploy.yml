@@ -11,7 +11,18 @@ permissions:
   id-token: write
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint and Test
+        run: |
+          npm ci
+          npm run lint
+          npm run test
+          npm run build:ci
   upload:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
+      - name: Lighthouse Audit
+        run: |
           npm ci
           npm run lh
