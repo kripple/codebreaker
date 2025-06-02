@@ -9,7 +9,7 @@ import { TokenSelect } from '@/app/components/TokenSelect';
 import { useConfetti } from '@/app/hooks/useConfetti';
 import { useGame } from '@/app/hooks/useGame';
 import { useMakeAttempt } from '@/app/hooks/useMakeAttempt';
-import { config } from '@/constants/config';
+import { maxAttempts, solutionLength } from '@/constants/config';
 import {
   type FeedbackToken,
   gameRow,
@@ -41,7 +41,7 @@ export function Game() {
   const currentAttempt = last(gameData?.attempts);
   const win = currentAttempt?.feedback === winningFeedback;
   useConfetti(win);
-  const locked = win || gameData?.attempts.length === config.maxAttempts;
+  const locked = win || gameData?.attempts.length === maxAttempts;
   const secretCode = win ? currentAttempt.value : undefined;
 
   function selectFeedbackTokens(
@@ -103,7 +103,7 @@ export function Game() {
       draft[row][column] = value;
       return draft;
     });
-    const maxColumnId = config.solutionLength - 1;
+    const maxColumnId = solutionLength - 1;
     setColumnId((current) => {
       const draft = current + 1;
       if (draft > maxColumnId) return 0;

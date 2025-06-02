@@ -1,10 +1,10 @@
-import { config } from '@/constants/config';
+import { solutionLength } from '@/constants/config';
 import { gameTokens, winningFeedback } from '@/constants/tokens';
 import { sample } from '@/utils/array-sample';
 
 export function makeSecretCode() {
   const ids = gameTokens.map((token) => token.id);
-  const selectedTokens = new Array(config.solutionLength)
+  const selectedTokens = new Array(solutionLength)
     .fill(0)
     .map(() => sample(ids));
   return selectedTokens.join('');

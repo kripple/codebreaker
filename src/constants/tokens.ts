@@ -1,14 +1,12 @@
-import { config } from '@/constants/config';
+import { maxAttempts, solutionLength } from '@/constants/config';
 import { lookup } from '@/utils/array-lookup';
 import { isString } from '@/utils/type-guards';
 
 export const defaultColor = 'var(--token-default)' as const;
-export const gameRow: string[] = new Array(config.solutionLength).fill(
-  defaultColor,
-);
-const _gameRows: string[][] = new Array(config.maxAttempts)
+export const gameRow: string[] = new Array(solutionLength).fill(defaultColor);
+const _gameRows: string[][] = new Array(maxAttempts)
   .fill(defaultColor)
-  .map(() => new Array(config.solutionLength).fill(defaultColor));
+  .map(() => new Array(solutionLength).fill(defaultColor));
 export const gameRows = () => [..._gameRows];
 
 export const icons = [
@@ -62,6 +60,4 @@ export function isFeedbackToken(
   return value in feedbackTokenByValue;
 }
 
-export const winningFeedback = new Array(config.solutionLength)
-  .fill(correct)
-  .join('');
+export const winningFeedback = new Array(solutionLength).fill(correct).join('');

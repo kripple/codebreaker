@@ -1,7 +1,7 @@
 import { Modal, type ModalBaseProps } from '@mantine/core';
 
 import { FeedbackToken } from '@/app/components/FeedbackToken';
-import { config } from '@/constants/config';
+import { maxAttempts } from '@/constants/config';
 
 export function HowToPlayModal({
   hide,
@@ -56,7 +56,7 @@ export function HowToPlayModal({
           fontWeight: 300,
         }}
       >
-        Break the Code in {config.maxAttempts} tries.
+        Break the Code in {maxAttempts} tries.
       </p>
       <ul
         style={{

@@ -2,12 +2,11 @@ import { Flex, Group } from '@mantine/core';
 
 import { Modal } from '@/app/components/Modal';
 import { Profiler } from '@/app/components/Profiler';
+import { appTitle } from '@/constants/config';
 
 import '@/app/components/Header.css';
 
 export function Header() {
-  const title = 'Code:Breaker' as const;
-
   return (
     <Profiler component="Header">
       <Group
@@ -20,7 +19,7 @@ export function Header() {
       >
         <Flex p="md"></Flex>
         <Flex className="title" justify="center" px="md" py={0}>
-          {title}
+          {appTitle}
         </Flex>
         <Flex h="inherit" justify="flex-end" p="md">
           <Modal />
