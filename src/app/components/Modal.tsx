@@ -18,6 +18,7 @@ export function Modal() {
     <>
       <HowToPlayModal hide={hideModal} show={show} />
       <Button
+        aria-label="How to play button"
         onClick={showModal}
         style={{
           aspectRatio: 1,
