@@ -1,15 +1,16 @@
-name: Lint, Test, & Build
+name: project linting and testing
+
 on:
   pull_request:
     branches:
       - main
   workflow_dispatch:
+
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch triggering commit
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       - run: |
           npm ci
           npm run lint
