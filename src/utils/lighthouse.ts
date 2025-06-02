@@ -16,7 +16,7 @@ for (const category in result.lhr.categories) {
   const score = result.lhr.categories[category].score;
   if (!score) throw Error(`missing score for '${category}' category`);
   if (score < failureThreshold)
-    console.warn(`failed ${category} audit with a score of ${score * 100}`);
+    throw Error(`failed ${category} audit with a score of ${score * 100}`);
   console.info(`${category}: ${score * 100}`);
 }
 
