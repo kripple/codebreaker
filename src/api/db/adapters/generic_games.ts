@@ -14,18 +14,18 @@ export async function createNewGenericGame({
   console.info('create new generic game');
   const isDailyGame = 'solution_id' in game;
   const key = isDailyGame ? 'daily_game_id' : 'adhoc_game_id';
-  const generic_games = await db
+  const games = await db
     .insert(GenericGame)
     .values({
       [key]: game.id,
     })
     .returning();
 
-  const generic_game = generic_games.pop();
-  if (!generic_game) {
+  const genericGame = games.pop();
+  if (!genericGame) {
     throw Error('failed to create new generic game');
   }
-  return generic_game;
+  return genericGame;
 }
 
 export async function getGenericGame({
@@ -40,12 +40,9 @@ export async function getGenericGame({
   const key = isDailyGame
     ? GenericGame.daily_game_id
     : GenericGame.adhoc_game_id;
-  const generic_games = await db
-    .select()
-    .from(GenericGame)
-    .where(eq(key, game.id));
-  const generic_game = generic_games.pop();
-  return generic_game;
+  const games = await db.select().from(GenericGame).where(eq(key, game.id));
+  const genericGame = games.pop();
+  return genericGame;
 }
 
 export async function getOrCreateGenericGame({

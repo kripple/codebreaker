@@ -416,17 +416,17 @@ const Se = {
   startActiveSpan(n, e) {
     return e();
   }
-}, ue = Symbol.for("drizzle:ViewBaseConfig"), bt = Symbol.for("drizzle:Schema"), sr = Symbol.for("drizzle:Columns"), Dr = Symbol.for("drizzle:ExtraConfigColumns"), Ht = Symbol.for("drizzle:OriginalName"), Gt = Symbol.for("drizzle:BaseName"), Et = Symbol.for("drizzle:IsAlias"), $r = Symbol.for("drizzle:ExtraConfigBuilder"), Rs = Symbol.for("drizzle:IsDrizzleTable");
+}, ue = Symbol.for("drizzle:ViewBaseConfig"), bt = Symbol.for("drizzle:Schema"), sr = Symbol.for("drizzle:Columns"), Dr = Symbol.for("drizzle:ExtraConfigColumns"), Gt = Symbol.for("drizzle:OriginalName"), Ht = Symbol.for("drizzle:BaseName"), Et = Symbol.for("drizzle:IsAlias"), $r = Symbol.for("drizzle:ExtraConfigBuilder"), Rs = Symbol.for("drizzle:IsDrizzleTable");
 class U {
   static [I] = "Table";
   /** @internal */
   static Symbol = {
     Name: Le,
     Schema: bt,
-    OriginalName: Ht,
+    OriginalName: Gt,
     Columns: sr,
     ExtraConfigColumns: Dr,
-    BaseName: Gt,
+    BaseName: Ht,
     IsAlias: Et,
     ExtraConfigBuilder: $r
   };
@@ -439,7 +439,7 @@ class U {
    * @internal
    * Used to store the original name of the table, before any aliasing.
    */
-  [Ht];
+  [Gt];
   /** @internal */
   [bt];
   /** @internal */
@@ -450,7 +450,7 @@ class U {
    *  @internal
    * Used to store the table name before the transformation via the `tableCreator` functions.
    */
-  [Gt];
+  [Ht];
   /** @internal */
   [Et] = !1;
   /** @internal */
@@ -458,7 +458,7 @@ class U {
   /** @internal */
   [$r] = void 0;
   constructor(e, t, r) {
-    this[Le] = this[Ht] = e, this[bt] = t, this[Gt] = r;
+    this[Le] = this[Gt] = e, this[bt] = t, this[Ht] = r;
   }
 }
 function Ne(n) {
@@ -1023,20 +1023,20 @@ class Ks extends Y {
     return typeof e == "number" ? e : Number(e);
   }
 }
-class Hs extends Nt {
+class Gs extends Nt {
   static [I] = "PgBigInt64Builder";
   constructor(e) {
     super(e, "bigint", "PgBigInt64");
   }
   /** @internal */
   build(e) {
-    return new Gs(
+    return new Hs(
       e,
       this.config
     );
   }
 }
-class Gs extends Y {
+class Hs extends Y {
   static [I] = "PgBigInt64";
   getSQLType() {
     return "bigint";
@@ -1048,7 +1048,7 @@ class Gs extends Y {
 }
 function Js(n, e) {
   const { name: t, config: r } = fe(n, e);
-  return r.mode === "number" ? new Ws(t) : new Hs(t);
+  return r.mode === "number" ? new Ws(t) : new Gs(t);
 }
 class Ys extends te {
   static [I] = "PgBigSerial53Builder";
@@ -1583,20 +1583,20 @@ function Ki(n, e) {
   const { name: t, config: r } = fe(n, e), i = r?.mode;
   return i === "number" ? new Ui(t, r?.precision, r?.scale) : i === "bigint" ? new Vi(t, r?.precision, r?.scale) : new ji(t, r?.precision, r?.scale);
 }
-class Hi extends te {
+class Gi extends te {
   static [I] = "PgPointTupleBuilder";
   constructor(e) {
     super(e, "array", "PgPointTuple");
   }
   /** @internal */
   build(e) {
-    return new Gi(
+    return new Hi(
       e,
       this.config
     );
   }
 }
-class Gi extends Y {
+class Hi extends Y {
   static [I] = "PgPointTuple";
   getSQLType() {
     return "point";
@@ -1643,7 +1643,7 @@ class Yi extends Y {
 }
 function Zi(n, e) {
   const { name: t, config: r } = fe(n, e);
-  return !r?.mode || r.mode === "tuple" ? new Hi(t) : new Ji(t);
+  return !r?.mode || r.mode === "tuple" ? new Gi(t) : new Ji(t);
 }
 function Xi(n) {
   const e = [];
@@ -2138,7 +2138,7 @@ function Fo(n, e, t, r, i = n) {
     enableRLS: () => (y[ve.Symbol.EnableRLS] = !0, y)
   });
 }
-const Ge = (n, e, t) => Fo(n, e, t, void 0);
+const He = (n, e, t) => Fo(n, e, t, void 0);
 function jo(...n) {
   return n[0].columns ? new ar(n[0].columns, n[0].name) : new ar(n);
 }
@@ -2196,7 +2196,7 @@ function Vo(...n) {
 function Wo(n) {
   return A`not ${n}`;
 }
-const Ko = (n, e) => A`${n} > ${me(e, n)}`, Ho = (n, e) => A`${n} >= ${me(e, n)}`, Go = (n, e) => A`${n} < ${me(e, n)}`, Jo = (n, e) => A`${n} <= ${me(e, n)}`;
+const Ko = (n, e) => A`${n} > ${me(e, n)}`, Go = (n, e) => A`${n} >= ${me(e, n)}`, Ho = (n, e) => A`${n} < ${me(e, n)}`, Jo = (n, e) => A`${n} <= ${me(e, n)}`;
 function Yo(n, e) {
   return Array.isArray(e) ? e.length === 0 ? A`false` : A`${n} in ${e.map((t) => me(t, n))}` : A`${n} in ${me(e, n)}`;
 }
@@ -2295,13 +2295,13 @@ function ha() {
     eq: at,
     exists: ta,
     gt: Ko,
-    gte: Ho,
+    gte: Go,
     ilike: aa,
     inArray: Yo,
     isNull: Xo,
     isNotNull: ea,
     like: ia,
-    lt: Go,
+    lt: Ho,
     lte: Jo,
     ne: zo,
     not: Wo,
@@ -3450,9 +3450,9 @@ class St {
       } of L) {
         const D = ma(t, r, E), R = it(E.referencedTable), F = r[R], j = `${a}_${B}`, O = Tt(
           ...D.fields.map(
-            (H, ee) => at(
+            (G, ee) => at(
               Be(D.references[ee], j),
-              Be(H, a)
+              Be(G, a)
             )
           )
         ), q = this.buildRelationalQueryWithoutPK({
@@ -5207,7 +5207,7 @@ class Qa {
     this.config = { ...e, table: t };
   }
 }
-function He(n) {
+function Ge(n) {
   return new Cn(!1, n);
 }
 function Tn(n) {
@@ -5266,7 +5266,7 @@ const Xt = { withTimezone: !0 }, Ye = {
   created_at: vt(Xt).defaultNow().notNull(),
   updated_at: vt(Xt),
   deleted_at: vt(Xt)
-}, ct = Ie().primaryKey().generatedAlwaysAsIdentity(), wr = Ge(
+}, ct = Ie().primaryKey().generatedAlwaysAsIdentity(), wr = He(
   "users",
   {
     id: ct,
@@ -5274,7 +5274,7 @@ const Xt = { withTimezone: !0 }, Ye = {
     ...Ye
   },
   (n) => [Tn("uuid_idx").on(n.uuid)]
-), Fa = Ge(
+), Fa = He(
   "adhoc_games",
   {
     id: ct,
@@ -5282,8 +5282,8 @@ const Xt = { withTimezone: !0 }, Ye = {
     user_id: Ie().notNull().references(() => wr.id),
     ...Ye
   },
-  (n) => [He("adhoc_game_user_idx").on(n.user_id)]
-), xt = Ge(
+  (n) => [Ge("adhoc_game_user_idx").on(n.user_id)]
+), xt = He(
   "solutions",
   {
     id: ct,
@@ -5292,7 +5292,7 @@ const Xt = { withTimezone: !0 }, Ye = {
     ...Ye
   },
   (n) => [Tn("daily_game_solution_date_idx").on(n.date)]
-), nt = Ge(
+), nt = He(
   "daily_games",
   {
     id: ct,
@@ -5301,10 +5301,10 @@ const Xt = { withTimezone: !0 }, Ye = {
     ...Ye
   },
   (n) => [
-    He("daily_game_user_idx").on(n.user_id),
-    He("daily_game_solution_idx").on(n.solution_id)
+    Ge("daily_game_user_idx").on(n.user_id),
+    Ge("daily_game_solution_idx").on(n.solution_id)
   ]
-), An = Ge(
+), An = He(
   "generic_games",
   {
     id: ct,
@@ -5321,10 +5321,10 @@ const Xt = { withTimezone: !0 }, Ye = {
       (${n.daily_game_id} IS NULL AND ${n.adhoc_game_id} IS NOT NULL)
     `
     ),
-    He("daily_game_idx").on(n.daily_game_id),
-    He("adhoc_game_idx").on(n.adhoc_game_id)
+    Ge("daily_game_idx").on(n.daily_game_id),
+    Ge("adhoc_game_idx").on(n.adhoc_game_id)
   ]
-), er = Ge(
+), er = He(
   "attempts",
   {
     game_id: Ie().references(() => An.id).notNull(),
@@ -5344,7 +5344,7 @@ const Xt = { withTimezone: !0 }, Ye = {
       name: "id",
       columns: [n.game_id, n.game_attempts_order]
     }),
-    He("game_attempts_idx").on(n.game_id)
+    Ge("game_attempts_idx").on(n.game_id)
   ]
 );
 async function ja({
@@ -5408,17 +5408,17 @@ const za = [
 }));
 Ua(Ka, "value");
 new Array(ut.solutionLength).fill(xn).join("");
-function Ha(n) {
+function Ga(n) {
   const e = new Uint32Array(1);
   return crypto.getRandomValues(e), Math.floor(e[0] / (Math.pow(2, 32) - 1) * n);
 }
-function Ga(n) {
-  const e = Ha(n.length);
+function Ha(n) {
+  const e = Ga(n.length);
   return n[e];
 }
 function Ja() {
   const n = Va.map((t) => t.id);
-  return new Array(ut.solutionLength).fill(0).map(() => Ga(n)).join("");
+  return new Array(ut.solutionLength).fill(0).map(() => Ha(n)).join("");
 }
 async function Ya({
   db: n
@@ -5856,7 +5856,7 @@ var iu = Object.create, Ze = Object.defineProperty, ou = Object.getOwnPropertyDe
         case "utf-8":
           return O(this, l, p);
         case "ascii":
-          return H(this, l, p);
+          return G(this, l, p);
         case "latin1":
         case "binary":
           return ee(
@@ -6137,14 +6137,14 @@ var iu = Object.create, Ze = Object.defineProperty, ou = Object.getOwnPropertyDe
     return p;
   }
   g(W, "decodeCodePointsArray");
-  function H(o, l, p) {
+  function G(o, l, p) {
     let C = "";
     p = Math.min(o.length, p);
     for (let N = l; N < p; ++N)
       C += String.fromCharCode(o[N] & 127);
     return C;
   }
-  g(H, "asciiSlice");
+  g(G, "asciiSlice");
   function ee(o, l, p) {
     let C = "";
     p = Math.min(o.length, p);
@@ -6679,8 +6679,8 @@ var iu = Object.create, Ze = Object.defineProperty, ou = Object.getOwnPropertyDe
     throw new Error("BigInt not supported");
   }
   g(Or, "BufferBigIntNotDefined");
-}), Lt, br, G, Z, V = ye(() => {
-  Lt = globalThis, br = globalThis.setImmediate ?? ((n) => setTimeout(n, 0)), G = typeof globalThis.Buffer == "function" && typeof globalThis.Buffer.allocUnsafe == "function" ? globalThis.Buffer : du().Buffer, Z = globalThis.process ?? {}, Z.env ?? (Z.env = {});
+}), Lt, br, H, Z, V = ye(() => {
+  Lt = globalThis, br = globalThis.setImmediate ?? ((n) => setTimeout(n, 0)), H = typeof globalThis.Buffer == "function" && typeof globalThis.Buffer.allocUnsafe == "function" ? globalThis.Buffer : du().Buffer, Z = globalThis.process ?? {}, Z.env ?? (Z.env = {});
   try {
     Z.nextTick(() => {
     });
@@ -7102,7 +7102,7 @@ var Vr, tr, tt, Ot, Rt = ye(() => {
           this.emit("error", y), this.emit("close");
         }), a.addEventListener("message", (y) => {
           if (this.tlsState === 0) {
-            let f = G.from(y.data);
+            let f = H.from(y.data);
             this.emit("data", f);
           }
         }), a.addEventListener("close", () => {
@@ -7159,7 +7159,7 @@ var Vr, tr, tt, Ot, Rt = ye(() => {
         if (e === void 0)
           break;
         {
-          let t = G.from(e);
+          let t = H.from(e);
           this.emit("data", t);
         }
       }
@@ -7183,13 +7183,13 @@ var Vr, tr, tt, Ot, Rt = ye(() => {
     }
     write(e, t = "utf8", r = (i) => {
     }) {
-      return e.length === 0 ? (r(), !0) : (typeof e == "string" && (e = G.from(e, t)), this.tlsState === 0 ? (this.rawWrite(e), r()) : this.tlsState === 1 ? this.once("secureConnection", () => {
+      return e.length === 0 ? (r(), !0) : (typeof e == "string" && (e = H.from(e, t)), this.tlsState === 0 ? (this.rawWrite(e), r()) : this.tlsState === 1 ? this.once("secureConnection", () => {
         this.write(e, t, r);
       }) : (this.tlsWrite(
         e
       ), r()), !0);
     }
-    end(e = G.alloc(0), t = "utf8", r = () => {
+    end(e = H.alloc(0), t = "utf8", r = () => {
     }) {
       return this.write(e, t, () => {
         this.ws.close(), r();
@@ -7431,7 +7431,7 @@ var Rn = ye(() => {
 }), yu = X((n, e) => {
   V(), e.exports = g(function(t) {
     if (/^\\x/.test(t))
-      return new G(t.substr(
+      return new H(t.substr(
         2
       ), "hex");
     for (var r = "", i = 0; i < t.length; )
@@ -7446,7 +7446,7 @@ var Rn = ye(() => {
           r += "\\";
         i += Math.floor(s / 2) * 2;
       }
-    return new G(r, "binary");
+    return new H(r, "binary");
   }, "parseBytea");
 }), wu = X((n, e) => {
   V();
@@ -8016,14 +8016,14 @@ var Pu = ye(() => {
 }), Pr = {};
 Te(Pr, { createHash: () => kn, createHmac: () => qn, randomBytes: () => Qn });
 function Qn(n) {
-  return crypto.getRandomValues(G.alloc(n));
+  return crypto.getRandomValues(H.alloc(n));
 }
 function kn(n) {
   if (n === "sha256")
     return { update: g(function(e) {
       return { digest: g(
         function() {
-          return G.from(st(e));
+          return H.from(st(e));
         },
         "digest"
       ) };
@@ -8062,7 +8062,7 @@ function qn(n, e) {
         let u = new Uint8Array(t.length + 64);
         u.set(i, 0), u.set(t, 64);
         let a = new Uint8Array(96);
-        return a.set(s, 0), a.set(st(u), 64), G.from(st(a));
+        return a.set(s, 0), a.set(st(u), 64), H.from(st(a));
       },
       "digest"
     ) };
@@ -8119,17 +8119,17 @@ var Fn = ye(() => {
   g(i, "escapeElement");
   function s(c) {
     for (var h = "{", w = 0; w < c.length; w++)
-      w > 0 && (h = h + ","), c[w] === null || typeof c[w] > "u" ? h = h + "NULL" : Array.isArray(c[w]) ? h = h + s(c[w]) : c[w] instanceof G ? h += "\\\\x" + c[w].toString("hex") : h += i(u(c[w]));
+      w > 0 && (h = h + ","), c[w] === null || typeof c[w] > "u" ? h = h + "NULL" : Array.isArray(c[w]) ? h = h + s(c[w]) : c[w] instanceof H ? h += "\\\\x" + c[w].toString("hex") : h += i(u(c[w]));
     return h = h + "}", h;
   }
   g(s, "arrayString");
   var u = g(function(c, h) {
     if (c == null)
       return null;
-    if (c instanceof G)
+    if (c instanceof H)
       return c;
     if (ArrayBuffer.isView(c)) {
-      var w = G.from(c.buffer, c.byteOffset, c.byteLength);
+      var w = H.from(c.buffer, c.byteOffset, c.byteLength);
       return w.length === c.byteLength ? w : w.slice(c.byteOffset, c.byteOffset + c.byteLength);
     }
     return c instanceof Date ? r.parseInputDatesAsUTC ? f(c) : y(c) : Array.isArray(c) ? s(c) : typeof c == "object" ? a(c, h) : c.toString();
@@ -8177,7 +8177,7 @@ var Fn = ye(() => {
     return t.createHash("md5").update(c, "utf-8").digest("hex");
   }, "md5"), v = g(
     function(c, h, w) {
-      var S = m(h + c), _ = m(G.concat([G.from(S), w]));
+      var S = m(h + c), _ = m(H.concat([H.from(S), w]));
       return "md5" + _;
     },
     "postgresMd5PasswordHash"
@@ -8221,7 +8221,7 @@ var jn, Qt = ye(() => {
         throw new Error("SASL: SCRAM-SERVER-FIRST-MESSAGE: server nonce is too short");
     } else
       throw new Error("SASL: SCRAM-SERVER-FIRST-MESSAGE: server nonce does not start with client nonce");
-    var T = G.from(_.salt, "base64"), L = c(w, T, _.iteration), M = v(L, "Client Key"), P = m(
+    var T = H.from(_.salt, "base64"), L = c(w, T, _.iteration), M = v(L, "Client Key"), P = m(
       M
     ), B = "n=*,r=" + h.clientNonce, x = "r=" + _.nonce + ",s=" + _.salt + ",i=" + _.iteration, E = "c=biws,r=" + _.nonce, D = B + "," + x + "," + E, R = v(P, D), F = b(M, R), j = F.toString("base64"), O = v(L, "Server Key"), q = v(O, D);
     h.message = "SASLResponse", h.serverSignature = q.toString("base64"), h.response = E + ",p=" + j;
@@ -8294,9 +8294,9 @@ var jn, Qt = ye(() => {
   }
   g(f, "parseServerFinalMessage");
   function b(h, w) {
-    if (!G.isBuffer(h))
+    if (!H.isBuffer(h))
       throw new TypeError("first argument must be a Buffer");
-    if (!G.isBuffer(w))
+    if (!H.isBuffer(w))
       throw new TypeError(
         "second argument must be a Buffer"
       );
@@ -8304,7 +8304,7 @@ var jn, Qt = ye(() => {
       throw new Error("Buffer lengths must match");
     if (h.length === 0)
       throw new Error("Buffers cannot be empty");
-    return G.from(h.map((S, _) => h[_] ^ w[_]));
+    return H.from(h.map((S, _) => h[_] ^ w[_]));
   }
   g(b, "xorBuffers");
   function m(h) {
@@ -8318,7 +8318,7 @@ var jn, Qt = ye(() => {
   function c(h, w, S) {
     for (var _ = v(
       h,
-      G.concat([w, G.from([0, 0, 0, 1])])
+      H.concat([w, H.from([0, 0, 0, 1])])
     ), T = _, L = 0; L < S - 1; L++)
       _ = v(h, _), T = b(T, _);
     return T;
@@ -8343,10 +8343,10 @@ var Wn = ye(() => {
   V(), g(Vn, "stat");
 }), Cr = {};
 Te(Cr, { default: () => Kn });
-var Kn, Hn = ye(() => {
+var Kn, Gn = ye(() => {
   V(), Kn = {};
-}), Gn = {};
-Te(Gn, { StringDecoder: () => Jn });
+}), Hn = {};
+Te(Hn, { StringDecoder: () => Jn });
 var rr, Jn, Cu = ye(() => {
   V(), rr = class {
     constructor(e) {
@@ -8361,7 +8361,7 @@ var rr, Jn, Cu = ye(() => {
   }, g(rr, "StringDecoder"), Jn = rr;
 }), Tu = X((n, e) => {
   V();
-  var { Transform: t } = (Hn(), he(Cr)), { StringDecoder: r } = (Cu(), he(Gn)), i = Symbol(
+  var { Transform: t } = (Gn(), he(Cr)), { StringDecoder: r } = (Cu(), he(Hn)), i = Symbol(
     "last"
   ), s = Symbol("decoder");
   function u(b, m, v) {
@@ -8425,7 +8425,7 @@ var rr, Jn, Cu = ye(() => {
   g(f, "split"), e.exports = f;
 }), Au = X((n, e) => {
   V();
-  var t = (zn(), he(Er)), r = (Hn(), he(Cr)).Stream, i = Tu(), s = (Qt(), he(ht)), u = 5432, a = Z.platform === "win32", d = Z.stderr, y = 56, f = 7, b = 61440, m = 32768;
+  var t = (zn(), he(Er)), r = (Gn(), he(Cr)).Stream, i = Tu(), s = (Qt(), he(ht)), u = 5432, a = Z.platform === "win32", d = Z.stderr, y = 56, f = 7, b = 61440, m = 32768;
   function v(M) {
     return (M & b) == m;
   }
@@ -8481,8 +8481,8 @@ var rr, Jn, Cu = ye(() => {
     if (M.length < 11 || M.match(/^\s+#/))
       return null;
     for (var P = "", B = "", x = 0, E = 0, D = 0, R = {}, F = !1, j = g(
-      function(q, W, H) {
-        var ee = M.substring(W, H);
+      function(q, W, G) {
+        var ee = M.substring(W, G);
         Object.hasOwnProperty.call(Z.env, "PGPASS_NO_DEESCAPE") || (ee = ee.replace(/\\([:\\])/g, "$1")), R[c[q]] = ee;
       },
       "addToObj"
@@ -8784,16 +8784,16 @@ var Zn, Bu = ye(() => {
   var i = r;
   n.CopyDataMessage = i;
   var s = class {
-    constructor(O, q, W, H) {
-      this.length = O, this.name = q, this.binary = W, this.columnTypes = new Array(H);
+    constructor(O, q, W, G) {
+      this.length = O, this.name = q, this.binary = W, this.columnTypes = new Array(G);
     }
   };
   g(s, "CopyResponse");
   var u = s;
   n.CopyResponse = u;
   var a = class {
-    constructor(O, q, W, H, ee, re, we) {
-      this.name = O, this.tableID = q, this.columnID = W, this.dataTypeID = H, this.dataTypeSize = ee, this.dataTypeModifier = re, this.format = we;
+    constructor(O, q, W, G, ee, re, we) {
+      this.name = O, this.tableID = q, this.columnID = W, this.dataTypeID = G, this.dataTypeSize = ee, this.dataTypeModifier = re, this.format = we;
     }
   };
   g(a, "Field");
@@ -8840,8 +8840,8 @@ var Zn, Bu = ye(() => {
   var _ = S;
   n.BackendKeyDataMessage = _;
   var T = class {
-    constructor(O, q, W, H) {
-      this.length = O, this.processId = q, this.channel = W, this.payload = H, this.name = "notification";
+    constructor(O, q, W, G) {
+      this.length = O, this.processId = q, this.channel = W, this.payload = G, this.name = "notification";
     }
   };
   g(T, "NotificationResponseMessage");
@@ -8883,13 +8883,13 @@ var Zn, Bu = ye(() => {
   V(), Object.defineProperty(n, "__esModule", { value: !0 }), n.Writer = void 0;
   var e = class {
     constructor(i = 256) {
-      this.size = i, this.offset = 5, this.headerPosition = 0, this.buffer = G.allocUnsafe(i);
+      this.size = i, this.offset = 5, this.headerPosition = 0, this.buffer = H.allocUnsafe(i);
     }
     ensure(i) {
       var s = this.buffer.length - this.offset;
       if (s < i) {
         var u = this.buffer, a = u.length + (u.length >> 1) + i;
-        this.buffer = G.allocUnsafe(a), u.copy(this.buffer);
+        this.buffer = H.allocUnsafe(a), u.copy(this.buffer);
       }
     }
     addInt32(i) {
@@ -8902,13 +8902,13 @@ var Zn, Bu = ye(() => {
       if (!i)
         this.ensure(1);
       else {
-        var s = G.byteLength(i);
+        var s = H.byteLength(i);
         this.ensure(s + 1), this.buffer.write(i, this.offset, "utf-8"), this.offset += s;
       }
       return this.buffer[this.offset++] = 0, this;
     }
     addString(i = "") {
-      var s = G.byteLength(i);
+      var s = H.byteLength(i);
       return this.ensure(s), this.buffer.write(i, this.offset), this.offset += s, this;
     }
     add(i) {
@@ -8926,7 +8926,7 @@ var Zn, Bu = ye(() => {
     }
     flush(i) {
       var s = this.join(i);
-      return this.offset = 5, this.headerPosition = 0, this.buffer = G.allocUnsafe(this.size), s;
+      return this.offset = 5, this.headerPosition = 0, this.buffer = H.allocUnsafe(this.size), s;
     }
   };
   g(e, "Writer");
@@ -8936,51 +8936,51 @@ var Zn, Bu = ye(() => {
   V(), Object.defineProperty(n, "__esModule", { value: !0 }), n.serialize = void 0;
   var e = Ou(), t = new e.Writer(), r = g((O) => {
     t.addInt16(3).addInt16(0);
-    for (let H of Object.keys(O))
+    for (let G of Object.keys(O))
       t.addCString(
-        H
-      ).addCString(O[H]);
+        G
+      ).addCString(O[G]);
     t.addCString("client_encoding").addCString("UTF8");
     var q = t.addCString("").flush(), W = q.length + 4;
     return new e.Writer().addInt32(W).add(q).flush();
   }, "startup"), i = g(() => {
-    let O = G.allocUnsafe(
+    let O = H.allocUnsafe(
       8
     );
     return O.writeInt32BE(8, 0), O.writeInt32BE(80877103, 4), O;
   }, "requestSsl"), s = g((O) => t.addCString(O).flush(
     112
   ), "password"), u = g(function(O, q) {
-    return t.addCString(O).addInt32(G.byteLength(q)).addString(q), t.flush(112);
+    return t.addCString(O).addInt32(H.byteLength(q)).addString(q), t.flush(112);
   }, "sendSASLInitialResponseMessage"), a = g(function(O) {
     return t.addString(O).flush(112);
   }, "sendSCRAMClientFinalMessage"), d = g((O) => t.addCString(O).flush(81), "query"), y = [], f = g((O) => {
     let q = O.name || "";
     q.length > 63 && (console.error("Warning! Postgres only supports 63 characters for query names."), console.error("You supplied %s (%s)", q, q.length), console.error("This can cause conflicts and silent errors executing queries"));
     let W = O.types || y;
-    for (var H = W.length, ee = t.addCString(q).addCString(O.text).addInt16(
-      H
-    ), re = 0; re < H; re++)
+    for (var G = W.length, ee = t.addCString(q).addCString(O.text).addInt16(
+      G
+    ), re = 0; re < G; re++)
       ee.addInt32(W[re]);
     return t.flush(80);
   }, "parse"), b = new e.Writer(), m = g(function(O, q) {
     for (let W = 0; W < O.length; W++) {
-      let H = q ? q(O[W], W) : O[W];
-      H == null ? (t.addInt16(0), b.addInt32(-1)) : H instanceof G ? (t.addInt16(
+      let G = q ? q(O[W], W) : O[W];
+      G == null ? (t.addInt16(0), b.addInt32(-1)) : G instanceof H ? (t.addInt16(
         1
-      ), b.addInt32(H.length), b.add(H)) : (t.addInt16(0), b.addInt32(G.byteLength(H)), b.addString(H));
+      ), b.addInt32(G.length), b.add(G)) : (t.addInt16(0), b.addInt32(H.byteLength(G)), b.addString(G));
     }
   }, "writeValues"), v = g((O = {}) => {
-    let q = O.portal || "", W = O.statement || "", H = O.binary || !1, ee = O.values || y, re = ee.length;
-    return t.addCString(q).addCString(W), t.addInt16(re), m(ee, O.valueMapper), t.addInt16(re), t.add(b.flush()), t.addInt16(H ? 1 : 0), t.flush(66);
-  }, "bind"), c = G.from([69, 0, 0, 0, 9, 0, 0, 0, 0, 0]), h = g((O) => {
+    let q = O.portal || "", W = O.statement || "", G = O.binary || !1, ee = O.values || y, re = ee.length;
+    return t.addCString(q).addCString(W), t.addInt16(re), m(ee, O.valueMapper), t.addInt16(re), t.add(b.flush()), t.addInt16(G ? 1 : 0), t.flush(66);
+  }, "bind"), c = H.from([69, 0, 0, 0, 9, 0, 0, 0, 0, 0]), h = g((O) => {
     if (!O || !O.portal && !O.rows)
       return c;
-    let q = O.portal || "", W = O.rows || 0, H = G.byteLength(q), ee = 4 + H + 1 + 4, re = G.allocUnsafe(1 + ee);
-    return re[0] = 69, re.writeInt32BE(ee, 1), re.write(q, 5, "utf-8"), re[H + 5] = 0, re.writeUInt32BE(W, re.length - 4), re;
+    let q = O.portal || "", W = O.rows || 0, G = H.byteLength(q), ee = 4 + G + 1 + 4, re = H.allocUnsafe(1 + ee);
+    return re[0] = 69, re.writeInt32BE(ee, 1), re.write(q, 5, "utf-8"), re[G + 5] = 0, re.writeUInt32BE(W, re.length - 4), re;
   }, "execute"), w = g(
     (O, q) => {
-      let W = G.allocUnsafe(16);
+      let W = H.allocUnsafe(16);
       return W.writeInt32BE(16, 0), W.writeInt16BE(1234, 4), W.writeInt16BE(
         5678,
         6
@@ -8988,12 +8988,12 @@ var Zn, Bu = ye(() => {
     },
     "cancel"
   ), S = g((O, q) => {
-    let W = 4 + G.byteLength(q) + 1, H = G.allocUnsafe(1 + W);
-    return H[0] = O, H.writeInt32BE(W, 1), H.write(q, 5, "utf-8"), H[W] = 0, H;
+    let W = 4 + H.byteLength(q) + 1, G = H.allocUnsafe(1 + W);
+    return G[0] = O, G.writeInt32BE(W, 1), G.write(q, 5, "utf-8"), G[W] = 0, G;
   }, "cstringMessage"), _ = t.addCString("P").flush(68), T = t.addCString("S").flush(68), L = g((O) => O.name ? S(68, `${O.type}${O.name || ""}`) : O.type === "P" ? _ : T, "describe"), M = g((O) => {
     let q = `${O.type}${O.name || ""}`;
     return S(67, q);
-  }, "close"), P = g((O) => t.add(O).flush(100), "copyData"), B = g((O) => S(102, O), "copyFail"), x = g((O) => G.from([O, 0, 0, 0, 4]), "codeOnlyBuffer"), E = x(72), D = x(83), R = x(88), F = x(99), j = {
+  }, "close"), P = g((O) => t.add(O).flush(100), "copyData"), B = g((O) => S(102, O), "copyFail"), x = g((O) => H.from([O, 0, 0, 0, 4]), "codeOnlyBuffer"), E = x(72), D = x(83), R = x(88), F = x(99), j = {
     startup: r,
     password: s,
     requestSsl: i,
@@ -9019,7 +9019,7 @@ var Zn, Bu = ye(() => {
   n.serialize = j;
 }), Mu = X((n) => {
   V(), Object.defineProperty(n, "__esModule", { value: !0 }), n.BufferReader = void 0;
-  var e = G.allocUnsafe(0), t = class {
+  var e = H.allocUnsafe(0), t = class {
     constructor(s = 0) {
       this.offset = s, this.buffer = e, this.encoding = "utf-8";
     }
@@ -9064,7 +9064,7 @@ var Zn, Bu = ye(() => {
   n.BufferReader = r;
 }), Du = X((n) => {
   V(), Object.defineProperty(n, "__esModule", { value: !0 }), n.Parser = void 0;
-  var e = Xn(), t = Mu(), r = 1, i = 4, s = r + i, u = G.allocUnsafe(0), a = class {
+  var e = Xn(), t = Mu(), r = 1, i = 4, s = r + i, u = H.allocUnsafe(0), a = class {
     constructor(f) {
       if (this.buffer = u, this.bufferLength = 0, this.bufferOffset = 0, this.reader = new t.BufferReader(), f?.mode === "binary")
         throw new Error("Binary mode not supported yet");
@@ -9096,7 +9096,7 @@ var Zn, Bu = ye(() => {
             let v = this.buffer.byteLength * 2;
             for (; b >= v; )
               v *= 2;
-            m = G.allocUnsafe(v);
+            m = H.allocUnsafe(v);
           }
           this.buffer.copy(m, 0, this.bufferOffset, this.bufferOffset + this.bufferLength), this.buffer = m, this.bufferOffset = 0;
         }
@@ -10228,17 +10228,17 @@ V();
 Rt();
 Rn();
 V();
-var zu = Object.defineProperty, Vu = Object.defineProperties, Wu = Object.getOwnPropertyDescriptors, Kr = Object.getOwnPropertySymbols, Ku = Object.prototype.hasOwnProperty, Hu = Object.prototype.propertyIsEnumerable, Hr = g(
+var zu = Object.defineProperty, Vu = Object.defineProperties, Wu = Object.getOwnPropertyDescriptors, Kr = Object.getOwnPropertySymbols, Ku = Object.prototype.hasOwnProperty, Gu = Object.prototype.propertyIsEnumerable, Gr = g(
   (n, e, t) => e in n ? zu(n, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : n[e] = t,
   "__defNormalProp"
-), Gu = g((n, e) => {
+), Hu = g((n, e) => {
   for (var t in e || (e = {}))
-    Ku.call(e, t) && Hr(n, t, e[t]);
+    Ku.call(e, t) && Gr(n, t, e[t]);
   if (Kr)
     for (var t of Kr(e))
-      Hu.call(e, t) && Hr(n, t, e[t]);
+      Gu.call(e, t) && Gr(n, t, e[t]);
   return n;
-}, "__spreadValues"), Ju = g((n, e) => Vu(n, Wu(e)), "__spreadProps"), Yu = 1008e3, Gr = new Uint8Array(
+}, "__spreadValues"), Ju = g((n, e) => Vu(n, Wu(e)), "__spreadProps"), Yu = 1008e3, Hr = new Uint8Array(
   new Uint16Array([258]).buffer
 )[0] === 2, Zu = new TextDecoder(), Ar = new TextEncoder(), gt = Ar.encode("0123456789abcdef"), mt = Ar.encode("0123456789ABCDEF"), Xu = Ar.encode("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"), os = Xu.slice();
 os[62] = 45;
@@ -10246,7 +10246,7 @@ os[63] = 95;
 var rt, yt;
 function as(n, { alphabet: e, scratchArr: t } = {}) {
   if (!rt)
-    if (rt = new Uint16Array(256), yt = new Uint16Array(256), Gr)
+    if (rt = new Uint16Array(256), yt = new Uint16Array(256), Hr)
       for (let v = 0; v < 256; v++)
         rt[v] = gt[v & 15] << 8 | gt[v >>> 4], yt[v] = mt[v & 15] << 8 | mt[v >>> 4];
     else
@@ -10258,7 +10258,7 @@ function as(n, { alphabet: e, scratchArr: t } = {}) {
     n.byteOffset,
     s
   ), d = new Uint32Array(u.buffer, u.byteOffset, i), y = e === "upper" ? yt : rt, f = 0, b = 0, m;
-  if (Gr)
+  if (Hr)
     for (; f < s; )
       m = a[f++], d[b++] = y[m >>> 8 & 255] << 16 | y[m & 255], d[b++] = y[m >>> 24] << 16 | y[m >>> 16 & 255];
   else
@@ -10273,7 +10273,7 @@ function us(n, e = {}) {
   let t = "", r = n.length, i = Yu >>> 1, s = Math.ceil(r / i), u = new Uint16Array(s > 1 ? i : r);
   for (let a = 0; a < s; a++) {
     let d = a * i, y = d + i;
-    t += as(n.subarray(d, y), Ju(Gu(
+    t += as(n.subarray(d, y), Ju(Hu(
       {},
       e
     ), { scratchArr: u }));
@@ -10309,7 +10309,7 @@ var cs = class hs {
           }
         else {
           let { params: a } = e;
-          a.push(u), e.query += "$" + a.length, (u instanceof G || ArrayBuffer.isView(u)) && (e.query += "::bytea");
+          a.push(u), e.query += "$" + a.length, (u instanceof H || ArrayBuffer.isView(u)) && (e.query += "::bytea");
         }
       }
     return e;
@@ -10336,7 +10336,7 @@ g(
 );
 var Ve = gs, Jr = "transaction() expects an array of queries, or a function returning an array of queries", rl = ["severity", "code", "detail", "hint", "position", "internalPosition", "internalQuery", "where", "schema", "table", "column", "dataType", "constraint", "file", "line", "routine"];
 function ys(n) {
-  return n instanceof G ? "\\x" + ls(n) : n;
+  return n instanceof H ? "\\x" + ls(n) : n;
 }
 g(ys, "encodeBuffersAsBytea");
 function hr(n) {
@@ -10395,7 +10395,7 @@ function We(n, {
     let {
       fetchEndpoint: T,
       fetchFunction: L
-    } = Ot, M = Array.isArray(w) ? { queries: w.map((H) => hr(H)) } : hr(w), P = r ?? {}, B = e ?? !1, x = t ?? !1, E = i, D = s, R = u;
+    } = Ot, M = Array.isArray(w) ? { queries: w.map((G) => hr(G)) } : hr(w), P = r ?? {}, B = e ?? !1, x = t ?? !1, E = i, D = s, R = u;
     _ !== void 0 && (_.fetchOptions !== void 0 && (P = { ...P, ..._.fetchOptions }), _.arrayMode !== void 0 && (B = _.arrayMode), _.fullResults !== void 0 && (x = _.fullResults), _.isolationLevel !== void 0 && (E = _.isolationLevel), _.readOnly !== void 0 && (D = _.readOnly), _.deferrable !== void 0 && (R = _.deferrable)), S !== void 0 && !Array.isArray(S) && S.fetchOptions !== void 0 && (P = { ...P, ...S.fetchOptions });
     let F = a;
     !Array.isArray(S) && S?.authToken !== void 0 && (F = S.authToken);
@@ -10410,14 +10410,14 @@ function We(n, {
     let W;
     try {
       W = await (L ?? fetch)(j, { method: "POST", body: JSON.stringify(M), headers: O, ...P });
-    } catch (H) {
-      let ee = new Ve(`Error connecting to database: ${H}`);
-      throw ee.sourceError = H, ee;
+    } catch (G) {
+      let ee = new Ve(`Error connecting to database: ${G}`);
+      throw ee.sourceError = G, ee;
     }
     if (W.ok) {
-      let H = await W.json();
+      let G = await W.json();
       if (Array.isArray(w)) {
-        let ee = H.results;
+        let ee = G.results;
         if (!Array.isArray(ee))
           throw new Ve("Neon internal error: unexpected result format");
         return ee.map((re, we) => {
@@ -10426,18 +10426,18 @@ function We(n, {
         });
       } else {
         let ee = S ?? {}, re = ee.arrayMode ?? B, we = ee.fullResults ?? x;
-        return fr(H, { arrayMode: re, fullResults: we, types: ee.types });
+        return fr(G, { arrayMode: re, fullResults: we, types: ee.types });
       }
     } else {
-      let { status: H } = W;
-      if (H === 400) {
+      let { status: G } = W;
+      if (G === 400) {
         let ee = await W.json(), re = new Ve(ee.message);
         for (let we of rl)
           re[we] = ee[we] ?? void 0;
         throw re;
       } else {
         let ee = await W.text();
-        throw new Ve(`Server error (HTTP status ${H}): ${ee}`);
+        throw new Ve(`Server error (HTTP status ${G}): ${ee}`);
       }
     }
   }
@@ -10539,24 +10539,24 @@ var sl = qe(kt()), vs = class extends sl.Client {
       throw new Error("SASL: SCRAM-SERVER-FIRST-MESSAGE: server nonce does not start with client nonce");
     if (a.length === r.clientNonce.length)
       throw new Error("SASL: SCRAM-SERVER-FIRST-MESSAGE: server nonce is too short");
-    let f = parseInt(y, 10), b = G.from(d, "base64"), m = new TextEncoder(), v = m.encode(i), c = await t.importKey("raw", v, { name: "HMAC", hash: { name: "SHA-256" } }, !1, ["sign"]), h = new Uint8Array(await t.sign("HMAC", c, G.concat([b, G.from([0, 0, 0, 1])]))), w = h;
+    let f = parseInt(y, 10), b = H.from(d, "base64"), m = new TextEncoder(), v = m.encode(i), c = await t.importKey("raw", v, { name: "HMAC", hash: { name: "SHA-256" } }, !1, ["sign"]), h = new Uint8Array(await t.sign("HMAC", c, H.concat([b, H.from([0, 0, 0, 1])]))), w = h;
     for (var S = 0; S < f - 1; S++)
       h = new Uint8Array(await t.sign(
         "HMAC",
         c,
         h
-      )), w = G.from(w.map((ee, re) => w[re] ^ h[re]));
+      )), w = H.from(w.map((ee, re) => w[re] ^ h[re]));
     let _ = w, T = await t.importKey("raw", _, { name: "HMAC", hash: {
       name: "SHA-256"
     } }, !1, ["sign"]), L = new Uint8Array(await t.sign("HMAC", T, m.encode("Client Key"))), M = await t.digest("SHA-256", L), P = "n=*,r=" + r.clientNonce, B = "r=" + a + ",s=" + d + ",i=" + f, x = "c=biws,r=" + a, E = P + "," + B + "," + x, D = await t.importKey("raw", M, { name: "HMAC", hash: { name: "SHA-256" } }, !1, ["sign"]);
     var R = new Uint8Array(
       await t.sign("HMAC", D, m.encode(E))
-    ), F = G.from(L.map((ee, re) => L[re] ^ R[re])), j = F.toString("base64");
+    ), F = H.from(L.map((ee, re) => L[re] ^ R[re])), j = F.toString("base64");
     let O = await t.importKey("raw", _, { name: "HMAC", hash: { name: "SHA-256" } }, !1, ["sign"]), q = await t.sign("HMAC", O, m.encode(
       "Server Key"
     )), W = await t.importKey("raw", q, { name: "HMAC", hash: { name: "SHA-256" } }, !1, ["sign"]);
-    var H = G.from(await t.sign("HMAC", W, m.encode(E)));
-    r.message = "SASLResponse", r.serverSignature = H.toString("base64"), r.response = x + ",p=" + j, this.connection.sendSCRAMClientFinalMessage(this.saslSession.response);
+    var G = H.from(await t.sign("HMAC", W, m.encode(E)));
+    r.message = "SASLResponse", r.serverSignature = G.toString("base64"), r.response = x + ",p=" + j, this.connection.sendSCRAMClientFinalMessage(this.saslSession.response);
   }
 };
 g(vs, "NeonClient");

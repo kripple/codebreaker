@@ -14,18 +14,18 @@ async function createNewDailyGame({
   console.info('create new daily solution');
 
   const solution = await getOrCreateSolution({ db });
-  const daily_solutions = await db
+  const games = await db
     .insert(DailyGame)
     .values({
       user_id: user.id,
       solution_id: solution.id,
     })
     .returning();
-  const daily_solution = daily_solutions.pop();
-  if (!daily_solution) {
+  const game = games.pop();
+  if (!game) {
     throw Error('failed to create new daily solution');
   }
-  return daily_solution;
+  return game;
 }
 
 async function getDailyGame({
