@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   test:
+    name: Lint and Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,6 +28,7 @@ jobs:
           npm run build:ci
 
   upload:
+    name: Upload to GitHub Pages
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -40,6 +42,7 @@ jobs:
           path: ./docs
 
   deploy:
+    name: Deploy to GitHub Pages
     needs: upload
     runs-on: ubuntu-latest
     environment:
@@ -49,7 +52,8 @@ jobs:
       - uses: actions/deploy-pages@v4
         id: pages-deployment
 
-  post-deploy:
+  audit:
+    name: Lighthouse Audit
     needs: deploy
     runs-on: ubuntu-latest
     steps:
@@ -58,7 +62,6 @@ jobs:
         with:
           node-version-file: '.node-version'
           cache: 'npm'
-      - name: Lighthouse Audit
-        run: |
+      - run: |
           npm ci
           npm run lh
