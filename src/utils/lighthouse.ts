@@ -7,7 +7,7 @@ const port = 9222 as const;
 
 const browser = await puppeteer.launch({
   headless: true,
-  args: [`--remote-debugging-port=${port}`],
+  args: ['--no-sandbox', `--remote-debugging-port=${port}`],
 });
 const result = await lighthouse(url, { port });
 if (!result) throw Error('failed to create lighthouse report');
