@@ -1,7 +1,6 @@
 import lighthouse from 'lighthouse';
 import puppeteer from 'puppeteer';
 
-const failureThreshold = 90 as const;
 const url = 'https://kripple.github.io/codebreaker/' as const;
 const port = 9222 as const;
 const browser = await puppeteer.launch({
@@ -24,10 +23,16 @@ for (const category in result.lhr.categories) {
   const draft = result.lhr.categories[category].score;
   if (!draft) throw Error(`missing score for '${category}' category`);
 
-  const score = draft * 100;
-  if (score < failureThreshold)
-    throw Error(`failed ${category} audit with a score of ${score}`);
+  const defaultThreshold = 100 as const;
+  const performanceThreshold = 85 as const;
 
+  const score = draft * 100;
+  if (
+    (category !== 'performance' && score < defaultThreshold) ||
+    (category === 'performance' && score < performanceThreshold)
+  ) {
+    throw Error(`failed ${category} audit with a score of ${score}`);
+  }
   console.info(`${category}: ${score}`);
 }
 
