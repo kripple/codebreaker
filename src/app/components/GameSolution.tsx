@@ -5,8 +5,10 @@ import { solutionLength } from '@/constants/config';
 import { gameTokens } from '@/constants/tokens';
 
 export function GameSolution({
+  date,
   secretCode,
 }: {
+  date: string | undefined;
   secretCode: string | undefined;
 }) {
   const hiddenCode = new Array(solutionLength).fill('*').join('');
@@ -16,6 +18,9 @@ export function GameSolution({
 
   return (
     <Paper p="xs" withBorder>
+      <time dateTime={date} style={{ display: 'none' }}>
+        {date}
+      </time>
       <Center>
         <Flex gap="2px">
           {solution.split('').map((tokenId, key) => (

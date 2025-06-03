@@ -22,3 +22,13 @@ svg {
   height: 100%;
   width: 100%;
 }
+
+time {
+  --size: 12px;
+  font-family: monospace;
+  font-size: var(--size);
+  left: var(--size);
+  line-height: var(--size);
+  padding: 0 3px;
+  pointer-events: none;
+}

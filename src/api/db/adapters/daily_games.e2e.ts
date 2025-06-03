@@ -16,7 +16,7 @@ test.describe('daily_games', () => {
     const user = await createNewUser({ db });
     expect(user).toBeTruthy();
 
-    const game = await getOrCreateDailyGame({ db, user });
+    const { game } = await getOrCreateDailyGame({ db, user });
     expect(game).toBeTruthy();
 
     const gameById = await getDailyGameById({ db, id: game.id });

@@ -10,8 +10,8 @@ export async function getGameById({ db, id }: { db: AppDatabase; id: string }) {
     ? await getUser({ db, uuid: id })
     : undefined;
   const user = currentUser || (await createNewUser({ db }));
-  const dailyGame = await getOrCreateDailyGame({ db, user });
+  const { game: dailyGame, date } = await getOrCreateDailyGame({ db, user });
   const game = await getOrCreateGenericGame({ db, game: dailyGame });
   const attempts = await getAttempts({ db, game });
-  return { user, attempts };
+  return { user, attempts, date };
 }

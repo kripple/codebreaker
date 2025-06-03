@@ -21,7 +21,7 @@ export async function makeAttempt({
   const user = uuid.validate(id) ? await getUser({ db, uuid: id }) : undefined;
   if (!user) throw Error('missing user');
 
-  const dailyGame = await getOrCreateDailyGame({ db, user });
+  const { game: dailyGame } = await getOrCreateDailyGame({ db, user });
   const solution = await getSolutionById({ db, id: dailyGame.solution_id });
   if (!solution) throw Error('missing solution');
 

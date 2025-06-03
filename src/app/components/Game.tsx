@@ -123,7 +123,11 @@ export function Game() {
 
   return (
     <Profiler component="Game">
-      <GameSolution secretCode={secretCode} />
+      {/* <div className="custom-text-field">
+        <input id="myInput" placeholder=" " required type="text" />
+        <label htmlFor="myInput">{gameData?.date}</label>
+      </div> */}
+      <GameSolution date={gameData?.date} secretCode={secretCode} />
       <Paper my="sm" withBorder>
         <form onSubmit={submit}>
           <HiddenInput name="userId" value={userId} />

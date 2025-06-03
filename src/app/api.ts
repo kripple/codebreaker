@@ -8,7 +8,7 @@ export const api = createApi({
   }),
   tagTypes: ['Game'],
   endpoints: (build) => ({
-    getGame: build.query<Game, string>({
+    getGame: build.query<Game & { date: string }, string>({
       query: (id: string) => `/game/${id}`,
       providesTags: ['Game'],
     }),

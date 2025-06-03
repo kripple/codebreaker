@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import * as uuid from 'uuid';
 
 import { api } from '@/app/api';
+import { isSameDate, toTimestamp } from '@/utils/time';
+
+const invalidateGame = () => {
+  api.util.invalidateTags(['Game']);
+};
 
 export const useGame = () => {
   const key = 'user_id' as const;
@@ -14,6 +19,12 @@ export const useGame = () => {
   const id = userId || 'new';
   const response = api.useGetGameQuery(id);
   const currentId = response.currentData?.id;
+
+  const timestamp = response.startedTimeStamp;
+  const date = response.currentData?.date;
+  if (date && timestamp && !isSameDate([toTimestamp(date), timestamp])) {
+    invalidateGame();
+  }
 
   useEffect(() => {
     setUserId((current) => {
